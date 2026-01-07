@@ -147,18 +147,29 @@ _maintenance_precheck_brew-upgrade() {
   return 0
 }
 
-# Helper function for git gc on key repositories
+# Helper function for git gc on all repositories
 _maintenance_git_gc() {
-  local repos=(
-    "$HOME/.local/share/chezmoi"
-  )
+  local count=0
 
-  for repo in "${repos[@]}"; do
-    if [[ -d "$repo/.git" ]]; then
-      echo -e "      ${_m_dim}Running gc on: $repo${_m_reset}"
-      git -C "$repo" gc --quiet
-    fi
-  done
+  # Always include chezmoi
+  if [[ -d "$HOME/.local/share/chezmoi/.git" ]]; then
+    echo -e "      ${_m_dim}Running gc on: ~/.local/share/chezmoi${_m_reset}"
+    git -C "$HOME/.local/share/chezmoi" gc --quiet
+    ((count++))
+  fi
+
+  # Scan ~/Code/Repositories for git repos (depth 2)
+  if [[ -d "$HOME/Code/Repositories" ]]; then
+    for repo in "$HOME/Code/Repositories"/*/*/.git(N); do
+      local repo_dir="${repo%/.git}"
+      local short_path="${repo_dir/#$HOME/~}"
+      echo -e "      ${_m_dim}Running gc on: $short_path${_m_reset}"
+      git -C "$repo_dir" gc --quiet
+      ((count++))
+    done
+  fi
+
+  echo -e "      ${_m_dim}Optimized $count repositories${_m_reset}"
 }
 
 # Helper function for chezmoi push (commit and push)
