@@ -1,0 +1,10 @@
+[user]
+	name = Darshan Rambhia
+	email = darshanrambhia@live.com
+	signingkey = ~/.ssh/github_ed25519.pub
+
+[commit]
+	gpgsign = true
+
+[tag]
+	gpgsign = true

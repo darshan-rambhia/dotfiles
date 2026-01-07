@@ -1,0 +1,8 @@
+# Allowed SSH Signing Keys
+# Format: <email> <key-type> <public-key>
+
+# Personal
+darshanrambhia@live.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMLz9+2Cb7Evy4SEUfvPGs2ly8rnbyYTz4mwUbC3N4G9
+
+# Work
+d.rambhia@elsevier.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMLz9+2Cb7Evy4SEUfvPGs2ly8rnbyYTz4mwUbC3N4G9
