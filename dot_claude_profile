@@ -1,0 +1,75 @@
+#!/bin/zsh
+# .claude_profile - Shell configuration for Claude Code
+# This file is sourced by Claude Code for its shell environment
+
+# =============================================================================
+# Source base environment (XDG vars, PATH already set in .zshenv)
+# =============================================================================
+[[ -f "$HOME/.zshenv" ]] && source "$HOME/.zshenv"
+
+# =============================================================================
+# Claude-specific environment
+# =============================================================================
+export EDITOR="code --wait"
+export LANG="en_US.UTF-8"
+export LC_ALL="en_US.UTF-8"
+
+# Certificate bundle for corporate proxy
+[[ -f "$HOME/ca-certs/Zscaler-Root-CA.pem" ]] && \
+  export REQUESTS_CA_BUNDLE="$HOME/ca-certs/Zscaler-Root-CA.pem"
+
+# =============================================================================
+# Fix zoxide cd override (Claude needs builtin cd)
+# =============================================================================
+unalias cd 2>/dev/null || true
+unfunction cd 2>/dev/null || true
+cd() { builtin cd "$@"; }
+
+# =============================================================================
+# Aliases (simplified for Claude - avoid complex dependencies)
+# =============================================================================
+# Core tools
+alias k='kubectl'
+alias t='terraform'
+alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
+
+# File listing (basic ls, no eza dependency)
+alias ll='ls -la'
+alias la='ls -A'
+alias l='ls -CF'
+
+# Git shortcuts
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit'
+alias gp='git push'
+alias gl='git pull'
+
+# Navigation
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+
+# Utility
+alias rmdsstores='find . -name ".DS_Store" -type f -delete'
+
+# =============================================================================
+# Functions
+# =============================================================================
+mkcd() { mkdir -p "$1" && cd "$1"; }
+awsd() { source _awsd; }
+
+# =============================================================================
+# Completions (zsh-style)
+# =============================================================================
+autoload -Uz compinit
+compinit -d "${XDG_CACHE_HOME:-$HOME/.cache}/zcompdump-claude" 2>/dev/null
+
+# Docker completions
+[[ -d "$HOME/.docker/completions" ]] && fpath=("$HOME/.docker/completions" $fpath)
+
+# AWS CLI completion (zsh-style)
+if (( $+commands[aws_completer] )); then
+  autoload -Uz bashcompinit && bashcompinit
+  complete -C "$(command -v aws_completer)" aws
+fi
