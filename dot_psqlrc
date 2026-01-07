@@ -1,0 +1,11 @@
+\set QUIET 1
+\set PROMPT1 '%[%033[1m%]%n@%/%R%[%033[0m%]%# '
+\set PROMPT2 '[more] %R > '
+\pset null '(null)'
+\set COMP_KEYWORD_CASE preserve-upper
+\timing
+\set HISTSIZE 200
+\set HISTFILE ~/local/psql_history/ :DBNAME
+\set HISTCONTROL ignoredups
+\x auto
+\encoding unicode

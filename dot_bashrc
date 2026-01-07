@@ -1,0 +1,17 @@
+# Kiro CLI pre block. Keep at the top of this file.
+[[ -f "${HOME}/Library/Application Support/kiro-cli/shell/bashrc.pre.bash" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/bashrc.pre.bash"
+# Only load zoxide in interactive shells (not Claude Code)
+if [[ $- == *i* ]] && [[ -z "$CLAUDE_CODE_CONTEXT" ]]; then
+    # Zoxide configuration
+    export _ZO_DATA_DIR=$HOME/.local/share/zoxide
+    export _ZO_CACHE_DIR=$HOME/.cache/zoxide
+    export _ZO_ECHO=1
+    export _ZO_RESOLVE_SYMLINKS=1
+    eval "$(zoxide init --cmd cd zsh)"
+else
+    # Non-interactive shell (like Claude Code) - load minimal profile
+    source "$HOME/.claude_profile" 2>/dev/null || true
+fi
+
+# Kiro CLI post block. Keep at the bottom of this file.
+[[ -f "${HOME}/Library/Application Support/kiro-cli/shell/bashrc.post.bash" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/bashrc.post.bash"

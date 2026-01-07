@@ -1,0 +1,27 @@
+Include ~/.ssh/1Password/config
+
+Host *
+  AddKeysToAgent yes
+  IgnoreUnknown UseKeychain
+  ServerAliveInterval 240
+  ServerAliveCountMax 10
+  PermitLocalCommand yes
+  StrictHostKeyChecking accept-new
+
+Host github.com
+  User git
+  IdentityFile ~/.ssh/github_ed25519
+
+Host homelab
+  ForwardAgent yes
+  # HostName pve.solarflare-bushi.ts.net
+  HostName 10.100.0.1
+  IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+
+Host immich
+  HostName immich.solarflare-bushi.ts.net
+  User root
+
+Host cloudflared
+  HostName cloudflared.solarflare-bushi.ts.net
+  User root
