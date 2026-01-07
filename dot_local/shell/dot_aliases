@@ -98,6 +98,14 @@ alias localip='ipconfig getifaddr en0'
 alias flushdns='sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder'
 
 # =============================================================================
+# Homebrew Brewfile Management
+# =============================================================================
+alias brewsave='brew bundle dump --describe --force --file=~/.config/homebrew/Brewfile'
+alias brewrestore='brew bundle --file=~/.config/homebrew/Brewfile'
+alias brewcheck='brew bundle check --file=~/.config/homebrew/Brewfile'
+alias brewclean='brew bundle cleanup --file=~/.config/homebrew/Brewfile'
+
+# =============================================================================
 # Functions
 # =============================================================================
 function set_win_title() {
