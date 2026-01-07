@@ -110,7 +110,7 @@ export VISUAL='code --wait'
 # =============================================================================
 # PATH Construction (order matters: first match wins)
 # =============================================================================
-if [[ -n "$ZSH_VERSION" ]]; then
+if [ -n "$ZSH_VERSION" ]; then
     # Zsh: use typeset -U for unique entries and path array
     typeset -U path
     path=(
@@ -127,8 +127,8 @@ if [[ -n "$ZSH_VERSION" ]]; then
         $path
     )
 else
-    # Bash: build PATH string directly
-    export PATH="$HOME/.local/bin:$GOPATH/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+    # Bash/sh/POSIX: build PATH string directly
+    PATH="$HOME/.local/bin:$GOPATH/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 fi
 
 export PATH
