@@ -193,10 +193,10 @@ fpath=($HOME/.docker/completions $fpath)
 # Only run compinit if not using zinit (zinit handles this)
 if [[ "$PLUGIN_MANAGER" != "zinit" ]]; then
   autoload -Uz compinit
-  if [[ -n ${ZDOTDIR:-$HOME}/.zcompdump(#qN.mh+24) ]]; then
-    compinit
+  if [[ -n ${ZSH_COMPDUMP}(#qN.mh+24) ]]; then
+    compinit -d "$ZSH_COMPDUMP"
   else
-    compinit -C
+    compinit -C -d "$ZSH_COMPDUMP"
   fi
 fi
 
