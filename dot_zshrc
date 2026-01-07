@@ -264,6 +264,11 @@ if [[ $TERM_PROGRAM != "WarpTerminal" ]]; then
 fi
 
 # =============================================================================
+# System Maintenance Check
+# =============================================================================
+[[ -f "$HOME/.local/shell/.maintenance" ]] && source "$HOME/.local/shell/.maintenance"
+
+# =============================================================================
 # Custom Aliases
 # =============================================================================
 [[ -f "$HOME/.local/shell/.aliases" ]] && source "$HOME/.local/shell/.aliases"

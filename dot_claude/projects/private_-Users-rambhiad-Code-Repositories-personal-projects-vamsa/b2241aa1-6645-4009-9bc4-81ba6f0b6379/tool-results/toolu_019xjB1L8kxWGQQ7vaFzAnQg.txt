@@ -1,6 +1,0 @@
-The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/schemas/backup.test.ts has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
-     1→import { describe, it, expect } from "bun:test";
-     2→import { backupExportSchema, backupMetadataSchema } from "./backup";
-     3→
-     4→describe("backupExportSchema", () => {
-     5→  it("should validate valid backup export input", () => {

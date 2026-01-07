@@ -1,9 +1,0 @@
-{"type":"summary","summary":"Fix markdown violations in authentik docs","leafUuid":"7510f704-38fa-4c14-aadd-89cc9d9fd62c"}
-{"type":"summary","summary":"Authentik Migration: Replace Authelia with Unified OAuth","leafUuid":"d1ed85d2-6cb7-4553-a3f8-c5f7996d066d"}
-{"type":"summary","summary":"Authentik Migration: Replace Authelia with Centralized Identity Provider","leafUuid":"42391aa2-5697-4013-8a51-a71203a635dd"}
-{"type":"summary","summary":"n8n Backup Fix & Monitoring Upgrades","leafUuid":"ece3a38d-033d-408a-8d96-f516ed22229f"}
-{"type":"summary","summary":"Homelab backup fixes, alert setup, Pulse+Arcane deployment","leafUuid":"3617812d-f9ac-436b-80f9-569c6c352492"}
-{"type":"summary","summary":"Deploy Pulse + Arcane agents to all apps","leafUuid":"71e9be6d-72d2-4ce1-986c-fa4e994eb3e0"}
-{"type":"summary","summary":"Pulse+Arcane deployment, healthcheck fixes, Homepage integration","leafUuid":"3bd9844d-349b-4bfd-84f9-d7e3bfeda1f2"}
-{"type":"summary","summary":"Pulse+Arcane Deploy, Portainer Removal, PBS Backup Setup","leafUuid":"27109973-7802-460b-af8d-391a8b198966"}
-{"type":"summary","summary":"Portainer Removal, PBS Restore Test Setup","leafUuid":"3879afb0-a188-46c5-9bdf-b9fb07933ff8"}

@@ -1,1 +1,0 @@
-Command running in background with ID: b61c5af. Output is being written to: /tmp/claude/-Users-rambhiad-Code-Repositories-personal-projects-homelab/tasks/b61c5af.output

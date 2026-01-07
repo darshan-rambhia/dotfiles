@@ -1,0 +1,384 @@
+#!/bin/zsh
+# =============================================================================
+# Shell Maintenance Reminder System
+# =============================================================================
+# Prompts for overdue maintenance tasks on shell startup.
+# Use `maintain` command for manual control.
+#
+# Location: ~/.local/shell/.maintenance
+# State: ~/.local/state/maintenance/
+
+# =============================================================================
+# Configuration
+# =============================================================================
+MAINTENANCE_THRESHOLD_DAYS=${MAINTENANCE_THRESHOLD_DAYS:-3}
+MAINTENANCE_STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/maintenance"
+
+# =============================================================================
+# Colors and Formatting
+# =============================================================================
+_m_red='\033[0;31m'
+_m_green='\033[0;32m'
+_m_yellow='\033[0;33m'
+_m_blue='\033[0;34m'
+_m_cyan='\033[0;36m'
+_m_bold='\033[1m'
+_m_dim='\033[2m'
+_m_reset='\033[0m'
+
+# =============================================================================
+# Task Definitions
+# =============================================================================
+# Format: task_id:display_name:command:risk_level
+# Risk levels: low, medium, high
+typeset -A MAINTENANCE_TASKS
+MAINTENANCE_TASKS=(
+  [brew-update]="Update Homebrew|brew update|low"
+  [brew-upgrade]="Upgrade packages|brew upgrade|medium"
+  [brewsave]="Save Brewfile|brewsave|low"
+  [chezmoi-readd]="Sync dotfiles to chezmoi|chezmoi re-add|low"
+)
+
+# Task order for display
+MAINTENANCE_TASK_ORDER=(brew-update brew-upgrade brewsave chezmoi-readd)
+
+# =============================================================================
+# Helper Functions
+# =============================================================================
+
+# Ensure state directory exists
+_maintenance_init() {
+  [[ -d "$MAINTENANCE_STATE_DIR" ]] || mkdir -p "$MAINTENANCE_STATE_DIR"
+}
+
+# Get timestamp file path for a task
+_maintenance_timestamp_file() {
+  echo "$MAINTENANCE_STATE_DIR/${1}.lastrun"
+}
+
+# Read last run timestamp (returns epoch seconds, or 0 if never run)
+_maintenance_get_lastrun() {
+  local task="$1"
+  local file="$(_maintenance_timestamp_file "$task")"
+  if [[ -f "$file" ]]; then
+    cat "$file"
+  else
+    echo "0"
+  fi
+}
+
+# Write current timestamp
+_maintenance_set_lastrun() {
+  local task="$1"
+  local file="$(_maintenance_timestamp_file "$task")"
+  date +%s > "$file"
+}
+
+# Calculate days since last run
+_maintenance_days_since() {
+  local task="$1"
+  local lastrun="$(_maintenance_get_lastrun "$task")"
+  local now=$(date +%s)
+
+  if [[ "$lastrun" -eq 0 ]]; then
+    echo "never"
+    return
+  fi
+
+  local diff=$((now - lastrun))
+  local days=$((diff / 86400))
+  echo "$days"
+}
+
+# Check if task is due
+_maintenance_is_due() {
+  local task="$1"
+  local days="$(_maintenance_days_since "$task")"
+
+  if [[ "$days" == "never" ]]; then
+    return 0  # Due if never run
+  fi
+
+  [[ "$days" -ge "$MAINTENANCE_THRESHOLD_DAYS" ]]
+}
+
+# Parse task definition
+_maintenance_parse_task() {
+  local task="$1"
+  local field="$2"
+  local def="${MAINTENANCE_TASKS[$task]}"
+
+  case "$field" in
+    name) echo "${def%%|*}" ;;
+    command) echo "${${def#*|}%%|*}" ;;
+    risk) echo "${def##*|}" ;;
+  esac
+}
+
+# =============================================================================
+# Pre-check Functions (for risky commands)
+# =============================================================================
+
+# Pre-check for brew upgrade - show outdated packages
+_maintenance_precheck_brew-upgrade() {
+  local outdated
+  outdated=$(brew outdated 2>/dev/null)
+
+  if [[ -z "$outdated" ]]; then
+    echo -e "      ${_m_dim}No outdated packages${_m_reset}"
+    return 1  # Skip - nothing to upgrade
+  fi
+
+  echo -e "      ${_m_yellow}Outdated packages:${_m_reset}"
+  echo "$outdated" | head -10 | while read -r line; do
+    echo -e "        ${_m_dim}$line${_m_reset}"
+  done
+  local count=$(echo "$outdated" | wc -l | tr -d ' ')
+  if [[ "$count" -gt 10 ]]; then
+    echo -e "        ${_m_dim}... and $((count - 10)) more${_m_reset}"
+  fi
+  return 0
+}
+
+# Pre-check for chezmoi re-add - show files that have local changes
+_maintenance_precheck_chezmoi-readd() {
+  echo -e "      ${_m_dim}Checking for local changes...${_m_reset}"
+
+  # Check for local changes not yet synced to chezmoi
+  local chz_status
+  chz_status=$(chezmoi status 2>/dev/null)
+
+  if [[ -z "$chz_status" ]]; then
+    echo -e "      ${_m_dim}No local changes to sync${_m_reset}"
+    return 1  # Skip - nothing to re-add
+  fi
+
+  echo -e "      ${_m_yellow}Files changed locally:${_m_reset}"
+  echo "$chz_status" | head -10 | while read -r line; do
+    echo -e "        ${_m_dim}$line${_m_reset}"
+  done
+  local count=$(echo "$chz_status" | wc -l | tr -d ' ')
+  if [[ "$count" -gt 10 ]]; then
+    echo -e "        ${_m_dim}... and $((count - 10)) more${_m_reset}"
+  fi
+  return 0
+}
+
+# =============================================================================
+# Task Execution
+# =============================================================================
+
+# Run a single task with pre-checks and confirmation
+_maintenance_run_task() {
+  local task="$1"
+  local index="$2"
+  local total="$3"
+  local force="${4:-false}"
+
+  local name="$(_maintenance_parse_task "$task" name)"
+  local command="$(_maintenance_parse_task "$task" command)"
+  local risk="$(_maintenance_parse_task "$task" risk)"
+  local days="$(_maintenance_days_since "$task")"
+
+  # Display task info
+  if [[ -n "$index" ]]; then
+    echo -e "\n${_m_bold}[$index/$total]${_m_reset} ${_m_cyan}$name${_m_reset} ${_m_dim}(last: ${days} days ago)${_m_reset}"
+  else
+    echo -e "\n${_m_cyan}$name${_m_reset} ${_m_dim}(last: ${days} days ago)${_m_reset}"
+  fi
+
+  # Run pre-check if exists
+  local precheck_fn="_maintenance_precheck_$task"
+  if typeset -f "$precheck_fn" > /dev/null; then
+    if ! "$precheck_fn"; then
+      echo -e "      ${_m_dim}Skipping (nothing to do)${_m_reset}"
+      _maintenance_set_lastrun "$task"
+      return 0
+    fi
+  fi
+
+  # Determine default based on risk level
+  local prompt default
+  case "$risk" in
+    high)
+      prompt="      Run now? [y/N]: "
+      default="n"
+      ;;
+    *)
+      prompt="      Run now? [Y/n]: "
+      default="y"
+      ;;
+  esac
+
+  # Get user confirmation (unless forced)
+  local response
+  if [[ "$force" == "true" ]]; then
+    response="y"
+  else
+    echo -n "$prompt"
+    read -r response
+    response="${response:-$default}"
+  fi
+
+  if [[ "${response:l}" == "y" || "${response:l}" == "yes" ]]; then
+    echo -e "      ${_m_dim}Running: $command${_m_reset}"
+    if eval "$command"; then
+      echo -e "      ${_m_green}Complete${_m_reset}"
+      _maintenance_set_lastrun "$task"
+      return 0
+    else
+      echo -e "      ${_m_red}Failed${_m_reset}"
+      return 1
+    fi
+  else
+    echo -e "      ${_m_yellow}Skipped${_m_reset}"
+    return 0
+  fi
+}
+
+# =============================================================================
+# Main Check Function (called on shell startup)
+# =============================================================================
+
+_maintenance_check() {
+  _maintenance_init
+
+  # Collect due tasks
+  local due_tasks=()
+  for task in "${MAINTENANCE_TASK_ORDER[@]}"; do
+    if _maintenance_is_due "$task"; then
+      due_tasks+=("$task")
+    fi
+  done
+
+  # Exit if nothing due
+  if [[ ${#due_tasks[@]} -eq 0 ]]; then
+    return 0
+  fi
+
+  # Show banner
+  echo ""
+  echo -e "${_m_bold}${_m_blue}Maintenance Check${_m_reset}"
+  echo -e "${_m_dim}${#due_tasks[@]} task(s) overdue (threshold: ${MAINTENANCE_THRESHOLD_DAYS} days)${_m_reset}"
+
+  # Process each due task
+  local index=1
+  local total=${#due_tasks[@]}
+  for task in "${due_tasks[@]}"; do
+    _maintenance_run_task "$task" "$index" "$total"
+    ((index++))
+  done
+
+  echo ""
+}
+
+# =============================================================================
+# CLI Interface
+# =============================================================================
+
+maintain() {
+  _maintenance_init
+
+  local cmd="${1:-check}"
+  local arg="$2"
+
+  case "$cmd" in
+    check|"")
+      _maintenance_check
+      ;;
+
+    status)
+      echo -e "${_m_bold}Maintenance Status${_m_reset}"
+      echo -e "${_m_dim}Threshold: ${MAINTENANCE_THRESHOLD_DAYS} days${_m_reset}"
+      echo ""
+
+      for task in "${MAINTENANCE_TASK_ORDER[@]}"; do
+        local name="$(_maintenance_parse_task "$task" name)"
+        local days="$(_maintenance_days_since "$task")"
+        local due=""
+
+        if _maintenance_is_due "$task"; then
+          due=" ${_m_yellow}(due)${_m_reset}"
+        fi
+
+        if [[ "$days" == "never" ]]; then
+          echo -e "  ${_m_cyan}$name${_m_reset}: ${_m_dim}never run${_m_reset}$due"
+        else
+          echo -e "  ${_m_cyan}$name${_m_reset}: ${days} days ago$due"
+        fi
+      done
+      ;;
+
+    reset)
+      if [[ -n "$arg" ]]; then
+        # Reset specific task
+        if [[ -n "${MAINTENANCE_TASKS[$arg]}" ]]; then
+          rm -f "$(_maintenance_timestamp_file "$arg")"
+          echo "Reset timestamp for: $arg"
+        else
+          echo "Unknown task: $arg"
+          echo "Valid tasks: ${(k)MAINTENANCE_TASKS}"
+          return 1
+        fi
+      else
+        # Reset all
+        rm -f "$MAINTENANCE_STATE_DIR"/*.lastrun
+        echo "Reset all maintenance timestamps"
+      fi
+      ;;
+
+    run)
+      if [[ -z "$arg" ]]; then
+        echo "Usage: maintain run <task>"
+        echo "Tasks: ${(k)MAINTENANCE_TASKS}"
+        return 1
+      fi
+
+      if [[ -n "${MAINTENANCE_TASKS[$arg]}" ]]; then
+        _maintenance_run_task "$arg" "" "" "false"
+      else
+        echo "Unknown task: $arg"
+        echo "Valid tasks: ${(k)MAINTENANCE_TASKS}"
+        return 1
+      fi
+      ;;
+
+    help|--help|-h)
+      echo "maintain - Shell maintenance reminder system"
+      echo ""
+      echo "Usage:"
+      echo "  maintain              Run maintenance check (same as shell startup)"
+      echo "  maintain status       Show status of all tasks"
+      echo "  maintain reset        Clear all timestamps (forces all tasks due)"
+      echo "  maintain reset <task> Clear specific task timestamp"
+      echo "  maintain run <task>   Run specific task immediately"
+      echo "  maintain help         Show this help"
+      echo ""
+      echo "Tasks:"
+      for task in "${MAINTENANCE_TASK_ORDER[@]}"; do
+        local name="$(_maintenance_parse_task "$task" name)"
+        local command="$(_maintenance_parse_task "$task" command)"
+        printf "  %-16s %s (%s)\n" "$task" "$name" "$command"
+      done
+      echo ""
+      echo "Configuration (set in .zshrc before sourcing):"
+      echo "  MAINTENANCE_THRESHOLD_DAYS=${MAINTENANCE_THRESHOLD_DAYS} (default: 3)"
+      ;;
+
+    *)
+      echo "Unknown command: $cmd"
+      echo "Run 'maintain help' for usage"
+      return 1
+      ;;
+  esac
+}
+
+# =============================================================================
+# Auto-run on Interactive Shell Startup
+# =============================================================================
+
+# Only run check in interactive shells, and only once per session
+if [[ -o interactive ]] && [[ -z "$_MAINTENANCE_CHECKED" ]]; then
+  export _MAINTENANCE_CHECKED=1
+  _maintenance_check
+fi

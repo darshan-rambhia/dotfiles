@@ -1,4 +1,0 @@
-root      681596  0.0  0.0   2680  1708 pts/3    S+   21:04   0:00 /bin/sh -c source /root/.pbs-backup-env proxmox-backup-client namespace create n8n \   --repository backup@pbs@10.100.1.102:homelab 
-root      681597  0.0  0.5 155288 12236 pts/3    Sl+  21:04   0:00 proxmox-backup-client namespace create n8n --repository backup@pbs@10.100.1.102:homelab
-root      684274  0.0  0.0   2680  1696 pts/4    S+   21:26   0:00 /bin/sh -c source /root/.pbs-backup-env proxmox-backup-client namespace create n8n \   --repository backup@pbs@10.100.1.102:homelab 
-root      684275  0.0  0.5 155288 12264 pts/4    Sl+  21:26   0:00 proxmox-backup-client namespace create n8n --repository backup@pbs@10.100.1.102:homelab

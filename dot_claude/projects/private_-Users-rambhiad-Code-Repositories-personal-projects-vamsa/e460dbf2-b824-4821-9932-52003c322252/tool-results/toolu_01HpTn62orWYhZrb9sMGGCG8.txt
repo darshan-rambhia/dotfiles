@@ -1,3 +1,0 @@
-total 0
-drwxr-xr-x@ 2 rambhiad  staff   64 Jan  2 19:39 .
-drwxr-xr-x@ 6 rambhiad  staff  192 Jan  2 19:39 ..

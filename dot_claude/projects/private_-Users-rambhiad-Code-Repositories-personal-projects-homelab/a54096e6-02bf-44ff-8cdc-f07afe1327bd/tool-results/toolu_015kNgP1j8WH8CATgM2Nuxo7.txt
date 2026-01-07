@@ -1,3 +1,0 @@
-Repository: backup@pbs@10.100.1.102:homelab
-Namespace: n8n
-Fingerprint: 8e:a5:45:1f:3e:49:9c...

@@ -1,8 +1,0 @@
-The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/backup.test.ts has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
-     1→import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
-     2→
-     3→// Mock dependencies - must be defined before mock.module calls
-     4→const mockRequireAdmin = mock(() => Promise.resolve({}));
-     5→const mockPersonFindMany = mock(() => Promise.resolve([]));
-     6→const mockRelationshipFindMany = mock(() => Promise.resolve([]));
-     7→const mockUserFindMany = mock(() => Promise.resolve([]));

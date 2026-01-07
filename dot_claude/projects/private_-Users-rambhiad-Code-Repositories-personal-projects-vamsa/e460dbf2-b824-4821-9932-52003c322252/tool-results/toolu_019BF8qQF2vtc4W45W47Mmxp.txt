@@ -1,9 +1,0 @@
-total 48
-drwxr-xr-x@  8 rambhiad  staff   256 Jan  1 23:06 .
-drwxr-xr-x@ 41 rambhiad  staff  1312 Jan  2 20:48 ..
--rwxr-xr-x@  1 rambhiad  staff   437 Jan  1 13:36 build.sh
--rwx--x--x@  1 rambhiad  staff   504 Jan  1 23:06 db-start.sh
--rwx--x--x@  1 rambhiad  staff   256 Jan  1 23:06 db-stop.sh
--rwxr-xr-x@  1 rambhiad  staff   310 Jan  1 13:20 down.sh
--rwxr-xr-x@  1 rambhiad  staff   564 Jan  1 13:36 run.sh
--rwxr-xr-x@  1 rambhiad  staff   311 Jan  1 13:20 up.sh

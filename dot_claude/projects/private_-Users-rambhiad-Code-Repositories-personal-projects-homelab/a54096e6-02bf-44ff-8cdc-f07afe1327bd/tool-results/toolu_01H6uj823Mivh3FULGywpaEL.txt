@@ -1,4 +1,0 @@
-total 11
-drwxr-xr-x 3 backup backup 3 Dec 18 15:58 .
-drwxr-xr-x 5 backup backup 7 Dec 18 15:58 ..
-drwxr-xr-x 3 backup backup 3 Dec 18 15:58 n8n
