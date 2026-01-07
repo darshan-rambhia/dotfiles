@@ -158,9 +158,9 @@ _maintenance_git_gc() {
     ((count++))
   fi
 
-  # Scan ~/Code/Repositories for git repos (depth 2)
+  # Scan ~/Code/Repositories for all git repos (recursive)
   if [[ -d "$HOME/Code/Repositories" ]]; then
-    for repo in "$HOME/Code/Repositories"/*/*/.git(N); do
+    for repo in "$HOME/Code/Repositories"/**/.git(N); do
       local repo_dir="${repo%/.git}"
       local short_path="${repo_dir/#$HOME/~}"
       echo -e "      ${_m_dim}Running gc on: $short_path${_m_reset}"
