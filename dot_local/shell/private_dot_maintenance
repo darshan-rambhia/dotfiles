@@ -35,13 +35,19 @@ typeset -A MAINTENANCE_TASKS
 MAINTENANCE_TASKS=(
   [brew-update]="Update Homebrew|brew update|low"
   [brew-upgrade]="Upgrade packages|brew upgrade|medium"
+  [brew-cleanup]="Cleanup old versions|brew cleanup --prune=30|low"
+  [brew-doctor]="Check Homebrew health|brew doctor; true|low"
   [brewsave]="Save Brewfile|brewsave|low"
+  [npm-cache]="Clear npm cache|npm cache clean --force|low"
+  [npm-global]="Update global npm packages|npm update -g|low"
+  [docker-prune]="Clean Docker system|docker system prune -f|low"
+  [git-gc]="Optimize git repos|_maintenance_git_gc|low"
   [chezmoi-readd]="Sync dotfiles to chezmoi|chezmoi re-add|low"
   [chezmoi-push]="Push dotfiles to git|_maintenance_chezmoi_push|low"
 )
 
 # Task order for display
-MAINTENANCE_TASK_ORDER=(brew-update brew-upgrade brewsave chezmoi-readd chezmoi-push)
+MAINTENANCE_TASK_ORDER=(brew-update brew-upgrade brew-cleanup brew-doctor brewsave npm-cache npm-global docker-prune git-gc chezmoi-readd chezmoi-push)
 
 # =============================================================================
 # Helper Functions
@@ -141,6 +147,20 @@ _maintenance_precheck_brew-upgrade() {
   return 0
 }
 
+# Helper function for git gc on key repositories
+_maintenance_git_gc() {
+  local repos=(
+    "$HOME/.local/share/chezmoi"
+  )
+
+  for repo in "${repos[@]}"; do
+    if [[ -d "$repo/.git" ]]; then
+      echo -e "      ${_m_dim}Running gc on: $repo${_m_reset}"
+      git -C "$repo" gc --quiet
+    fi
+  done
+}
+
 # Helper function for chezmoi push (commit and push)
 _maintenance_chezmoi_push() {
   local date_str=$(date +"%m/%d/%y")
@@ -170,6 +190,45 @@ _maintenance_precheck_chezmoi-push() {
   local count=$(echo "$git_status" | wc -l | tr -d ' ')
   if [[ "$count" -gt 10 ]]; then
     echo -e "        ${_m_dim}... and $((count - 10)) more${_m_reset}"
+  fi
+  return 0
+}
+
+# Pre-check for docker prune - check if Docker is running
+_maintenance_precheck_docker-prune() {
+  if ! docker info &>/dev/null; then
+    echo -e "      ${_m_dim}Docker is not running${_m_reset}"
+    return 1  # Skip
+  fi
+
+  local usage
+  usage=$(docker system df --format "{{.Type}}: {{.Size}}" 2>/dev/null | head -4)
+  if [[ -n "$usage" ]]; then
+    echo -e "      ${_m_yellow}Docker disk usage:${_m_reset}"
+    echo "$usage" | while read -r line; do
+      echo -e "        ${_m_dim}$line${_m_reset}"
+    done
+  fi
+  return 0
+}
+
+# Pre-check for npm global update - show outdated packages
+_maintenance_precheck_npm-global() {
+  local outdated
+  outdated=$(npm outdated -g --depth=0 2>/dev/null | tail -n +2)
+
+  if [[ -z "$outdated" ]]; then
+    echo -e "      ${_m_dim}No outdated global packages${_m_reset}"
+    return 1  # Skip
+  fi
+
+  echo -e "      ${_m_yellow}Outdated global packages:${_m_reset}"
+  echo "$outdated" | head -5 | while read -r line; do
+    echo -e "        ${_m_dim}$line${_m_reset}"
+  done
+  local count=$(echo "$outdated" | wc -l | tr -d ' ')
+  if [[ "$count" -gt 5 ]]; then
+    echo -e "        ${_m_dim}... and $((count - 5)) more${_m_reset}"
   fi
   return 0
 }
