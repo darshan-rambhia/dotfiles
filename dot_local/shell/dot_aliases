@@ -139,3 +139,58 @@ function extract() {
     echo "'$1' is not a valid file"
   fi
 }
+
+# Show processes with most open file descriptors (diagnose "file table overflow")
+function openfiles() {
+  local count=${1:-20}
+  local total=$(lsof 2>/dev/null | wc -l | tr -d ' ')
+  local maxfiles=$(sysctl -n kern.maxfiles)
+  local pct=$((total * 100 / maxfiles))
+
+  echo "┌─────────────────────────────────────────────────────────┐"
+  echo "│  Open Files: $total / $maxfiles ($pct% used)"
+  echo "├─────────┬─────────┬───────────────────────────────────┤"
+  printf "│ %7s │ %7s │ %-33s │\n" "FILES" "PID" "PROCESS"
+  echo "├─────────┼─────────┼───────────────────────────────────┤"
+
+  lsof 2>/dev/null | awk '{print $2, $1}' | sort | uniq -c | sort -rn | head -$count | \
+    while read files pid proc; do
+      printf "│ %7s │ %7s │ %-33s │\n" "$files" "$pid" "${proc:0:33}"
+    done
+
+  echo "└─────────┴─────────┴───────────────────────────────────┘"
+}
+
+# Restore PopClip extensions from config backup to Application Support
+function popclip-restore() {
+  local src="$HOME/.config/popclip/Extensions"
+  local dest="$HOME/Library/Application Support/PopClip/Extensions"
+
+  if [[ ! -d "$src" ]]; then
+    echo "Source not found: $src"
+    return 1
+  fi
+
+  echo "Restoring PopClip extensions..."
+  mkdir -p "$dest"
+  cp -R "$src"/* "$dest"/
+  echo "Done. Restart PopClip to load extensions."
+}
+
+# Backup PopClip extensions from Application Support to config
+function popclip-backup() {
+  local src="$HOME/Library/Application Support/PopClip/Extensions"
+  local dest="$HOME/.config/popclip/Extensions"
+
+  if [[ ! -d "$src" ]]; then
+    echo "Source not found: $src"
+    return 1
+  fi
+
+  echo "Backing up PopClip extensions..."
+  mkdir -p "$dest"
+  rm -rf "$dest"/*
+  cp -R "$src"/* "$dest"/
+  chezmoi add ~/.config/popclip
+  echo "Done. PopClip extensions backed up and added to chezmoi."
+}

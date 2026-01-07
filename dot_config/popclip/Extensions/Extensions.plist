@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Installed Extensions</key>
+	<array>
+		<dict>
+			<key>Enabled</key>
+			<true/>
+			<key>Extension Identifier</key>
+			<string>com.pilotmoon.popclip.extension.call</string>
+			<key>Extension Name</key>
+			<string>Call</string>
+			<key>Package Name</key>
+			<string>@y1e8y0.com.pilotmoon.popclip.extension.call.popclipext</string>
+		</dict>
+		<dict>
+			<key>Enabled</key>
+			<true/>
+			<key>Extension Identifier</key>
+			<string>com.pilotmoon.popclip.extension.rtc</string>
+			<key>Extension Name</key>
+			<string>Terminal</string>
+			<key>Package Name</key>
+			<string>@8jj623.com.pilotmoon.popclip.extension.rtc.popclipext</string>
+		</dict>
+		<dict>
+			<key>Enabled</key>
+			<true/>
+			<key>Extension Identifier</key>
+			<string>com.pilotmoon.popclip.extension.calculate</string>
+			<key>Extension Name</key>
+			<string>Calculate</string>
+			<key>Package Name</key>
+			<string>@7ccsap.com.pilotmoon.popclip.extension.calculate.popclipext</string>
+		</dict>
+		<dict>
+			<key>Enabled</key>
+			<true/>
+			<key>Extension Identifier</key>
+			<string>autoid.autoname.jira.efzxhyjo.popclipext</string>
+			<key>Extension Name</key>
+			<string>Jira</string>
+			<key>Package Name</key>
+			<string>autoname.jira.EFzXHYJO.popclipext</string>
+		</dict>
+		<dict>
+			<key>Enabled</key>
+			<true/>
+			<key>Extension Identifier</key>
+			<string>com.pilotmoon.popclip.extension.google-search</string>
+			<key>Extension Name</key>
+			<string>Google</string>
+			<key>Package Name</key>
+			<string>@ckrwqw.com.pilotmoon.popclip.extension.google-search.popclipext</string>
+		</dict>
+		<dict>
+			<key>Enabled</key>
+			<true/>
+			<key>Extension Identifier</key>
+			<string>com.pilotmoon.popclip.extension.alfred</string>
+			<key>Extension Name</key>
+			<string>Alfred</string>
+			<key>Package Name</key>
+			<string>@8tjp5p.com.pilotmoon.popclip.extension.alfred.popclipext</string>
+		</dict>
+		<dict>
+			<key>Enabled</key>
+			<true/>
+			<key>Extension Identifier</key>
+			<string>com.pilotmoon.popclip.extension.raycast</string>
+			<key>Extension Name</key>
+			<string>Raycast</string>
+			<key>Package Name</key>
+			<string>@rv56p0.com.pilotmoon.popclip.extension.raycast.popclipext</string>
+		</dict>
+		<dict>
+			<key>Enabled</key>
+			<true/>
+			<key>Extension Identifier</key>
+			<string>com.pilotmoon.popclip.extension.charcount</string>
+			<key>Extension Name</key>
+			<string>Character Count</string>
+			<key>Package Name</key>
+			<string>@4hzjpg.com.pilotmoon.popclip.extension.charcount.popclipext</string>
+		</dict>
+		<dict>
+			<key>Enabled</key>
+			<true/>
+			<key>Extension Identifier</key>
+			<string>com.pilotmoon.popclip.extension.base64</string>
+			<key>Extension Name</key>
+			<string>Base64</string>
+			<key>Package Name</key>
+			<string>@6ymxrg.com.pilotmoon.popclip.extension.base64.popclipext</string>
+		</dict>
+		<dict>
+			<key>Enabled</key>
+			<true/>
+			<key>Extension Identifier</key>
+			<string>com.pilotmoon.popclip.extension.wordcount</string>
+			<key>Extension Name</key>
+			<string>Word Count</string>
+			<key>Package Name</key>
+			<string>@p94cm7.com.pilotmoon.popclip.extension.wordcount.popclipext</string>
+		</dict>
+		<dict>
+			<key>Enabled</key>
+			<true/>
+			<key>Extension Identifier</key>
+			<string>com.pilotmoon.popclip.extension.urban-dictionary</string>
+			<key>Extension Name</key>
+			<string>Urban Dictionary</string>
+			<key>Package Name</key>
+			<string>@6n9d0y.com.pilotmoon.popclip.extension.urban-dictionary.popclipext</string>
+		</dict>
+		<dict>
+			<key>Enabled</key>
+			<true/>
+			<key>Extension Identifier</key>
+			<string>com.pilotmoon.popclip.extension.audible-search</string>
+			<key>Extension Name</key>
+			<string>Audible</string>
+			<key>Package Name</key>
+			<string>@ezvs1d.com.pilotmoon.popclip.extension.audible-search.popclipext</string>
+		</dict>
+	</array>
+	<key>Version</key>
+	<integer>1</integer>
+</dict>
+</plist>

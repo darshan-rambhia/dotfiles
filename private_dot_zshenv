@@ -78,6 +78,9 @@ export KUBECONFIG="$XDG_CONFIG_HOME/kube/config"
 # Terraform
 export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME/terraform/terraformrc"
 
+# SOPS (use 1Password for age key instead of local file)
+export SOPS_AGE_KEY_CMD="op read 'op://homelab/sops-age-key/private_key'"
+
 # =============================================================================
 # Database Histories
 # =============================================================================
@@ -107,22 +110,25 @@ export VISUAL='code --wait'
 # =============================================================================
 # PATH Construction (order matters: first match wins)
 # =============================================================================
-# Use typeset -U to ensure unique entries
-typeset -U path
-
-# Build PATH with XDG-compliant locations
-path=(
-    "$HOME/.local/bin"
-    "$GOPATH/bin"
-    "/opt/homebrew/bin"
-    "/opt/homebrew/sbin"
-    "/usr/local/bin"
-    "/usr/local/sbin"
-    "/usr/bin"
-    "/bin"
-    "/usr/sbin"
-    "/sbin"
-    $path
-)
+if [[ -n "$ZSH_VERSION" ]]; then
+    # Zsh: use typeset -U for unique entries and path array
+    typeset -U path
+    path=(
+        "$HOME/.local/bin"
+        "$GOPATH/bin"
+        "/opt/homebrew/bin"
+        "/opt/homebrew/sbin"
+        "/usr/local/bin"
+        "/usr/local/sbin"
+        "/usr/bin"
+        "/bin"
+        "/usr/sbin"
+        "/sbin"
+        $path
+    )
+else
+    # Bash: build PATH string directly
+    export PATH="$HOME/.local/bin:$GOPATH/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+fi
 
 export PATH

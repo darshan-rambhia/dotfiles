@@ -1,5 +1,9 @@
 # Kiro CLI pre block. Keep at the top of this file.
 [[ -f "${HOME}/Library/Application Support/kiro-cli/shell/bashrc.pre.bash" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/bashrc.pre.bash"
+
+# Source shared environment variables from .zshenv
+[[ -f "$HOME/.zshenv" ]] && source "$HOME/.zshenv"
+
 # Only load zoxide in interactive shells (not Claude Code)
 if [[ $- == *i* ]] && [[ -z "$CLAUDE_CODE_CONTEXT" ]]; then
     # Zoxide configuration

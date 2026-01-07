@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Signature</key>
+	<data>gWDIxQ7ryhXvoaJ6Ugtvpv2J8xp8nbM4SUrsFYUgNYfS1Hk60rvQPjDvfPzyVn/2ukHuEQpx3vIjrws8I3kXA3aM0rFmNYQTlAWQftDBHoXBT7AHKzN/nQR+mZv01QVuSTdN/r6oZSZrSQAOckQADt742VZr4r80PIzYtSTHx/8=</data>
+	<key>SignatureV2</key>
+	<data>7tn3ejhAVFvl8zLEvq3bHww3IqldXaE1Dr8qWwxUNVf1dVghYItvwFszNdRUQuQEqNbpTHY5agzjBtwVYkasDA==</data>
+	<key>Metadata</key>
+	<dict>
+		<key>identifier</key>
+		<string>com.pilotmoon.popclip.extension.call</string>
+		<key>shortcode</key>
+		<string>y1e8y0</string>
+		<key>version</key>
+		<string>100</string>
+	</dict>
+</dict>
+</plist>
