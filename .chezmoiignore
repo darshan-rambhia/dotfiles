@@ -1,0 +1,27 @@
+# =============================================================================
+# Files/patterns to never track in chezmoi
+# =============================================================================
+
+# Shell history (contains sensitive commands)
+**/*history*
+**/*_history
+.zsh_history
+.bash_history
+
+# Credentials and secrets
+**/*.pem
+**/*.key
+**/id_rsa*
+**/id_ed25519*
+**/*credential*
+**/*.env
+**/.env.*
+
+# macOS junk
+.DS_Store
+**/.DS_Store
+
+# Temporary files
+*.tmp
+*.swp
+*.bak
