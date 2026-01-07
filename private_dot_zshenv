@@ -21,9 +21,9 @@ export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 # =============================================================================
 # Zsh XDG Compliance
 # =============================================================================
-# Note: ZDOTDIR would move .zshrc to $XDG_CONFIG_HOME/zsh/.zshrc
-# Uncomment the following line if you want to migrate .zshrc location:
-# export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
+# ZDOTDIR tells zsh to look for .zshrc in this directory instead of $HOME
+export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
+[ -d "$ZDOTDIR" ] || mkdir -p "$ZDOTDIR"
 
 # Zsh state files (history, completion cache)
 export HISTFILE="$XDG_STATE_HOME/zsh/history"
@@ -84,8 +84,9 @@ export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME/terraform/terraformrc"
 export SOPS_AGE_KEY_CMD="op read 'op://homelab/sops-age-key/private_key'"
 
 # =============================================================================
-# Database Histories
+# Database Configs & Histories
 # =============================================================================
+export PSQLRC="$XDG_CONFIG_HOME/pg/psqlrc"
 export MYSQL_HISTFILE="$XDG_STATE_HOME/mysql_history"
 export PSQL_HISTORY="$XDG_STATE_HOME/psql_history"
 export SQLITE_HISTORY="$XDG_STATE_HOME/sqlite_history"
