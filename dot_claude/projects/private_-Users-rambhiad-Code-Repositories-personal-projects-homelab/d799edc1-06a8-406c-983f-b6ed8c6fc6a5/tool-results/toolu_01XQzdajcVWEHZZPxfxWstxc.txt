@@ -1,0 +1,235 @@
+     1→# Homelab Infrastructure Automation
+     2→# https://taskfile.dev
+     3→
+     4→version: '3'
+     5→
+     6→vars:
+     7→  PROJECT_ROOT: "{{.TASKFILE_DIR}}"
+     8→  TOFU_DIR: "{{.PROJECT_ROOT}}/tofu"
+     9→
+    10→env:
+    11→  # State encryption passphrase - MUST be TF_VAR because encryption runs before providers
+    12→  # All other secrets are now fetched via 1Password provider directly in OpenTofu
+    13→  TF_VAR_state_encryption_passphrase:
+    14→    sh: |
+    15→      if [ -n "$TF_VAR_state_encryption_passphrase" ]; then
+    16→        echo "$TF_VAR_state_encryption_passphrase"
+    17→      else
+    18→        op read "op://homelab/opentofu/password" 2>/dev/null || echo ""
+    19→      fi
+    20→
+    21→# =============================================================================
+    22→# Included Taskfiles (flattened into main namespace)
+    23→# =============================================================================
+    24→includes:
+    25→  tofu:
+    26→    taskfile: ./tasks/tofu.yml
+    27→    flatten: true
+    28→    vars:
+    29→      PROJECT_ROOT: "{{.PROJECT_ROOT}}"
+    30→  backup:
+    31→    taskfile: ./tasks/backup.yml
+    32→    flatten: true
+    33→    vars:
+    34→      PROJECT_ROOT: "{{.PROJECT_ROOT}}"
+    35→  cloud:
+    36→    taskfile: ./tasks/cloud.yml
+    37→    flatten: true
+    38→    vars:
+    39→      PROJECT_ROOT: "{{.PROJECT_ROOT}}"
+    40→  template:
+    41→    taskfile: ./tasks/template.yml
+    42→    flatten: true
+    43→    vars:
+    44→      PROJECT_ROOT: "{{.PROJECT_ROOT}}"
+    45→  pbs:
+    46→    taskfile: ./tasks/pbs.yml
+    47→    flatten: true
+    48→    vars:
+    49→      PROJECT_ROOT: "{{.PROJECT_ROOT}}"
+    50→  importer:
+    51→    taskfile: ./tasks/immich-importer.yml
+    52→    vars:
+    53→      PROJECT_ROOT: "{{.PROJECT_ROOT}}"
+    54→  beads:
+    55→    taskfile: ./tasks/beads.yml
+    56→    flatten: true
+    57→    vars:
+    58→      PROJECT_ROOT: "{{.PROJECT_ROOT}}"
+    59→
+    60→tasks:
+    61→  # ===========================================================================
+    62→  # Desktop LXC (Temporary GUI for Downloads)
+    63→  # ===========================================================================
+    64→
+    65→  desktop:create:
+    66→    desc: "Create temporary GUI desktop LXC for downloading Google Takeout"
+    67→    cmds:
+    68→      - ./scripts/desktop-lxc/create.sh
+    69→
+    70→  desktop:destroy:
+    71→    desc: "Destroy temporary GUI desktop LXC"
+    72→    cmds:
+    73→      - ./scripts/desktop-lxc/destroy.sh
+    74→
+    75→  desktop:info:
+    76→    desc: "Show VNC connection info for desktop LXC"
+    77→    cmds:
+    78→      - |
+    79→        IP=$(ssh root@homelab "pct exec 600 -- ip -4 addr show eth0 | grep inet | awk '{print \$2}' | cut -d/ -f1" 2>/dev/null)
+    80→        if [ -z "$IP" ]; then
+    81→          echo "Desktop LXC (600) is not running or does not exist."
+    82→          echo "Run 'task desktop:create' first."
+    83→          exit 1
+    84→        fi
+    85→        echo "=== Desktop LXC VNC Connection ==="
+    86→        echo ""
+    87→        echo "VNC Host: $IP:5901"
+    88→        echo ""
+    89→        echo "macOS: Open Finder, Cmd+K, enter vnc://$IP:5901"
+    90→        echo ""
+    91→        echo "Downloads save to: /downloads (mounted to /tank/photo-import)"
+    92→
+    93→  desktop:restart-vnc:
+    94→    desc: "Restart VNC server on desktop LXC"
+    95→    cmds:
+    96→      - |
+    97→        echo "Restarting VNC server..."
+    98→        ssh root@homelab "pct exec 600 -- bash -c 'vncserver -kill :1 2>/dev/null || true; vncserver :1 -geometry 1920x1080 -depth 24 -localhost no'"
+    99→        echo "VNC server restarted on display :1"
+   100→
+   101→  # ===========================================================================
+   102→  # Authelia Operations
+   103→  # ===========================================================================
+   104→
+   105→  authelia:secrets:
+   106→    desc: "Generate Authelia secrets from 1Password"
+   107→    cmds:
+   108→      - |
+   109→        SECRETS_DIR="{{.PROJECT_ROOT}}/tofu/apps/authelia/deploy/secrets"
+   110→        mkdir -p "$SECRETS_DIR"
+   111→        echo "Fetching secrets from 1Password..."
+   112→        op read "op://homelab/authelia/jwt_secret" > "$SECRETS_DIR/jwt_secret"
+   113→        op read "op://homelab/authelia/session_secret" > "$SECRETS_DIR/session_secret"
+   114→        op read "op://homelab/authelia/storage_encryption_key" > "$SECRETS_DIR/storage_encryption_key"
+   115→        op read "op://homelab/authelia/oidc_hmac_secret" > "$SECRETS_DIR/oidc_hmac_secret"
+   116→        op read "op://homelab/authelia/oidc_private_key" > "$SECRETS_DIR/oidc_private_key"
+   117→        chmod 600 "$SECRETS_DIR"/*
+   118→        echo "Secrets written to $SECRETS_DIR"
+   119→
+   120→  authelia:users:
+   121→    desc: "Generate Authelia users database from 1Password"
+   122→    cmds:
+   123→      - |
+   124→        USERS_FILE="{{.PROJECT_ROOT}}/tofu/apps/authelia/deploy/authelia/users_database.yml"
+   125→        HASH=$(op read "op://homelab/authelia/admin_password_hash")
+   126→        if [ "$HASH" = "PLACEHOLDER_RUN_DOCKER_TO_GENERATE" ]; then
+   127→          echo "ERROR: admin_password_hash is still a placeholder."
+   128→          echo "Run: docker run --rm -it authelia/authelia:latest authelia crypto hash generate argon2"
+   129→          echo "Then update 1Password: op item edit authelia --vault=homelab 'admin_password_hash=YOUR_HASH'"
+   130→          exit 1
+   131→        fi
+   132→        echo "users:" > "$USERS_FILE"
+   133→        echo "  admin:" >> "$USERS_FILE"
+   134→        echo "    displayname: \"Admin\"" >> "$USERS_FILE"
+   135→        echo "    email: admin@homelab.rambtech.dev" >> "$USERS_FILE"
+   136→        echo "    password: \"$HASH\"" >> "$USERS_FILE"
+   137→        echo "    groups:" >> "$USERS_FILE"
+   138→        echo "      - admins" >> "$USERS_FILE"
+   139→        echo "      - users" >> "$USERS_FILE"
+   140→        echo "Users database written to $USERS_FILE"
+   141→
+   142→  authelia:setup:
+   143→    desc: "Full Authelia setup (secrets + users)"
+   144→    cmds:
+   145→      - task: authelia:secrets
+   146→      - task: authelia:users
+   147→      - echo "Authelia setup complete. Run 'task tofu:apply APP=authelia' to deploy."
+   148→
+   149→  # ===========================================================================
+   150→  # AdGuard DNS Operations
+   151→  # ===========================================================================
+   152→
+   153→  adguard:test:
+   154→    desc: "Test DNS resolution for homelab domains"
+   155→    cmds:
+   156→      - ./scripts/sync/adguard-sync.sh test
+   157→
+   158→  # ===========================================================================
+   159→  # IP Address Management
+   160→  # ===========================================================================
+   161→
+   162→  ip:next:
+   163→    desc: "Show the next available IP address for new LXC deployment"
+   164→    cmds:
+   165→      - ./scripts/ip/next.sh
+   166→
+   167→  ip:list:
+   168→    desc: "Show all allocated IP addresses"
+   169→    cmds:
+   170→      - ./scripts/ip/list.sh
+   171→
+   172→  # ===========================================================================
+   173→  # Cleanup & Maintenance
+   174→  # ===========================================================================
+   175→
+   176→  cleanup:
+   177→    desc: "Clean up temporary files, backups, and cruft (dry run)"
+   178→    cmds:
+   179→      - ./scripts/cleanup.sh
+   180→
+   181→  cleanup:run:
+   182→    desc: "Clean up temporary files, backups, and cruft (actually delete)"
+   183→    cmds:
+   184→      - ./scripts/cleanup.sh --run
+   185→
+   186→  # ===========================================================================
+   187→  # Local Development
+   188→  # ===========================================================================
+   189→
+   190→  dev:dashboards:up:
+   191→    desc: "Start Homepage and Dashy locally for testing configs"
+   192→    dir: "{{.PROJECT_ROOT}}/dev/dashboards"
+   193→    cmds:
+   194→      - docker compose up -d
+   195→      - |
+   196→        echo ""
+   197→        echo "=== Dashboard Dev Environment ==="
+   198→        echo ""
+   199→        echo "Homepage: http://localhost:3000"
+   200→        echo "Dashy:    http://localhost:4001"
+   201→        echo ""
+   202→        echo "Config files are mounted from tofu/apps/dashboards/deploy/"
+   203→        echo "Edit configs and refresh browser to see changes."
+   204→        echo "(Dashy may need container restart for config changes)"
+   205→        echo ""
+   206→        echo "Stop with: task dev:dashboards:down"
+   207→
+   208→  dev:dashboards:down:
+   209→    desc: "Stop local dashboard dev environment"
+   210→    dir: "{{.PROJECT_ROOT}}/dev/dashboards"
+   211→    cmds:
+   212→      - docker compose down
+   213→
+   214→  dev:dashboards:logs:
+   215→    desc: "View logs from local dashboard containers"
+   216→    dir: "{{.PROJECT_ROOT}}/dev/dashboards"
+   217→    cmds:
+   218→      - docker compose logs -f {{.SERVICE}}
+   219→    vars:
+   220→      SERVICE: '{{.SERVICE | default ""}}'
+   221→
+   222→  dev:dashboards:restart:
+   223→    desc: "Restart local dashboard containers (useful after config changes)"
+   224→    dir: "{{.PROJECT_ROOT}}/dev/dashboards"
+   225→    cmds:
+   226→      - docker compose restart {{.SERVICE}}
+   227→      - echo "Restarted. Dashy takes ~40s to fully start."
+   228→    vars:
+   229→      SERVICE: '{{.SERVICE | default ""}}'
+   230→
+   231→
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

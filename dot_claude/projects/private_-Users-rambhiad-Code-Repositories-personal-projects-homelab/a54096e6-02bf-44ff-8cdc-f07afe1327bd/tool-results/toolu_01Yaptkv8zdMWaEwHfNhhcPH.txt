@@ -1,0 +1,21 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/homelab/tofu/modules/lxc-sidecars/templates/configure-backup-playbook.yml.tftpl has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+   100→        dest: /root/.pbs-backup-env
+   101→        mode: '0600'
+   102→      no_log: true
+   103→
+   104→    # =========================================================================
+   105→    # Create PBS Namespace (if specified and doesn't exist)
+   106→    # =========================================================================
+   107→    - name: Create PBS namespace
+   108→      ansible.builtin.shell:
+   109→        cmd: bash -c 'source /root/.pbs-backup-env && proxmox-backup-client namespace create {{ namespace }} --repository {{ pbs_repository }}'
+   110→        executable: /bin/bash
+   111→      register: namespace_create
+   112→      changed_when: namespace_create.rc == 0
+   113→      failed_when: false
+   114→      no_log: true
+   115→      when: namespace != ""
+   116→
+   117→    # =========================================================================
+   118→    # Create Backup Script
+   119→    # =========================================================================

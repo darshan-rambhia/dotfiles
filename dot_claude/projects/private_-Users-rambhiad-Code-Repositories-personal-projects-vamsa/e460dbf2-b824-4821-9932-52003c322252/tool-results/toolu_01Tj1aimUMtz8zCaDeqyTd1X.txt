@@ -1,0 +1,2 @@
+-rw-r--r--@ 1 rambhiad  staff   345 Jan  2 08:15 /Users/rambhiad/Code/Repositories/personal-projects/vamsa/.env
+-rw-r--r--@ 1 rambhiad  staff  1296 Jan  2 08:15 /Users/rambhiad/Code/Repositories/personal-projects/vamsa/.env.example

@@ -1,0 +1,45 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/components/ui/button.test.tsx has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+     1→import { describe, it, expect, mock } from "bun:test";
+     2→import { render, screen } from "@testing-library/react";
+     3→import userEvent from "@testing-library/user-event";
+     4→import { Button } from "./button";
+     5→
+     6→describe("Button", () => {
+     7→  it("renders with children text", () => {
+     8→    render(<Button>Click me</Button>);
+     9→    expect(
+    10→      screen.getByRole("button", { name: "Click me" })
+    11→    ).toBeInTheDocument();
+    12→  });
+    13→
+    14→  it("applies default variant styles", () => {
+    15→    render(<Button>Default</Button>);
+    16→    const button = screen.getByRole("button");
+    17→    expect(button).toHaveClass("bg-primary");
+    18→  });
+    19→
+    20→  it("applies destructive variant styles", () => {
+    21→    render(<Button variant="destructive">Delete</Button>);
+    22→    const button = screen.getByRole("button");
+    23→    expect(button).toHaveClass("bg-destructive");
+    24→  });
+    25→
+    26→  it("applies outline variant styles", () => {
+    27→    render(<Button variant="outline">Outline</Button>);
+    28→    const button = screen.getByRole("button");
+    29→    expect(button).toHaveClass("border");
+    30→  });
+    31→
+    32→  it("applies size variants", () => {
+    33→    render(<Button size="sm">Small</Button>);
+    34→    const button = screen.getByRole("button");
+    35→    expect(button).toHaveClass("h-9");
+    36→  });
+    37→
+    38→  it("handles click events", async () => {
+    39→    const user = userEvent.setup();
+    40→    const onClick = mock(() => {});
+    41→
+    42→    render(<Button onClick={onClick}>Click</Button>);
+    43→    await user.click(screen.getByRole("button"));
+    44→

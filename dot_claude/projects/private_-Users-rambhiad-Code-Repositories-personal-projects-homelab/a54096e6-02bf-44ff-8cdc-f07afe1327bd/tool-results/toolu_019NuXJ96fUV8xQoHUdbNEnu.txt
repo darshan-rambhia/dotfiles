@@ -1,0 +1,519 @@
+/Users/rambhiad/Code/Repositories/personal-projects/homelab/tofu/apps/n8n
+[0m[1mdata.onepassword_vault.homelab: Reading...[0m[0m
+[0m[1mdata.onepassword_vault.homelab: Read complete after 1s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu][0m
+[0m[1mdata.onepassword_item.opentofu: Reading...[0m[0m
+[0m[1mdata.onepassword_item.cloudflare: Reading...[0m[0m
+[0m[1mdata.onepassword_item.discord_webhook: Reading...[0m[0m
+[0m[1mdata.onepassword_item.grafana: Reading...[0m[0m
+[0m[1mdata.onepassword_item.uptime_kuma: Reading...[0m[0m
+[0m[1mdata.onepassword_item.portainer_edge["openwebui"]: Reading...[0m[0m
+[0m[1mdata.onepassword_item.portainer_edge["media-management"]: Reading...[0m[0m
+[0m[1mdata.onepassword_item.portainer_edge["jellyfin"]: Reading...[0m[0m
+[0m[1mdata.onepassword_item.portainer_edge["monitoring"]: Reading...[0m[0m
+[0m[1mdata.onepassword_item.portainer_edge["dashboards"]: Reading...[0m[0m
+[0m[1mdata.onepassword_item.discord_webhook: Read complete after 1s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu/items/wqqqbskbdk62i5dbqyt2fu2tbm][0m
+[0m[1mdata.onepassword_item.portainer_edge["traefik"]: Reading...[0m[0m
+[0m[1mdata.onepassword_item.portainer_edge["openwebui"]: Read complete after 1s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu/items/32ocy2fdcy3a7fjkp3d3oihkxu][0m
+[0m[1mdata.onepassword_item.portainer_edge["n8n"]: Reading...[0m[0m
+[0m[1mdata.onepassword_item.grafana: Read complete after 1s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu/items/bbxkhyb6n3mteztoz4icimzcxu][0m
+[0m[1mdata.onepassword_item.portainer_edge["obsidian-sync"]: Reading...[0m[0m
+[0m[1mdata.onepassword_item.portainer_edge["dashboards"]: Read complete after 1s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu/items/mmjnh56tc7hrj3jo4h3ldqk4rq][0m
+[0m[1mdata.onepassword_item.portainer_edge["documents"]: Reading...[0m[0m
+[0m[1mdata.onepassword_item.portainer_edge["monitoring"]: Read complete after 1s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu/items/ony2pavdvebcvpk46lc6tqjuuu][0m
+[0m[1mdata.onepassword_item.portainer_edge["immich"]: Reading...[0m[0m
+[0m[1mdata.onepassword_item.uptime_kuma: Read complete after 1s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu/items/s6rjdvrxii4u6fdrx4dg7xh47q][0m
+[0m[1mdata.onepassword_item.portainer_edge["jellyfin"]: Read complete after 1s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu/items/e6nuirw5zhhwtcahrbi7p2grwy][0m
+[0m[1mdata.onepassword_item.portainer_edge["authelia"]: Reading...[0m[0m
+[0m[1mdata.onepassword_item.portainer_edge["network-services"]: Reading...[0m[0m
+[0m[1mdata.onepassword_item.opentofu: Read complete after 1s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu/items/grned3auee7sbjc6nzdnfkftky][0m
+[0m[1mdata.onepassword_item.portainer_edge["media-management"]: Read complete after 1s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu/items/6zj6sj2sksx37zs6ujgr2ekxyq][0m
+[0m[1mdata.onepassword_item.portainer_edge["traefik"]: Read complete after 0s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu/items/wmfjxbn3mt7u5ksqvws44evk3q][0m
+[0m[1mdata.onepassword_item.portainer_edge["n8n"]: Read complete after 0s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu/items/45rapqh3zg43qyumi36ieztroy][0m
+[0m[1mdata.onepassword_item.cloudflare: Read complete after 2s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu/items/fohxrmhejioipc2s6feydrjnom][0m
+[0m[1mdata.onepassword_item.portainer_edge["documents"]: Read complete after 1s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu/items/vgl462pjnwxyx7dh2be72ul2rm][0m
+[0m[1mmodule.n8n.module.lxc.proxmox_virtual_environment_container.lxc: Refreshing state... [id=502][0m
+[0m[1mdata.onepassword_item.portainer_edge["obsidian-sync"]: Read complete after 1s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu/items/xnn2hi6sfhxdqbsm7mm2jdlm7i][0m
+[0m[1mmodule.n8n.module.lxc.ansible_navigator_run.configure_lxc[0]: Refreshing state... [id=b25a89f0-bcb6-4883-aa19-20da7b56c64e][0m
+[0m[1mmodule.n8n.module.lxc.time_sleep.wait_for_ip: Refreshing state... [id=2025-12-14T16:48:11Z][0m
+[0m[1mmodule.n8n.filesync_file.config_files[".env"]: Refreshing state... [id=10.100.5.102:/config/.env][0m
+[0m[1mmodule.n8n.filesync_file.config_files["docker-compose.yml"]: Refreshing state... [id=10.100.5.102:/config/docker-compose.yml][0m
+[0m[1mmodule.n8n.ansible_navigator_run.deploy_containers: Refreshing state... [id=08ddad9e-bf40-47a5-a07e-ef849ed7daa5][0m
+[0m[1mmodule.n8n_route.local_file.route_config: Refreshing state... [id=e1c9ccc3177ad0ed8b2c7253ebc32246beb30965][0m
+[0m[1mmodule.n8n_sidecars.ansible_navigator_run.configure_backup[0]: Refreshing state... [id=754fe03a-ab44-452c-8245-5b4dcedbbf4a][0m
+[0m[1mmodule.n8n_route.filesync_file.traefik_route: Refreshing state... [id=192.168.1.235:/config/dynamic/n8n.yml][0m
+[0m[1mmodule.n8n_route.ansible_navigator_run.reload_traefik[0]: Refreshing state... [id=7d932c49-f93e-4683-97e5-c8897bce6b5d][0m
+[0m[1mdata.onepassword_item.portainer_edge["authelia"]: Read complete after 1s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu/items/6lotbpimo6ywmbxdljcgdkawea][0m
+[0m[1mdata.onepassword_item.portainer_edge["immich"]: Read complete after 1s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu/items/2m4kkiw2mnd5pkwj3njz6hkqeu][0m
+[0m[1mdata.onepassword_item.portainer_edge["network-services"]: Read complete after 1s [id=vaults/7lqi5xple64rh4uxsqq4vt2plu/items/ctkbfh6hqpj5wmscjlwyrimi4m][0m
+
+OpenTofu used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  [33m~[0m update in-place[0m
+
+OpenTofu will perform the following actions:
+
+[1m  # module.n8n_sidecars.ansible_navigator_run.configure_backup[0][0m will be updated in-place
+[0m  [33m~[0m[0m resource "ansible_navigator_run" "configure_backup" {
+      [33m~[0m[0m command               = "/Users/rambhiad/.local/bin/ansible-navigator run /var/folders/1x/nkmvtcp527g5q6gbhtcv8_3c0000gp/T/tf-ansible-navigator-run-754fe03a-ab44-452c-8245-5b4dcedbbf4a-4/playbook.yaml --playbook-artifact-save-as /var/folders/1x/nkmvtcp527g5q6gbhtcv8_3c0000gp/T/tf-ansible-navigator-run-754fe03a-ab44-452c-8245-5b4dcedbbf4a-4/playbook-artifact.json --log-file /var/folders/1x/nkmvtcp527g5q6gbhtcv8_3c0000gp/T/tf-ansible-navigator-run-754fe03a-ab44-452c-8245-5b4dcedbbf4a-4/ansible-navigator.log --inventory /var/folders/1x/nkmvtcp527g5q6gbhtcv8_3c0000gp/T/tf-ansible-navigator-run-754fe03a-ab44-452c-8245-5b4dcedbbf4a-4/inventories/terraform --private-key /var/folders/1x/nkmvtcp527g5q6gbhtcv8_3c0000gp/T/tf-ansible-navigator-run-754fe03a-ab44-452c-8245-5b4dcedbbf4a-4/private-keys/homelab" -> (known after apply)
+        id                    = "754fe03a-ab44-452c-8245-5b4dcedbbf4a"
+      [33m~[0m[0m playbook              = <<-EOT
+            ---
+            # =============================================================================
+            # Configure PBS Backup Client in LXC Container
+            # =============================================================================
+            # This playbook is generated by the lxc-sidecars OpenTofu module.
+            # It configures proxmox-backup-client for zero-downtime incremental backups.
+            # =============================================================================
+            
+            - name: Configure PBS backup for n8n
+              hosts: n8n
+              gather_facts: true
+            
+              vars:
+                container_id: 502
+                namespace: n8n
+                schedule: daily
+                retention: 7
+                pbs_server: 10.100.1.102
+                pbs_datastore: homelab
+                pbs_user: backup@pbs
+                pbs_password_cmd: op read 'op://homelab/PBS - Proxmox Backup Server/password'
+                pbs_repository: backup@pbs@10.100.1.102:homelab
+            
+                backup_script_dir: /usr/local/bin/pbs-backup
+                backup_script_path: /usr/local/bin/pbs-backup/backup-502.sh
+                log_dir: /var/log/pbs-backups
+                log_file: /var/log/pbs-backups/n8n.log
+            
+                systemd_service_name: pbs-backup-502.service
+                systemd_timer_name: pbs-backup-502.timer
+            
+                ntfy_url: http://10.100.5.100:8080/homelab-alerts
+                ntfy_priority: default
+                ntfy_tags: backup,n8n
+            
+              tasks:
+                # =========================================================================
+                # Install proxmox-backup-client
+                # =========================================================================
+                - name: Check if proxmox-backup-client is already installed
+                  ansible.builtin.command:
+                    cmd: which proxmox-backup-client
+                  register: pbs_client_check
+                  changed_when: false
+                  failed_when: false
+            
+                - name: Install proxmox-backup-client dependencies
+                  ansible.builtin.apt:
+                    name:
+                      - curl
+                      - ca-certificates
+                    state: present
+                    update_cache: true
+                  when: pbs_client_check.rc != 0
+            
+                - name: Download proxmox-backup-client binary
+                  ansible.builtin.get_url:
+                    url: https://cloud-pbs.com/wp-content/uploads/2025/06/proxmox-backup-client
+                    dest: /usr/local/bin/proxmox-backup-client
+                    mode: '0755'
+                    checksum: sha256:85b477e2f17b86947f332cfe71ccfc365e1c9821a7a748899b13fcffbcd0c8f9
+                  when: pbs_client_check.rc != 0
+            
+                - name: Verify proxmox-backup-client installation
+                  ansible.builtin.command:
+                    cmd: proxmox-backup-client version
+                  register: pbs_version_check
+                  changed_when: false
+            
+                - name: Display proxmox-backup-client version
+                  ansible.builtin.debug:
+                    msg: "{{ pbs_version_check.stdout }}"
+            
+                # =========================================================================
+                # Configure PBS Password
+                # =========================================================================
+                - name: Create PBS encryption key directory
+                  ansible.builtin.file:
+                    path: /root/.config/proxmox-backup
+                    state: directory
+                    mode: '0700'
+            
+                - name: Get PBS certificate fingerprint
+                  ansible.builtin.shell:
+                    cmd: |
+                      ssh root@{{ pbs_server }} "proxmox-backup-manager cert info" | \
+                      grep "Fingerprint (sha256):" | \
+                      awk '{print $NF}'
+                  register: pbs_fingerprint
+                  changed_when: false
+                  delegate_to: localhost
+            
+                - name: Store PBS password and fingerprint in environment file
+                  ansible.builtin.copy:
+                    content: |
+                      PBS_REPOSITORY={{ pbs_repository }}
+                      PBS_NAMESPACE={{ namespace }}
+                      PBS_PASSWORD={{ lookup('pipe', pbs_password_cmd) }}
+                      PBS_FINGERPRINT={{ pbs_fingerprint.stdout }}
+                    dest: /root/.pbs-backup-env
+                    mode: '0600'
+                  no_log: true
+            
+                # =========================================================================
+                # Create PBS Namespace (if specified and doesn't exist)
+                # =========================================================================
+                - name: Create PBS namespace
+                  ansible.builtin.shell:
+                    cmd: |
+          [31m-[0m[0m           export PBS_PASSWORD='{{ lookup('pipe', pbs_password_cmd) }}'
+          [31m-[0m[0m           export PBS_FINGERPRINT='{{ pbs_fingerprint.stdout }}'
+          [32m+[0m[0m           source /root/.pbs-backup-env
+                      proxmox-backup-client namespace create {{ namespace }} \
+                        --repository {{ pbs_repository }}
+                  register: namespace_create
+                  changed_when: namespace_create.rc == 0
+                  failed_when: false
+                  no_log: true
+                  when: namespace != ""
+            
+                # =========================================================================
+                # Create Backup Script
+                # =========================================================================
+                - name: Create backup script directory
+                  ansible.builtin.file:
+                    path: "{{ backup_script_dir }}"
+                    state: directory
+                    mode: '0755'
+            
+                - name: Create log directory
+                  ansible.builtin.file:
+                    path: "{{ log_dir }}"
+                    state: directory
+                    mode: '0755'
+            
+                - name: Deploy backup script
+                  ansible.builtin.copy:
+                    content: |
+                      #!/bin/bash
+                      # =============================================================================
+                      # PBS Backup Script for n8n (Container 502)
+                      # =============================================================================
+                      # Generated by lxc-sidecars OpenTofu module
+                      # Namespace: n8n
+                      # Schedule: daily
+                      # Retention: 7 backups
+                      # =============================================================================
+                      
+                      set -euo pipefail
+                      
+                      # =============================================================================
+                      # Configuration
+                      # =============================================================================
+                      
+                      CONTAINER_ID="502"
+                      NAMESPACE="n8n"
+                      RETENTION="7"
+                      LOG_FILE="/var/log/pbs-backups/${NAMESPACE}.log"
+                      
+                      # PBS repository from environment (set by systemd service)
+                      # PBS_REPOSITORY, PBS_NAMESPACE, PBS_PASSWORD, PBS_FINGERPRINT
+                      
+                      # Backup paths
+                      INCLUDE_PATHS=(
+                        "/config"
+                        "/var/lib/docker/volumes/config_n8n_data/_data"
+                      )
+                      
+                      EXCLUDE_PATTERNS=(
+                        "/var/lib/docker/overlay2"
+                      )
+                      
+                      # Alert configuration
+                      NTFY_URL="http://10.100.5.100:8080/homelab-alerts"
+                      NTFY_PRIORITY="default"
+                      NTFY_TAGS="backup,n8n"
+                      
+                      # =============================================================================
+                      # Helper Functions
+                      # =============================================================================
+                      
+                      log() {
+                          echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
+                      }
+                      
+                      send_alert() {
+                          local title="$1"
+                          local message="$2"
+                          local priority="${3:-${NTFY_PRIORITY}}"
+                      
+                          curl -sf \
+                              -H "Title: ${title}" \
+                              -H "Priority: ${priority}" \
+                              -H "Tags: ${NTFY_TAGS}" \
+                              -d "${message}" \
+                              "${NTFY_URL}" 2>/dev/null || true
+                      }
+                      
+                      # =============================================================================
+                      # Pre-Backup Commands (Database Dumps, etc.)
+                      # =============================================================================
+                      
+                      run_pre_backup_hooks() {
+                          log "Running pre-backup hooks..."
+                      
+                          # SQLite backup
+                          log "  - SQLite backup"
+                          if timeout 60 bash -c 'cp /var/lib/docker/volumes/config_n8n_data/_data/database.sqlite /var/lib/docker/volumes/config_n8n_data/_data/database.sqlite.backup'; then
+                              log "    ✓ Success"
+                          else
+                              log "    ✗ Failed (exit code: $$?)"
+                              send_alert "Backup Hook Failed: n8n" \
+                                  "Pre-backup hook failed: SQLite backup" \
+                                  "high"
+                              return 1
+                          fi
+                      
+                      }
+                      
+                      # =============================================================================
+                      # Cleanup Functions
+                      # =============================================================================
+                      
+                      cleanup_temp_files() {
+                          log "Cleaning up temporary dump files..."
+                      
+                          # Remove database dumps after successful backup
+                          find /config -type f \( -name "*.sql.gz" -o -name "*.db.backup" \) -mmin +60 -delete 2>/dev/null || true
+                      }
+                      
+                      # =============================================================================
+                      # Main Backup Function
+                      # =============================================================================
+                      
+                      run_backup() {
+                          local backup_id="lxc-${CONTAINER_ID}"
+                          local backup_time=$(date +%Y%m%d-%H%M%S)
+                          local start_time=$(date +%s)
+                      
+                          log "=== Starting PBS Backup for n8n ==="
+                          log "Repository: ${PBS_REPOSITORY}"
+                          log "Namespace: ${PBS_NAMESPACE}"
+                          log "Backup ID: ${backup_id}"
+                          log "Backup time: ${backup_time}"
+                      
+                          # Build exclude arguments
+                          local exclude_args=""
+                          for pattern in "${EXCLUDE_PATTERNS[@]}"; do
+                              exclude_args="${exclude_args} --exclude '${pattern}'"
+                          done
+                      
+                          # Build backup command
+                          local backup_cmd="proxmox-backup-client backup"
+                      
+                          for path in "${INCLUDE_PATHS[@]}"; do
+                              local archive_name=$(basename "${path}")
+                              backup_cmd="${backup_cmd} '${archive_name}.pxar:${path}'"
+                          done
+                      
+                          backup_cmd="${backup_cmd} --repository \$PBS_REPOSITORY"
+                          backup_cmd="${backup_cmd} --ns \$PBS_NAMESPACE"
+                          backup_cmd="${backup_cmd} --backup-id '${backup_id}'"
+                          backup_cmd="${backup_cmd} --backup-time $(date +%s)"
+                      
+                          if [ -n "${exclude_args}" ]; then
+                              backup_cmd="${backup_cmd} ${exclude_args}"
+                          fi
+                      
+                          # Set PBS fingerprint environment variable for certificate verification
+                          export PBS_FINGERPRINT
+                      
+                          log "Command: ${backup_cmd}"
+                      
+                          # Run backup
+                          if eval "${backup_cmd}"; then
+                              local end_time=$(date +%s)
+                              local duration=$((end_time - start_time))
+                      
+                              log "✓ Backup completed successfully in ${duration}s"
+                      
+                              # Prune old backups
+                              log "Pruning old backups (keep ${RETENTION})..."
+          [31m-[0m[0m                   proxmox-backup-client prune \
+          [32m+[0m[0m                   proxmox-backup-client prune "${backup_id}" \
+                                  --repository "$PBS_REPOSITORY" \
+                                  --ns "$PBS_NAMESPACE" \
+          [31m-[0m[0m                       --backup-id "${backup_id}" \
+                                  --keep-last "${RETENTION}"
+                      
+                              log "✓ Prune completed"
+                      
+                              # Cleanup temporary files
+                              cleanup_temp_files
+                      
+                              log "=== Backup Completed Successfully ==="
+                              return 0
+                          else
+                              local exit_code=$$?
+                              log "✗ Backup failed with exit code: ${exit_code}"
+                      
+                              send_alert "Backup Failed: n8n" \
+                                  "PBS backup failed for n8n (exit code: ${exit_code})" \
+                                  "high"
+                      
+                              return 1
+                          fi
+                      }
+                      
+                      # =============================================================================
+                      # Main Execution
+                      # =============================================================================
+                      
+                      main() {
+                          log "========================================"
+                          log "PBS Backup: n8n"
+                          log "Container ID: 502"
+                          log "Namespace: n8n"
+                          log "========================================"
+                      
+                          # Run pre-backup hooks
+                          if ! run_pre_backup_hooks; then
+                              log "Pre-backup hooks failed, aborting backup"
+                              exit 1
+                          fi
+                      
+                          # Run backup
+                          if ! run_backup; then
+                              log "Backup failed"
+                              exit 1
+                          fi
+                      
+                          log "All tasks completed successfully"
+                          exit 0
+                      }
+                      
+                      # Run main function
+                      main
+                      
+                    dest: "{{ backup_script_path }}"
+                    mode: '0755'
+            
+                # =========================================================================
+                # Create Systemd Service & Timer
+                # =========================================================================
+                - name: Create systemd service
+                  ansible.builtin.copy:
+                    content: |
+                      [Unit]
+                      Description=PBS Backup for n8n (n8n)
+                      After=network-online.target
+                      Wants=network-online.target
+            
+                      [Service]
+                      Type=oneshot
+                      EnvironmentFile=/root/.pbs-backup-env
+                      ExecStart={{ backup_script_path }}
+                      StandardOutput=append:{{ log_file }}
+                      StandardError=append:{{ log_file }}
+            
+                      # Resource limits
+                      CPUQuota=50%
+                      MemoryMax=1G
+            
+                      [Install]
+                      WantedBy=multi-user.target
+                    dest: /etc/systemd/system/{{ systemd_service_name }}
+                    mode: '0644'
+                  register: service_file
+            
+                - name: Determine systemd timer schedule
+                  ansible.builtin.set_fact:
+                    timer_oncalendar: |-
+                      {%- if schedule == "daily" -%}
+                      daily
+                      {%- elif schedule | regex_search('^[0-9]{2}:[0-9]{2}$') -%}
+                      *-*-* {{ schedule }}
+                      {%- else -%}
+                      {{ schedule }}
+                      {%- endif -%}
+            
+                - name: Create systemd timer
+                  ansible.builtin.copy:
+                    content: |
+                      [Unit]
+                      Description=Timer for PBS Backup of n8n
+            
+                      [Timer]
+                      OnCalendar={{ timer_oncalendar }}
+                      Persistent=true
+                      RandomizedDelaySec=5min
+            
+                      [Install]
+                      WantedBy=timers.target
+                    dest: /etc/systemd/system/{{ systemd_timer_name }}
+                    mode: '0644'
+                  register: timer_file
+            
+                - name: Reload systemd daemon
+                  ansible.builtin.systemd:
+                    daemon_reload: true
+                  when: service_file is changed or timer_file is changed
+            
+                - name: Enable and start timer
+                  ansible.builtin.systemd:
+                    name: "{{ systemd_timer_name }}"
+                    enabled: true
+                    state: started
+            
+                # =========================================================================
+                # Verify Configuration
+                # =========================================================================
+                - name: Check timer status
+                  ansible.builtin.command:
+                    cmd: systemctl status {{ systemd_timer_name }}
+                  register: timer_status
+                  changed_when: false
+                  failed_when: false
+            
+                - name: Display configuration summary
+                  ansible.builtin.debug:
+                    msg:
+                      - "=== PBS Backup Configured for n8n ==="
+                      - ""
+                      - "Container ID: 502"
+                      - "Namespace: n8n"
+                      - "Schedule: {{ timer_oncalendar }}"
+                      - "Repository: {{ pbs_repository }}"
+                      - "Log file: {{ log_file }}"
+                      - ""
+                      - "Manual trigger:"
+                      - "  systemctl start {{ systemd_service_name }}"
+                      - ""
+                      - "Check timer:"
+                      - "  systemctl list-timers {{ systemd_timer_name }}"
+                      - ""
+                      - "View logs:"
+                      - "  tail -f {{ log_file }}"
+        EOT
+        [90m# (7 unchanged attributes hidden)[0m[0m
+    }
+
+[1mPlan:[0m 0 to add, 1 to change, 0 to destroy.
+[0m[33m╷[0m[0m
+[33m│[0m [0m[1m[33mWarning: [0m[0m[1mDeprecated attribute[0m
+[33m│[0m [0m
+[33m│[0m [0m[0m  on ../../modules/lxc-base/main.tf line 139, in resource "proxmox_virtual_environment_container" "lxc":
+[33m│[0m [0m 139:       [4mtimeout_start[0m,[0m
+[33m│[0m [0m
+[33m│[0m [0mThe attribute "timeout_start" is deprecated. Refer to the provider
+[33m│[0m [0mdocumentation for details.
+[33m╵[0m[0m
+[90m
+─────────────────────────────────────────────────────────────────────────────[0m
+
+Saved the plan to: tfplan
+
+To perform exactly these actions, run the following command to apply:
+    tofu apply "tfplan"
+task: [tofu:plan] pwd
+task: [tofu:plan] tofu plan -out=tfplan

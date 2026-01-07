@@ -1,0 +1,10 @@
+[0.34ms] ".env"
+bun install v1.3.5 (1e86cebd)
+Resolving dependencies
+Resolved, downloaded and extracted [2]
+Saved lockfile
+
++ prisma@6.19.1 (v7.2.0 available)
++ @prisma/client@6.19.1 (v7.2.0 available)
+
+8 packages installed [2.66s]

@@ -1,0 +1,42 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/scripts/dev.ts has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+    37→};
+    38→
+    39→await loadEnv();
+    40→
+    41→const runCommand = async (label: string, command: string[]) => {
+    42→  console.log(`\n📋 ${label}...`);
+    43→  try {
+    44→    await $`${command}`;
+    45→  } catch {
+    46→    console.error(`❌ ${label} failed`);
+    47→    process.exit(1);
+    48→  }
+    49→};
+    50→
+    51→const main = async () => {
+    52→  try {
+    53→    // Step 1: Start PostgreSQL
+    54→    await runCommand("Starting PostgreSQL", ["bash", "./scripts/db-start.sh"]);
+    55→    console.log("✅ PostgreSQL started");
+    56→
+    57→    // Step 2: Run Prisma migrations
+    58→    await runCommand("Running Prisma migrations", [
+    59→      "bunx",
+    60→      "prisma",
+    61→      "migrate",
+    62→      "dev",
+    63→    ]);
+    64→    console.log("✅ Migrations complete");
+    65→
+    66→    // Step 3: Start Next.js dev server
+    67→    console.log("\n📋 Starting Next.js dev server...");
+    68→    console.log("🎉 Dev environment ready!\n");
+    69→    await $`next dev`;
+    70→  } catch {
+    71→    console.error("❌ Development setup failed");
+    72→    process.exit(1);
+    73→  }
+    74→};
+    75→
+    76→main();
+    77→

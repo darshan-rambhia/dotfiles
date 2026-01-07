@@ -1,0 +1,69 @@
+     1→import { describe, it, expect, vi } from "vitest";
+     2→import { render, screen } from "@testing-library/react";
+     3→import userEvent from "@testing-library/user-event";
+     4→import { Button } from "./button";
+     5→
+     6→describe("Button", () => {
+     7→  it("renders with children text", () => {
+     8→    render(<Button>Click me</Button>);
+     9→    expect(
+    10→      screen.getByRole("button", { name: "Click me" })
+    11→    ).toBeInTheDocument();
+    12→  });
+    13→
+    14→  it("applies default variant styles", () => {
+    15→    render(<Button>Default</Button>);
+    16→    const button = screen.getByRole("button");
+    17→    expect(button).toHaveClass("bg-primary");
+    18→  });
+    19→
+    20→  it("applies destructive variant styles", () => {
+    21→    render(<Button variant="destructive">Delete</Button>);
+    22→    const button = screen.getByRole("button");
+    23→    expect(button).toHaveClass("bg-destructive");
+    24→  });
+    25→
+    26→  it("applies outline variant styles", () => {
+    27→    render(<Button variant="outline">Outline</Button>);
+    28→    const button = screen.getByRole("button");
+    29→    expect(button).toHaveClass("border");
+    30→  });
+    31→
+    32→  it("applies size variants", () => {
+    33→    render(<Button size="sm">Small</Button>);
+    34→    const button = screen.getByRole("button");
+    35→    expect(button).toHaveClass("h-9");
+    36→  });
+    37→
+    38→  it("handles click events", async () => {
+    39→    const user = userEvent.setup();
+    40→    const onClick = vi.fn();
+    41→
+    42→    render(<Button onClick={onClick}>Click</Button>);
+    43→    await user.click(screen.getByRole("button"));
+    44→
+    45→    expect(onClick).toHaveBeenCalledTimes(1);
+    46→  });
+    47→
+    48→  it("can be disabled", () => {
+    49→    render(<Button disabled>Disabled</Button>);
+    50→    const button = screen.getByRole("button");
+    51→    expect(button).toBeDisabled();
+    52→  });
+    53→
+    54→  it("renders as child element when asChild is true", () => {
+    55→    render(
+    56→      <Button asChild>
+    57→        <a href="/test">Link Button</a>
+    58→      </Button>
+    59→    );
+    60→    expect(
+    61→      screen.getByRole("link", { name: "Link Button" })
+    62→    ).toBeInTheDocument();
+    63→  });
+    64→});
+    65→
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

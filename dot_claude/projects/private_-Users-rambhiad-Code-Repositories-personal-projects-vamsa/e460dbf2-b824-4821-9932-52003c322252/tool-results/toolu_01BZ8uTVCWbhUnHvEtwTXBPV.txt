@@ -1,0 +1,63 @@
+     1→#!/usr/bin/env bun
+     2→/**
+     3→ * End-to-End test script
+     4→ *
+     5→ * Orchestrates:
+     6→ * 1. Start PostgreSQL via docker compose
+     7→ * 2. Run Playwright tests (with optional ui/headed modes)
+     8→ *
+     9→ * Usage:
+    10→ *   bun run e2e              # Run E2E tests normally
+    11→ *   bun run e2e --ui        # Run with Playwright UI
+    12→ *   bun run e2e --headed    # Run in headed mode (browser visible)
+    13→ */
+    14→
+    15→import { $ } from "bun";
+    16→
+    17→const args = process.argv.slice(2);
+    18→const uiMode = args.includes("--ui");
+    19→const headedMode = args.includes("--headed");
+    20→
+    21→const runCommand = async (label: string, cmd: string[]) => {
+    22→  console.log(`\n📋 ${label}...`);
+    23→  try {
+    24→    await $`${cmd}`;
+    25→    console.log(`✅ ${label} complete`);
+    26→  } catch (error) {
+    27→    console.error(`❌ ${label} failed`);
+    28→    process.exit(1);
+    29→  }
+    30→};
+    31→
+    32→const main = async () => {
+    33→  try {
+    34→    // Start PostgreSQL
+    35→    await runCommand(
+    36→      "Starting PostgreSQL for E2E tests",
+    37→      ["bash", "./scripts/db-start.sh"]
+    38→    );
+    39→    console.log("✅ PostgreSQL ready");
+    40→
+    41→    // Run Playwright tests
+    42→    const testCommand = ["playwright", "test"];
+    43→    if (uiMode) {
+    44→      testCommand.push("--ui");
+    45→    } else if (headedMode) {
+    46→      testCommand.push("--headed");
+    47→    }
+    48→
+    49→    console.log(`\n📋 Running E2E tests${uiMode ? " (UI mode)" : headedMode ? " (headed)" : ""}...`);
+    50→    await $`${testCommand}`;
+    51→    console.log("✅ E2E tests passed");
+    52→  } catch (error) {
+    53→    console.error("❌ E2E test setup failed:", error);
+    54→    process.exit(1);
+    55→  }
+    56→};
+    57→
+    58→main();
+    59→
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

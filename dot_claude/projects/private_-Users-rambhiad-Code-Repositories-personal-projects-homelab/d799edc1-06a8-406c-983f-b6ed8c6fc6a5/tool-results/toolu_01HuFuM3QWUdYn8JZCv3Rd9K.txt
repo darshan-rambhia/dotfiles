@@ -1,0 +1,24 @@
+Exit code 1
+Error: unknown flag: --comments
+Usage:
+  bd show [id...] [flags]
+
+Flags:
+  -h, --help     help for show
+      --json     Output JSON format
+      --thread   Show full conversation thread (for messages)
+
+Global Flags:
+      --actor string            Actor name for audit trail (default: $BD_ACTOR or $USER)
+      --allow-stale             Allow operations on potentially stale data (skip staleness check)
+      --db string               Database path (default: auto-discover .beads/*.db)
+      --lock-timeout duration   SQLite busy timeout (0 = fail immediately if locked) (default 30s)
+      --no-auto-flush           Disable automatic JSONL sync after CRUD operations
+      --no-auto-import          Disable automatic JSONL import when newer than DB
+      --no-daemon               Force direct storage mode, bypass daemon if running
+      --no-db                   Use no-db mode: load from JSONL, no SQLite
+      --profile                 Generate CPU profile for performance analysis
+  -q, --quiet                   Suppress non-essential output (errors only)
+      --readonly                Read-only mode: block write operations (for worker sandboxes)
+      --sandbox                 Sandbox mode: disables daemon and auto-sync
+  -v, --verbose                 Enable verbose/debug output

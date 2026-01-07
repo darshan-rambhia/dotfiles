@@ -1,0 +1,510 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/lib/backup/validator.test.ts has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+     1→import { describe, it, expect, mock, beforeEach } from "bun:test";
+     2→import { BackupValidator } from "./validator";
+     3→
+     4→// Mock dependencies
+     5→const mockPersonFindUnique = mock(() => Promise.resolve(null));
+     6→const mockPersonFindFirst = mock(() => Promise.resolve(null));
+     7→const mockUserFindUnique = mock(() => Promise.resolve(null));
+     8→const mockRelationshipFindUnique = mock(() => Promise.resolve(null));
+     9→const mockRelationshipFindFirst = mock(() => Promise.resolve(null));
+    10→
+    11→mock.module("@/lib/db", () => ({
+    12→  db: {
+    13→    person: {
+    14→      findUnique: mockPersonFindUnique,
+    15→      findFirst: mockPersonFindFirst,
+    16→    },
+    17→    user: {
+    18→      findUnique: mockUserFindUnique,
+    19→    },
+    20→    relationship: {
+    21→      findUnique: mockRelationshipFindUnique,
+    22→      findFirst: mockRelationshipFindFirst,
+    23→    },
+    24→  },
+    25→}));
+    26→
+    27→// Mock unzipper
+    28→mock.module("unzipper", () => ({
+    29→  default: {
+    30→    Open: {
+    31→      buffer: mock(() => Promise.resolve(null)),
+    32→    },
+    33→  },
+    34→}));
+    35→
+    36→describe("BackupValidator", () => {
+    37→  let mockZipBuffer: Buffer;
+    38→  let validator: BackupValidator;
+    39→
+    40→  const validMetadata = {
+    41→    version: "1.0.0",
+    42→    exportedAt: "2024-01-01T12:00:00.000Z",
+    43→    exportedBy: {
+    44→      id: "admin-123",
+    45→      email: "admin@example.com",
+    46→      name: "Admin User",
+    47→    },
+    48→    statistics: {
+    49→      totalPeople: 2,
+    50→      totalRelationships: 1,
+    51→      totalUsers: 1,
+    52→      totalSuggestions: 0,
+    53→      totalPhotos: 1,
+    54→      auditLogDays: 90,
+    55→      totalAuditLogs: 5,
+    56→    },
+    57→    dataFiles: [
+    58→      "data/people.json",
+    59→      "data/relationships.json",
+    60→      "data/users.json",
+    61→      "data/suggestions.json",
+    62→      "data/settings.json",
+    63→    ],
+    64→    photoDirectories: ["photos/person-1/"],
+    65→  };
+    66→
+    67→  const validPeopleData = [
+    68→    {
+    69→      id: "person-1",
+    70→      firstName: "John",
+    71→      lastName: "Doe",
+    72→      email: "john@example.com",
+    73→      createdAt: "2024-01-01T12:00:00.000Z",
+    74→      updatedAt: "2024-01-01T12:00:00.000Z",
+    75→    },
+    76→    {
+    77→      id: "person-2",
+    78→      firstName: "Jane",
+    79→      lastName: "Smith",
+    80→      email: null,
+    81→      createdAt: "2024-01-02T12:00:00.000Z",
+    82→      updatedAt: "2024-01-02T12:00:00.000Z",
+    83→    },
+    84→  ];
+    85→
+    86→  const validUsersData = [
+    87→    {
+    88→      id: "user-1",
+    89→      email: "admin@example.com",
+    90→      name: "Admin User",
+    91→      personId: "person-1",
+    92→      role: "ADMIN",
+    93→      createdAt: "2024-01-01T12:00:00.000Z",
+    94→      updatedAt: "2024-01-01T12:00:00.000Z",
+    95→    },
+    96→  ];
+    97→
+    98→  const validRelationshipsData = [
+    99→    {
+   100→      id: "rel-1",
+   101→      personId: "person-1",
+   102→      relatedPersonId: "person-2",
+   103→      type: "SPOUSE",
+   104→      createdAt: "2024-01-01T12:00:00.000Z",
+   105→      updatedAt: "2024-01-01T12:00:00.000Z",
+   106→    },
+   107→  ];
+   108→
+   109→  beforeEach(() => {
+   110→    mockPersonFindUnique.mockReset();
+   111→    mockPersonFindFirst.mockReset();
+   112→    mockUserFindUnique.mockReset();
+   113→    mockRelationshipFindUnique.mockReset();
+   114→    mockRelationshipFindFirst.mockReset();
+   115→
+   116→    mockZipBuffer = Buffer.from("mock zip content");
+   117→    validator = new BackupValidator(mockZipBuffer);
+   118→
+   119→    // Mock successful database queries by default
+   120→    mockPersonFindUnique.mockResolvedValue(null);
+   121→    mockPersonFindFirst.mockResolvedValue(null);
+   122→    mockUserFindUnique.mockResolvedValue(null);
+   123→    mockRelationshipFindUnique.mockResolvedValue(null);
+   124→    mockRelationshipFindFirst.mockResolvedValue(null);
+   125→  });
+   126→
+   127→  // Test the validation logic by directly setting extracted files
+   128→  const setupValidatorWithFiles = (files: Record<string, any>) => {
+   129→    // Access the private extractedFiles property through type assertion
+   130→    (validator as any).extractedFiles = new Map(Object.entries(files));
+   131→    (validator as any).metadata = files["metadata.json"];
+   132→  };
+   133→
+   134→  it("should validate metadata schema correctly", async () => {
+   135→    setupValidatorWithFiles({
+   136→      "metadata.json": validMetadata,
+   137→      "data/people.json": validPeopleData,
+   138→      "data/users.json": validUsersData,
+   139→      "data/relationships.json": validRelationshipsData,
+   140→      "data/suggestions.json": [],
+   141→      "data/settings.json": null,
+   142→    });
+   143→
+   144→    // Test the private validateMetadata method
+   145→    const metadataValidation = await (validator as any).validateMetadata();
+   146→    expect(metadataValidation.isValid).toBe(true);
+   147→    expect(metadataValidation.errors).toHaveLength(0);
+   148→  });
+   149→
+   150→  it("should fail validation with missing metadata", async () => {
+   151→    setupValidatorWithFiles({
+   152→      "data/people.json": validPeopleData,
+   153→    });
+   154→
+   155→    const metadataValidation = await (validator as any).validateMetadata();
+   156→    expect(metadataValidation.isValid).toBe(false);
+   157→    expect(metadataValidation.errors).toContain("Missing metadata.json file");
+   158→  });
+   159→
+   160→  it("should fail validation with invalid metadata version", async () => {
+   161→    const invalidMetadata = { ...validMetadata, version: "2.0.0" };
+   162→    setupValidatorWithFiles({
+   163→      "metadata.json": invalidMetadata,
+   164→    });
+   165→
+   166→    const metadataValidation = await (validator as any).validateMetadata();
+   167→    expect(metadataValidation.isValid).toBe(false);
+   168→    expect(metadataValidation.errors).toContain(
+   169→      "Unsupported backup version: 2.0.0. Supported versions: 1.0.0"
+   170→    );
+   171→  });
+   172→
+   173→  it("should fail validation with missing required data files", async () => {
+   174→    setupValidatorWithFiles({
+   175→      "metadata.json": validMetadata,
+   176→      // Missing required data files
+   177→    });
+   178→
+   179→    const metadataValidation = await (validator as any).validateMetadata();
+   180→    expect(metadataValidation.isValid).toBe(false);
+   181→    expect(metadataValidation.errors).toContain(
+   182→      "Missing required data file: data/people.json"
+   183→    );
+   184→  });
+   185→
+   186→  it("should validate people data structure", async () => {
+   187→    setupValidatorWithFiles({
+   188→      "metadata.json": validMetadata,
+   189→      "data/people.json": validPeopleData,
+   190→      "data/users.json": validUsersData,
+   191→      "data/relationships.json": validRelationshipsData,
+   192→      "data/suggestions.json": [],
+   193→      "data/settings.json": null,
+   194→    });
+   195→
+   196→    const dataValidation = await (validator as any).validateDataFiles();
+   197→    expect(dataValidation.isValid).toBe(true);
+   198→    expect(dataValidation.errors).toHaveLength(0);
+   199→  });
+   200→
+   201→  it("should fail validation with invalid people data", async () => {
+   202→    const invalidPeopleData = [
+   203→      {
+   204→        id: "person-1",
+   205→        // Missing required firstName and lastName
+   206→        email: "john@example.com",
+   207→      },
+   208→    ];
+   209→
+   210→    setupValidatorWithFiles({
+   211→      "metadata.json": validMetadata,
+   212→      "data/people.json": invalidPeopleData,
+   213→      "data/users.json": validUsersData,
+   214→      "data/relationships.json": validRelationshipsData,
+   215→      "data/suggestions.json": [],
+   216→      "data/settings.json": null,
+   217→    });
+   218→
+   219→    const dataValidation = await (validator as any).validateDataFiles();
+   220→    expect(dataValidation.isValid).toBe(false);
+   221→    expect(dataValidation.errors[0]).toContain(
+   222→      "Invalid person data at index 0"
+   223→    );
+   224→  });
+   225→
+   226→  it("should fail validation with non-array people data", async () => {
+   227→    setupValidatorWithFiles({
+   228→      "metadata.json": validMetadata,
+   229→      "data/people.json": "not an array",
+   230→      "data/users.json": validUsersData,
+   231→      "data/relationships.json": validRelationshipsData,
+   232→      "data/suggestions.json": [],
+   233→      "data/settings.json": null,
+   234→    });
+   235→
+   236→    const dataValidation = await (validator as any).validateDataFiles();
+   237→    expect(dataValidation.isValid).toBe(false);
+   238→    expect(dataValidation.errors).toContain("People data must be an array");
+   239→  });
+   240→
+   241→  it("should fail validation with invalid users data", async () => {
+   242→    const invalidUsersData = [
+   243→      {
+   244→        id: "user-1",
+   245→        // Missing required email and role
+   246→        name: "Admin User",
+   247→      },
+   248→    ];
+   249→
+   250→    setupValidatorWithFiles({
+   251→      "metadata.json": validMetadata,
+   252→      "data/people.json": validPeopleData,
+   253→      "data/users.json": invalidUsersData,
+   254→      "data/relationships.json": validRelationshipsData,
+   255→      "data/suggestions.json": [],
+   256→      "data/settings.json": null,
+   257→    });
+   258→
+   259→    const dataValidation = await (validator as any).validateDataFiles();
+   260→    expect(dataValidation.isValid).toBe(false);
+   261→    expect(dataValidation.errors[0]).toContain("Invalid user data at index 0");
+   262→  });
+   263→
+   264→  it("should fail validation with invalid relationships data", async () => {
+   265→    const invalidRelationshipsData = [
+   266→      {
+   267→        id: "rel-1",
+   268→        // Missing required personId, relatedPersonId, and type
+   269→        createdAt: "2024-01-01T12:00:00.000Z",
+   270→      },
+   271→    ];
+   272→
+   273→    setupValidatorWithFiles({
+   274→      "metadata.json": validMetadata,
+   275→      "data/people.json": validPeopleData,
+   276→      "data/users.json": validUsersData,
+   277→      "data/relationships.json": invalidRelationshipsData,
+   278→      "data/suggestions.json": [],
+   279→      "data/settings.json": null,
+   280→    });
+   281→
+   282→    const dataValidation = await (validator as any).validateDataFiles();
+   283→    expect(dataValidation.isValid).toBe(false);
+   284→    expect(dataValidation.errors[0]).toContain(
+   285→      "Invalid relationship data at index 0"
+   286→    );
+   287→  });
+   288→
+   289→  it("should detect person ID conflicts", async () => {
+   290→    // Mock existing person in database for person-1 only, null for person-2
+   291→    mockPersonFindUnique
+   292→      .mockResolvedValueOnce({
+   293→        id: "person-1",
+   294→        firstName: "Existing John",
+   295→        lastName: "Doe",
+   296→        email: "existing@example.com",
+   297→      } as any)
+   298→      .mockResolvedValueOnce(null);
+   299→
+   300→    // Mock no existing people by email or name
+   301→    mockPersonFindFirst.mockResolvedValue(null);
+   302→
+   303→    setupValidatorWithFiles({
+   304→      "metadata.json": validMetadata,
+   305→      "data/people.json": validPeopleData,
+   306→      "data/users.json": validUsersData,
+   307→      "data/relationships.json": validRelationshipsData,
+   308→      "data/suggestions.json": [],
+   309→      "data/settings.json": null,
+   310→    });
+   311→
+   312→    const conflictDetection = await (validator as any).detectConflicts();
+   313→    expect(conflictDetection.conflicts).toHaveLength(1);
+   314→    expect(conflictDetection.conflicts[0]).toMatchObject({
+   315→      type: "person",
+   316→      action: "update",
+   317→      existingId: "person-1",
+   318→      severity: "medium",
+   319→      description: "Person with ID person-1 already exists",
+   320→    });
+   321→  });
+   322→
+   323→  it("should detect email conflicts", async () => {
+   324→    // Mock no existing people by ID
+   325→    mockPersonFindUnique.mockResolvedValue(null);
+   326→
+   327→    // Mock existing person with same email for john@example.com only
+   328→    mockPersonFindFirst
+   329→      .mockResolvedValueOnce({
+   330→        id: "existing-person",
+   331→        firstName: "Existing",
+   332→        lastName: "User",
+   333→        email: "john@example.com",
+   334→      } as any)
+   335→      .mockResolvedValue(null); // For name conflicts and other email checks
+   336→
+   337→    setupValidatorWithFiles({
+   338→      "metadata.json": validMetadata,
+   339→      "data/people.json": validPeopleData,
+   340→      "data/users.json": validUsersData,
+   341→      "data/relationships.json": validRelationshipsData,
+   342→      "data/suggestions.json": [],
+   343→      "data/settings.json": null,
+   344→    });
+   345→
+   346→    const conflictDetection = await (validator as any).detectConflicts();
+   347→    expect(conflictDetection.conflicts).toHaveLength(1);
+   348→    expect(conflictDetection.conflicts[0]).toMatchObject({
+   349→      type: "person",
+   350→      action: "create",
+   351→      existingId: "existing-person",
+   352→      severity: "high",
+   353→      description: "Person with email john@example.com already exists",
+   354→    });
+   355→  });
+   356→
+   357→  it("should detect user conflicts", async () => {
+   358→    // Mock existing user
+   359→    mockUserFindUnique.mockResolvedValue({
+   360→      id: "user-1",
+   361→      email: "admin@example.com",
+   362→      name: "Existing Admin",
+   363→      role: "ADMIN",
+   364→    } as any);
+   365→
+   366→    setupValidatorWithFiles({
+   367→      "metadata.json": validMetadata,
+   368→      "data/people.json": validPeopleData,
+   369→      "data/users.json": validUsersData,
+   370→      "data/relationships.json": validRelationshipsData,
+   371→      "data/suggestions.json": [],
+   372→      "data/settings.json": null,
+   373→    });
+   374→
+   375→    const conflictDetection = await (validator as any).detectConflicts();
+   376→    expect(conflictDetection.conflicts).toHaveLength(1);
+   377→    expect(conflictDetection.conflicts[0]).toMatchObject({
+   378→      type: "user",
+   379→      action: "update",
+   380→      existingId: "user-1",
+   381→      severity: "high",
+   382→      description: "User with ID user-1 already exists",
+   383→    });
+   384→  });
+   385→
+   386→  it("should detect relationship conflicts", async () => {
+   387→    // Mock existing relationship
+   388→    mockRelationshipFindUnique.mockResolvedValue({
+   389→      id: "rel-1",
+   390→      personId: "person-1",
+   391→      relatedPersonId: "person-2",
+   392→      type: "SPOUSE",
+   393→    } as any);
+   394→
+   395→    setupValidatorWithFiles({
+   396→      "metadata.json": validMetadata,
+   397→      "data/people.json": validPeopleData,
+   398→      "data/users.json": validUsersData,
+   399→      "data/relationships.json": validRelationshipsData,
+   400→      "data/suggestions.json": [],
+   401→      "data/settings.json": null,
+   402→    });
+   403→
+   404→    const conflictDetection = await (validator as any).detectConflicts();
+   405→    expect(conflictDetection.conflicts).toHaveLength(1);
+   406→    expect(conflictDetection.conflicts[0]).toMatchObject({
+   407→      type: "relationship",
+   408→      action: "update",
+   409→      existingId: "rel-1",
+   410→      severity: "medium",
+   411→      description: "Relationship with ID rel-1 already exists",
+   412→    });
+   413→  });
+   414→
+   415→  it("should warn about photo count mismatch", async () => {
+   416→    const metadataWithPhotos = {
+   417→      ...validMetadata,
+   418→      statistics: { ...validMetadata.statistics, totalPhotos: 2 },
+   419→    };
+   420→
+   421→    setupValidatorWithFiles({
+   422→      "metadata.json": metadataWithPhotos,
+   423→      "data/people.json": validPeopleData,
+   424→      "data/users.json": validUsersData,
+   425→      "data/relationships.json": validRelationshipsData,
+   426→      "data/suggestions.json": [],
+   427→      "data/settings.json": null,
+   428→      "photos/person-1/photo.jpg": "binary photo data",
+   429→      // Only 1 photo file but metadata says 2
+   430→    });
+   431→
+   432→    const dataValidation = await (validator as any).validateDataFiles();
+   433→    expect(dataValidation.warnings).toContain(
+   434→      "Expected 2 photos but found 1 photo files"
+   435→    );
+   436→  });
+   437→
+   438→  it("should handle changed fields detection", async () => {
+   439→    const existing = {
+   440→      id: "person-1",
+   441→      firstName: "John",
+   442→      lastName: "Doe",
+   443→      email: "john@example.com",
+   444→    };
+   445→
+   446→    const incoming = {
+   447→      id: "person-1",
+   448→      firstName: "Johnny", // Changed
+   449→      lastName: "Doe",
+   450→      email: "newemail@example.com", // Changed
+   451→    };
+   452→
+   453→    const changedFields = (validator as any).getChangedFields(
+   454→      existing,
+   455→      incoming
+   456→    );
+   457→    expect(changedFields).toEqual(["firstName", "email"]);
+   458→  });
+   459→
+   460→  it("should create proper validation result", async () => {
+   461→    const conflicts = [
+   462→      {
+   463→        type: "person",
+   464→        action: "update",
+   465→        existingId: "person-1",
+   466→        existingData: {},
+   467→        newData: {},
+   468→        conflictFields: ["firstName"],
+   469→        severity: "medium",
+   470→        description: "Test conflict",
+   471→      },
+   472→    ];
+   473→
+   474→    const result = (validator as any).createValidationResult(
+   475→      true,
+   476→      conflicts,
+   477→      [],
+   478→      ["Test warning"]
+   479→    );
+   480→
+   481→    expect(result).toMatchObject({
+   482→      isValid: true,
+   483→      conflicts,
+   484→      statistics: {
+   485→        totalConflicts: 1,
+   486→        conflictsByType: { person: 1 },
+   487→        conflictsBySeverity: { medium: 1 },
+   488→      },
+   489→      errors: [],
+   490→      warnings: ["Test warning"],
+   491→    });
+   492→  });
+   493→
+   494→  it("should provide access to extracted files", () => {
+   495→    const testFiles = new Map([["test.json", { data: "test" }]]);
+   496→    (validator as any).extractedFiles = testFiles;
+   497→
+   498→    const extractedFiles = validator.getExtractedFiles();
+   499→    expect(extractedFiles).toBe(testFiles);
+   500→  });
+   501→
+   502→  it("should provide access to metadata", () => {
+   503→    (validator as any).metadata = validMetadata;
+   504→
+   505→    const metadata = validator.getMetadata();
+   506→    expect(metadata).toBe(validMetadata);
+   507→  });
+   508→});
+   509→

@@ -1,0 +1,40 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+   256→    errors: [],
+   257→    warnings: [],
+   258→  };
+   259→
+   260→  beforeEach(() => {
+   261→    mockRequireAdmin.mockReset();
+   262→    mockValidate.mockReset();
+   263→    mockImportData.mockReset();
+   264→    mockAuditLogCreate.mockReset();
+   265→    mockDbTransaction.mockReset();
+   266→
+   267→    mockRequireAdmin.mockResolvedValue(mockSession);
+   268→    mockDbTransaction.mockImplementation((callback: any) =>
+   269→      callback(createMockTx())
+   270→    );
+   271→    mockAuditLogCreate.mockResolvedValue({} as any);
+   272→  });
+   273→
+   274→  it("should require admin authentication", async () => {
+   275→    mockRequireAdmin.mockRejectedValue(new Error("Unauthorized"));
+   276→
+   277→    const formData = new FormData();
+   278→    const testFile = new File(["test"], "backup.zip", {
+   279→      type: "application/zip",
+   280→    });
+   281→    formData.append("file", testFile);
+   282→
+   283→    await expect(
+   284→      importBackup(formData, "skip", {
+   285→        createBackupBeforeImport: false,
+   286→        importPhotos: false,
+   287→        importAuditLogs: false,
+   288→      })
+   289→    ).rejects.toThrow("Unauthorized");
+   290→  });
+   291→
+   292→  it("should validate file presence", async () => {
+   293→    const formData = new FormData();
+   294→

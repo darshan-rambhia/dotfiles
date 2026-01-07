@@ -1,0 +1,21 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/scripts/db.ts has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+   119→  bun run db reset --force
+   120→  `);
+   121→};
+   122→
+   123→const main = async () => {
+   124→  if (!command || !commands[command]) {
+   125→    printUsage();
+   126→    process.exit(command ? 1 : 0);
+   127→  }
+   128→
+   129→  try {
+   130→    await commands[command]();
+   131→  } catch {
+   132→    console.error("Error");
+   133→    process.exit(1);
+   134→  }
+   135→};
+   136→
+   137→main();
+   138→

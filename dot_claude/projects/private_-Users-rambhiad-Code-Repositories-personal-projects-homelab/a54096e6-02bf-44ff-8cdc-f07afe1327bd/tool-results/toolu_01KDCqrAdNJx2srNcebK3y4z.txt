@@ -1,0 +1,50 @@
+Starting backup: [n8n]:host/lxc-502/2025-12-18T20:58:42Z    
+Client name: n8n    
+Starting backup protocol: Thu Dec 18 20:58:42 2025    
+No previous manifest available.    
+Upload directory '/config' to 'backup@pbs@10.100.1.102:8007:homelab' as config.pxar.didx    
+config.pxar: had to backup 2.398 KiB of 2.398 KiB (compressed 1.148 KiB) in 0.00 s (average 3.38 MiB/s)
+Upload directory '/var/lib/docker/volumes/config_n8n_data/_data' to 'backup@pbs@10.100.1.102:8007:homelab' as _data.pxar.didx    
+_data.pxar: had to backup 1.649 MiB of 1.649 MiB (compressed 95.003 KiB) in 0.01 s (average 173.948 MiB/s)
+Uploaded backup catalog (451 B)
+Duration: 0.04s    
+End Time: Thu Dec 18 20:58:42 2025    
+[2025-12-18 20:58:42] ✓ Backup completed successfully in 0s
+[2025-12-18 20:58:42] Pruning old backups (keep 7)...
+Error: parameter verification failed - 'group': missing argument
+Usage: proxmox-backup-client prune <group> [OPTIONS]
+
+ <group>    <string>
+             Backup group
+
+Optional parameters:
+
+ --dry-run  <boolean>
+             Just show what prune would do, but do not delete anything.
+ --keep-daily <integer> (1 - N)
+             Number of daily backups to keep.
+ --keep-hourly <integer> (1 - N)
+             Number of hourly backups to keep.
+ --keep-last <integer> (1 - N)
+             Number of backups to keep.
+ --keep-monthly <integer> (1 - N)
+             Number of monthly backups to keep.
+ --keep-weekly <integer> (1 - N)
+             Number of weekly backups to keep.
+ --keep-yearly <integer> (1 - N)
+             Number of yearly backups to keep.
+ --max-depth <integer> (0 - 7)
+             How many levels of namespaces should be operated on (0 == no
+             recursion, empty == automatic full recursion, namespace depths
+             reduce maximum allowed value)
+ --ns       <string>
+             Namespace.
+ --output-format text|json|json-pretty
+             Output format.
+ --quiet    <boolean>   (default=false)
+             Minimal output - only show removals.
+ --repository <string>
+             Repository URL.[2025-12-18 20:58:42] ✓ Prune completed
+[2025-12-18 20:58:42] Cleaning up temporary dump files...
+[2025-12-18 20:58:42] === Backup Completed Successfully ===
+[2025-12-18 20:58:42] All tasks completed successfully

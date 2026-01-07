@@ -1,0 +1,226 @@
+     1→import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+     2→import {
+     3→  cn,
+     4→  parseDateString,
+     5→  formatDate,
+     6→  formatDateForInput,
+     7→  calculateAge,
+     8→  generateRandomPassword,
+     9→  getInitials,
+    10→} from "./utils";
+    11→
+    12→describe("cn", () => {
+    13→  it("merges class names correctly", () => {
+    14→    expect(cn("foo", "bar")).toBe("foo bar");
+    15→  });
+    16→
+    17→  it("handles conditional classes", () => {
+    18→    expect(cn("foo", false && "bar", "baz")).toBe("foo baz");
+    19→  });
+    20→
+    21→  it("handles array of classes", () => {
+    22→    expect(cn(["foo", "bar"])).toBe("foo bar");
+    23→  });
+    24→
+    25→  it("handles tailwind merge", () => {
+    26→    expect(cn("px-2 py-1", "px-4")).toBe("py-1 px-4");
+    27→  });
+    28→});
+    29→
+    30→describe("parseDateString", () => {
+    31→  it("returns null for empty string", () => {
+    32→    expect(parseDateString("")).toBeNull();
+    33→  });
+    34→
+    35→  it("returns null for null", () => {
+    36→    expect(parseDateString(null)).toBeNull();
+    37→  });
+    38→
+    39→  it("returns null for undefined", () => {
+    40→    expect(parseDateString(undefined)).toBeNull();
+    41→  });
+    42→
+    43→  it("returns null for whitespace only", () => {
+    44→    expect(parseDateString("   ")).toBeNull();
+    45→  });
+    46→
+    47→  it("parses YYYY-MM-DD format correctly", () => {
+    48→    const result = parseDateString("2024-06-15");
+    49→    expect(result).toBeInstanceOf(Date);
+    50→    expect(result?.getFullYear()).toBe(2024);
+    51→    expect(result?.getMonth()).toBe(5);
+    52→    expect(result?.getDate()).toBe(15);
+    53→    expect(result?.getHours()).toBe(12);
+    54→  });
+    55→
+    56→  it("parses ISO string with time", () => {
+    57→    const isoString = "2024-06-15T10:30:00Z";
+    58→    const result = parseDateString(isoString);
+    59→    expect(result).toBeInstanceOf(Date);
+    60→    expect(result?.getFullYear()).toBe(2024);
+    61→  });
+    62→
+    63→  it("returns null for invalid date string", () => {
+    64→    expect(parseDateString("invalid-date")).toBeNull();
+    65→  });
+    66→
+    67→  it("returns null for malformed YYYY-MM-DD", () => {
+    68→    expect(parseDateString("2024-13-45")).toBeNull();
+    69→  });
+    70→
+    71→  it("returns null for wrapped dates like Feb 30", () => {
+    72→    expect(parseDateString("2024-02-30")).toBeNull();
+    73→  });
+    74→
+    75→  it("returns null for wrapped dates like Apr 31", () => {
+    76→    expect(parseDateString("2024-04-31")).toBeNull();
+    77→  });
+    78→});
+    79→
+    80→describe("formatDate", () => {
+    81→  it("returns empty string for null", () => {
+    82→    expect(formatDate(null)).toBe("");
+    83→  });
+    84→
+    85→  it("returns empty string for undefined", () => {
+    86→    expect(formatDate(undefined)).toBe("");
+    87→  });
+    88→
+    89→  it("formats Date object correctly", () => {
+    90→    const date = new Date(2024, 5, 15);
+    91→    const result = formatDate(date);
+    92→    expect(result).toBe("June 15, 2024");
+    93→  });
+    94→
+    95→  it("formats YYYY-MM-DD string correctly", () => {
+    96→    const result = formatDate("2024-06-15");
+    97→    expect(result).toBe("June 15, 2024");
+    98→  });
+    99→
+   100→  it("returns empty string for invalid date string", () => {
+   101→    expect(formatDate("invalid")).toBe("");
+   102→  });
+   103→});
+   104→
+   105→describe("formatDateForInput", () => {
+   106→  it("returns empty string for null", () => {
+   107→    expect(formatDateForInput(null)).toBe("");
+   108→  });
+   109→
+   110→  it("returns empty string for undefined", () => {
+   111→    expect(formatDateForInput(undefined)).toBe("");
+   112→  });
+   113→
+   114→  it("formats Date object as YYYY-MM-DD", () => {
+   115→    const date = new Date(2024, 5, 15);
+   116→    expect(formatDateForInput(date)).toBe("2024-06-15");
+   117→  });
+   118→
+   119→  it("formats date with single-digit month and day correctly", () => {
+   120→    const date = new Date(2024, 0, 5);
+   121→    expect(formatDateForInput(date)).toBe("2024-01-05");
+   122→  });
+   123→
+   124→  it("formats string date correctly", () => {
+   125→    expect(formatDateForInput("2024-06-15")).toBe("2024-06-15");
+   126→  });
+   127→
+   128→  it("returns empty string for invalid date string", () => {
+   129→    expect(formatDateForInput("invalid")).toBe("");
+   130→  });
+   131→});
+   132→
+   133→describe("calculateAge", () => {
+   134→  beforeEach(() => {
+   135→    vi.useFakeTimers();
+   136→  });
+   137→
+   138→  afterEach(() => {
+   139→    vi.useRealTimers();
+   140→  });
+   141→
+   142→  it("returns null for null dateOfBirth", () => {
+   143→    expect(calculateAge(null)).toBeNull();
+   144→  });
+   145→
+   146→  it("returns null for undefined dateOfBirth", () => {
+   147→    expect(calculateAge(undefined)).toBeNull();
+   148→  });
+   149→
+   150→  it("calculates age correctly", () => {
+   151→    vi.setSystemTime(new Date(2024, 5, 15));
+   152→    const dob = new Date(1990, 5, 15);
+   153→    expect(calculateAge(dob)).toBe(34);
+   154→  });
+   155→
+   156→  it("calculates age when birthday hasn't occurred this year", () => {
+   157→    vi.setSystemTime(new Date(2024, 5, 14));
+   158→    const dob = new Date(1990, 5, 15);
+   159→    expect(calculateAge(dob)).toBe(33);
+   160→  });
+   161→
+   162→  it("calculates age with dateOfPassing", () => {
+   163→    const dob = new Date(1990, 5, 15);
+   164→    const dop = new Date(2020, 5, 15);
+   165→    expect(calculateAge(dob, dop)).toBe(30);
+   166→  });
+   167→
+   168→  it("calculates age when passing occurred before birthday in year", () => {
+   169→    const dob = new Date(1990, 5, 15);
+   170→    const dop = new Date(2020, 5, 14);
+   171→    expect(calculateAge(dob, dop)).toBe(29);
+   172→  });
+   173→
+   174→  it("handles same month but earlier day", () => {
+   175→    vi.setSystemTime(new Date(2024, 5, 10));
+   176→    const dob = new Date(1990, 5, 15);
+   177→    expect(calculateAge(dob)).toBe(33);
+   178→  });
+   179→});
+   180→
+   181→describe("generateRandomPassword", () => {
+   182→  it("generates password with default length", () => {
+   183→    const password = generateRandomPassword();
+   184→    expect(password).toHaveLength(16);
+   185→  });
+   186→
+   187→  it("generates password with custom length", () => {
+   188→    const password = generateRandomPassword(24);
+   189→    expect(password).toHaveLength(24);
+   190→  });
+   191→
+   192→  it("generates password with valid characters", () => {
+   193→    const password = generateRandomPassword();
+   194→    const validChars = /^[a-zA-Z0-9!@#$%^&*]+$/;
+   195→    expect(password).toMatch(validChars);
+   196→  });
+   197→
+   198→  it("generates different passwords each time", () => {
+   199→    const password1 = generateRandomPassword();
+   200→    const password2 = generateRandomPassword();
+   201→    expect(password1).not.toBe(password2);
+   202→  });
+   203→});
+   204→
+   205→describe("getInitials", () => {
+   206→  it("returns initials in uppercase", () => {
+   207→    expect(getInitials("John", "Doe")).toBe("JD");
+   208→  });
+   209→
+   210→  it("handles lowercase names", () => {
+   211→    expect(getInitials("john", "doe")).toBe("JD");
+   212→  });
+   213→
+   214→  it("handles single character names", () => {
+   215→    expect(getInitials("A", "B")).toBe("AB");
+   216→  });
+   217→
+   218→  it("handles names with special characters", () => {
+   219→    expect(getInitials("José", "María")).toBe("JM");
+   220→  });
+   221→});
+   222→
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

@@ -1,0 +1,12 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/package.json has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+    15→    "db:migrate": "prisma migrate dev",
+    16→    "db:push": "prisma db push",
+    17→    "db:seed": "bun run prisma/seed.ts",
+    18→    "db:studio": "prisma studio",
+    19→    "test": "bun test",
+    20→    "test:watch": "bun test --watch",
+    21→    "test:coverage": "bun test --coverage",
+    22→    "test:e2e": "./scripts/db-start.sh && playwright test",
+    23→    "test:e2e:ui": "./scripts/db-start.sh && playwright test --ui",
+    24→    "test:e2e:headed": "./scripts/db-start.sh && playwright test --headed",
+    25→    "docker:build": "./scripts/build.sh",

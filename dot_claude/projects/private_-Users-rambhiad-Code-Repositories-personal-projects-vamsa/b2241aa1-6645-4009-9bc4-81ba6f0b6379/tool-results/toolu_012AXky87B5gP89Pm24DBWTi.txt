@@ -1,0 +1,17 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/lib/backup/types.ts has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+     1→import type { PrismaClient } from "@prisma/client";
+     2→import type { ValidationResult, ImportResult, ConflictResolutionStrategy, Conflict } from "@/schemas/backup";
+     3→
+     4→// Session type for authenticated user
+     5→export interface AuthSession {
+     6→  id: string;
+     7→  email: string;
+     8→  name?: string | null;
+     9→  role: "ADMIN" | "MEMBER" | "VIEWER";
+    10→  personId?: string | null;
+    11→  mustChangePassword: boolean;
+    12→}
+    13→
+    14→// Storage adapter interface
+    15→export interface StorageAdapter {
+    16→  upload(buffer: Buffer, filename: string, mimeType: string): Promise<string>;

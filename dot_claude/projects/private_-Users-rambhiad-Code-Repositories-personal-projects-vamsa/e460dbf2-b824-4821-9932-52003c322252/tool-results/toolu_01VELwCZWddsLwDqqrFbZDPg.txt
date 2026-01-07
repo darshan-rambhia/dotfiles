@@ -1,0 +1,83 @@
+     1→#!/usr/bin/env bun
+     2→/**
+     3→ * Development server startup script
+     4→ *
+     5→ * Orchestrates:
+     6→ * 1. Start PostgreSQL via docker compose
+     7→ * 2. Run Prisma migrations
+     8→ * 3. Start Next.js dev server
+     9→ */
+    10→
+    11→import { $ } from "bun";
+    12→
+    13→// Load environment variables from .env file
+    14→const loadEnv = async () => {
+    15→  try {
+    16→    const envFile = await Bun.file(".env").text();
+    17→    envFile.split("\n").forEach((line) => {
+    18→      const trimmed = line.trim();
+    19→      if (trimmed && !trimmed.startsWith("#")) {
+    20→        const [key, ...valueParts] = trimmed.split("=");
+    21→        let value = valueParts.join("=").trim();
+    22→        // Remove quotes if present
+    23→        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    24→          value = value.slice(1, -1);
+    25→        }
+    26→        if (!process.env[key]) {
+    27→          process.env[key] = value;
+    28→        }
+    29→      }
+    30→    });
+    31→  } catch {
+    32→    // .env file not found, use defaults
+    33→    if (!process.env.DATABASE_URL) {
+    34→      process.env.DATABASE_URL = "postgresql://vamsa:password@localhost:5432/vamsa";
+    35→    }
+    36→  }
+    37→};
+    38→
+    39→await loadEnv();
+    40→
+    41→const runCommand = async (label: string, command: string[]) => {
+    42→  console.log(`\n📋 ${label}...`);
+    43→  try {
+    44→    // Create a new shell with env vars for this command
+    45→    const cmd = command.join(" ");
+    46→    await $`bash -c "export DATABASE_URL='${process.env.DATABASE_URL}' && ${cmd}"`;
+    47→  } catch {
+    48→    console.error(`❌ ${label} failed`);
+    49→    process.exit(1);
+    50→  }
+    51→};
+    52→
+    53→const main = async () => {
+    54→  try {
+    55→    // Step 1: Start PostgreSQL
+    56→    await runCommand("Starting PostgreSQL", ["bash", "./scripts/db-start.sh"]);
+    57→    console.log("✅ PostgreSQL started");
+    58→
+    59→    // Step 2: Run Prisma migrations
+    60→    await runCommand("Running Prisma migrations", [
+    61→      "bunx",
+    62→      "prisma",
+    63→      "migrate",
+    64→      "dev",
+    65→    ]);
+    66→    console.log("✅ Migrations complete");
+    67→
+    68→    // Step 3: Start Next.js dev server
+    69→    console.log("\n📋 Starting Next.js dev server...");
+    70→    console.log("🎉 Dev environment ready!\n");
+    71→    await $`next dev`;
+    72→  } catch {
+    73→    console.error("❌ Development setup failed");
+    74→    process.exit(1);
+    75→  }
+    76→};
+    77→
+    78→main();
+    79→
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

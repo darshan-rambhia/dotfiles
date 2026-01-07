@@ -1,0 +1,4 @@
+/Users/rambhiad/Code/Repositories/personal-projects/homelab/tofu/apps/authelia/deploy/authelia/users_database.yml
+/Users/rambhiad/Code/Repositories/personal-projects/homelab/tofu/apps/authelia/deploy/docker-compose.yml
+/Users/rambhiad/Code/Repositories/personal-projects/homelab/tofu/apps/authelia/deploy/authelia/configuration.yml
+/Users/rambhiad/Code/Repositories/personal-projects/homelab/tofu/apps/authelia/main.tf

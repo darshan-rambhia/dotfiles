@@ -1,0 +1,10 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/package.json has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+    87→    "prettier": "^3.4.2",
+    88→    "prettier-plugin-tailwindcss": "^0.6.9",
+    89→    "prisma": "^6.1.0",
+    90→    "tailwindcss": "^3.4.17",
+    91→    "typescript": "^5.7.2"
+    92→  },
+    93→  "overrides": {
+    94→    "@types/react": "19.2.7",
+    95→    "@types/react-dom": "19.2.3"

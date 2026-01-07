@@ -1,0 +1,17 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/app/api/admin/backup/export/route.test.ts has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+    14→  gatherBackupData: mockGatherBackupData,
+    15→  logBackupExport: mockLogBackupExport,
+    16→}));
+    17→
+    18→mock.module("@/lib/storage", () => ({
+    19→  getStorageAdapter: mock(() => ({})),
+    20→}));
+    21→
+    22→// Import after mocks are set up
+    23→const { POST } = await import("./route");
+    24→
+    25→describe("/api/admin/backup/export", () => {
+    26→  let testCounter = 0;
+    27→
+    28→  const createMockAdminSession = () => ({
+    29→    user: {

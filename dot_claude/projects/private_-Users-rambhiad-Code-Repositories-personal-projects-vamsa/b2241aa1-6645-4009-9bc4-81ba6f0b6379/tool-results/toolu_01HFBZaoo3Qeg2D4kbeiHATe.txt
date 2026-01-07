@@ -1,0 +1,254 @@
+     1→generator client {
+     2→  provider = "prisma-client-js"
+     3→}
+     4→
+     5→datasource db {
+     6→  provider = "postgresql"
+     7→}
+     8→
+     9→enum Gender {
+    10→  MALE
+    11→  FEMALE
+    12→  OTHER
+    13→  PREFER_NOT_TO_SAY
+    14→}
+    15→
+    16→enum UserRole {
+    17→  ADMIN
+    18→  MEMBER
+    19→  VIEWER
+    20→}
+    21→
+    22→enum RelationshipType {
+    23→  PARENT
+    24→  CHILD
+    25→  SPOUSE
+    26→  SIBLING
+    27→}
+    28→
+    29→enum SuggestionType {
+    30→  CREATE
+    31→  UPDATE
+    32→  DELETE
+    33→  ADD_RELATIONSHIP
+    34→}
+    35→
+    36→enum SuggestionStatus {
+    37→  PENDING
+    38→  APPROVED
+    39→  REJECTED
+    40→}
+    41→
+    42→enum PrivacyLevel {
+    43→  PUBLIC
+    44→  MEMBERS_ONLY
+    45→  ADMIN_ONLY
+    46→}
+    47→
+    48→enum AuditAction {
+    49→  CREATE
+    50→  UPDATE
+    51→  DELETE
+    52→  LOGIN
+    53→  LOGOUT
+    54→  APPROVE
+    55→  REJECT
+    56→}
+    57→
+    58→model Person {
+    59→  id            String    @id @default(cuid())
+    60→  firstName     String
+    61→  lastName      String
+    62→  maidenName    String?
+    63→  dateOfBirth   DateTime?
+    64→  dateOfPassing DateTime?
+    65→  birthPlace    String?
+    66→  nativePlace   String?
+    67→  gender        Gender?
+    68→  photoUrl      String?
+    69→  bio           String?
+    70→
+    71→  email         String?
+    72→  phone         String?
+    73→  currentAddress Json?
+    74→  workAddress    Json?
+    75→
+    76→  profession    String?
+    77→  employer      String?
+    78→
+    79→  socialLinks   Json?
+    80→
+    81→  isLiving      Boolean   @default(true)
+    82→
+    83→  createdAt     DateTime  @default(now())
+    84→  updatedAt     DateTime  @updatedAt
+    85→  createdById   String?
+    86→
+    87→  createdBy     User?     @relation("PersonCreatedBy", fields: [createdById], references: [id])
+    88→  user          User?     @relation("UserPerson")
+    89→
+    90→  relationshipsFrom Relationship[] @relation("RelationshipFrom")
+    91→  relationshipsTo   Relationship[] @relation("RelationshipTo")
+    92→
+    93→  suggestions   Suggestion[] @relation("SuggestionTarget")
+    94→
+    95→  @@index([lastName, firstName])
+    96→  @@index([createdById])
+    97→}
+    98→
+    99→model Relationship {
+   100→  id              String           @id @default(cuid())
+   101→  personId        String
+   102→  relatedPersonId String
+   103→  type            RelationshipType
+   104→
+   105→  marriageDate    DateTime?
+   106→  divorceDate     DateTime?
+   107→  isActive        Boolean          @default(true)
+   108→
+   109→  createdAt       DateTime         @default(now())
+   110→  updatedAt       DateTime         @updatedAt
+   111→
+   112→  person          Person           @relation("RelationshipFrom", fields: [personId], references: [id], onDelete: Cascade)
+   113→  relatedPerson   Person           @relation("RelationshipTo", fields: [relatedPersonId], references: [id], onDelete: Cascade)
+   114→
+   115→  @@unique([personId, relatedPersonId, type])
+   116→  @@index([personId])
+   117→  @@index([relatedPersonId])
+   118→}
+   119→
+   120→model User {
+   121→  id            String    @id @default(cuid())
+   122→  email         String    @unique
+   123→  name          String?
+   124→  passwordHash  String?
+   125→  personId      String?   @unique
+   126→  role          UserRole  @default(VIEWER)
+   127→  isActive      Boolean   @default(true)
+   128→  mustChangePassword Boolean @default(false)
+   129→
+   130→  invitedById   String?
+   131→
+   132→  createdAt     DateTime  @default(now())
+   133→  updatedAt     DateTime  @updatedAt
+   134→  lastLoginAt   DateTime?
+   135→
+   136→  person        Person?   @relation("UserPerson", fields: [personId], references: [id])
+   137→  invitedBy     User?     @relation("UserInvites", fields: [invitedById], references: [id])
+   138→  invitees      User[]    @relation("UserInvites")
+   139→
+   140→  createdPeople Person[]  @relation("PersonCreatedBy")
+   141→
+   142→  submittedSuggestions Suggestion[] @relation("SuggestionSubmitter")
+   143→  reviewedSuggestions  Suggestion[] @relation("SuggestionReviewer")
+   144→
+   145→  auditLogs     AuditLog[]
+   146→
+   147→  sessions      Session[]
+   148→  accounts      Account[]
+   149→
+   150→  @@index([email])
+   151→  @@index([personId])
+   152→}
+   153→
+   154→model Suggestion {
+   155→  id              String           @id @default(cuid())
+   156→  type            SuggestionType
+   157→  targetPersonId  String?
+   158→  suggestedData   Json
+   159→  reason          String?
+   160→  status          SuggestionStatus @default(PENDING)
+   161→
+   162→  submittedById   String
+   163→  reviewedById    String?
+   164→  reviewNote      String?
+   165→
+   166→  submittedAt     DateTime         @default(now())
+   167→  reviewedAt      DateTime?
+   168→
+   169→  targetPerson    Person?          @relation("SuggestionTarget", fields: [targetPersonId], references: [id], onDelete: Cascade)
+   170→  submittedBy     User             @relation("SuggestionSubmitter", fields: [submittedById], references: [id])
+   171→  reviewedBy      User?            @relation("SuggestionReviewer", fields: [reviewedById], references: [id])
+   172→
+   173→  @@index([status])
+   174→  @@index([submittedById])
+   175→  @@index([targetPersonId])
+   176→}
+   177→
+   178→model FamilySettings {
+   179→  id                    String       @id @default(cuid())
+   180→  familyName            String       @default("Our Family")
+   181→  description           String?
+   182→  locale                String       @default("en")
+   183→  customLabels          Json?
+   184→  defaultPrivacy        PrivacyLevel @default(MEMBERS_ONLY)
+   185→  allowSelfRegistration Boolean      @default(true)
+   186→  requireApprovalForEdits Boolean    @default(true)
+   187→
+   188→  createdAt             DateTime     @default(now())
+   189→  updatedAt             DateTime     @updatedAt
+   190→}
+   191→
+   192→model AuditLog {
+   193→  id            String      @id @default(cuid())
+   194→  userId        String
+   195→  action        AuditAction
+   196→  entityType    String
+   197→  entityId      String?
+   198→  previousData  Json?
+   199→  newData       Json?
+   200→  ipAddress     String?
+   201→  userAgent     String?
+   202→
+   203→  createdAt     DateTime    @default(now())
+   204→
+   205→  user          User        @relation(fields: [userId], references: [id])
+   206→
+   207→  @@index([userId])
+   208→  @@index([entityType, entityId])
+   209→  @@index([createdAt])
+   210→}
+   211→
+   212→model Account {
+   213→  id                String  @id @default(cuid())
+   214→  userId            String
+   215→  type              String
+   216→  provider          String
+   217→  providerAccountId String
+   218→  refresh_token     String?
+   219→  access_token      String?
+   220→  expires_at        Int?
+   221→  token_type        String?
+   222→  scope             String?
+   223→  id_token          String?
+   224→  session_state     String?
+   225→
+   226→  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+   227→
+   228→  @@unique([provider, providerAccountId])
+   229→  @@index([userId])
+   230→}
+   231→
+   232→model Session {
+   233→  id           String   @id @default(cuid())
+   234→  sessionToken String   @unique
+   235→  userId       String
+   236→  expires      DateTime
+   237→
+   238→  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+   239→
+   240→  @@index([userId])
+   241→}
+   242→
+   243→model VerificationToken {
+   244→  identifier String
+   245→  token      String   @unique
+   246→  expires    DateTime
+   247→
+   248→  @@unique([identifier, token])
+   249→}
+   250→
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

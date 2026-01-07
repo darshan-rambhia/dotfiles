@@ -1,0 +1,10 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/package.json has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+    86→    "@happy-dom/global-registrator": "^20.0.11",
+    87→    "postcss": "^8.4.49",
+    88→    "prettier": "^3.4.2",
+    89→    "prettier-plugin-tailwindcss": "^0.7.2",
+    90→    "prisma": "^6.9.0",
+    91→    "tailwindcss": "^4.1.18",
+    92→    "typescript": "^5.9.3"
+    93→  },
+    94→  "overrides": {

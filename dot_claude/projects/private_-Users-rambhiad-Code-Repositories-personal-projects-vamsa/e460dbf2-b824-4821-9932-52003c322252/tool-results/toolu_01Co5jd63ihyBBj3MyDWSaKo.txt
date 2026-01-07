@@ -1,0 +1,47 @@
+# Bun Script Execution Patterns
+
+Based on the GitHub issue discussion, here are the recommended patterns for task execution in Bun:
+
+## Current Recommended Approach: Bun Shell
+
+The community currently recommends using **Bun's native Shell API** for running multiple tasks:
+
+```typescript
+import { $ } from "bun";
+
+// Parallel execution
+await Promise.all([
+  $`bun run task1`,
+  $`bun run task2`,
+  $`bun run task3`
+]);
+
+// Sequential execution
+await $`bun run task1`;
+await $`bun run task2`;
+```
+
+## Advanced Pattern with Cleanup
+
+For long-running processes requiring cleanup:
+
+```typescript
+import { $ } from "bun";
+
+const run = async () => {
+  Bun.spawn(["bun", "run", "db:up"]);
+  Bun.spawn(["bun", "run", "server:dev"]);
+  
+  process.on("SIGINT", async () => {
+    await $`bun run cleanup`;
+  });
+};
+```
+
+## Key Advantages
+
+Using Bun's built-in APIs avoids external dependencies like `npm-run-all` or `concurrently`, which may have maintenance issues. The Shell API integrates seamlessly with Bun's runtime and provides proper signal handling.
+
+## Feature Status
+
+A native `bun run-parallel` / `bun run-sequential` CLI feature remains under discussion but hasn't been implemented as a built-in command yet.

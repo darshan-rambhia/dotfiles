@@ -1,0 +1,74 @@
+bun test v1.3.5 (1e86cebd)
+
+src/app/api/admin/backup/export/route.test.ts:
+Backup export error: ZodError: [
+  {
+    "origin": "number",
+    "code": "too_small",
+    "minimum": 1,
+    "inclusive": true,
+    "path": [
+      "auditLogDays"
+    ],
+    "message": "Too small: expected number to be >=1"
+  }
+]
+
+Backup export error: 230 |     expect(mockLogBackupExport).toHaveBeenCalled();
+231 |   });
+232 | 
+233 |   it("should handle backup data gathering errors", async () => {
+234 |     mockGatherBackupData.mockRejectedValue(
+235 |       new Error("Database connection failed")
+            ^
+error: Database connection failed
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/app/api/admin/backup/export/route.test.ts:235:7)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/app/api/admin/backup/export/route.test.ts:233:52)
+
+Backup export error: Unknown error
+Backup export error: 37 |         { status: 429 }
+38 |       );
+39 |     }
+40 | 
+41 |     // Parse and validate input
+42 |     const body = await request.json();
+                                    ^
+SyntaxError: JSON Parse error: Unexpected EOF
+      at async POST (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/app/api/admin/backup/export/route.ts:42:32)
+      at async <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/app/api/admin/backup/export/route.test.ts:278:28)
+
+Failed to add photo for person person-1: ENOENT: no such file or directory, open 'data/uploads/123456-photo.jpg'
+    path: "data/uploads/123456-photo.jpg",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+
+Added 0 photos to backup archive
+Failed to add photo for person person-1: ENOENT: no such file or directory, open 'data/uploads/123456-photo.jpg'
+    path: "data/uploads/123456-photo.jpg",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+
+Added 0 photos to backup archive
+Failed to add photo for person person-1: ENOENT: no such file or directory, open 'data/uploads/123456-photo.jpg'
+    path: "data/uploads/123456-photo.jpg",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+
+Added 0 photos to backup archive
+-----------------------|---------|---------|-------------------
+File                   | % Funcs | % Lines | Uncovered Line #s
+-----------------------|---------|---------|-------------------
+All files              |  100.00 |  100.00 |
+ src/schemas/backup.ts |  100.00 |  100.00 | 
+-----------------------|---------|---------|-------------------
+
+ 10 pass
+ 0 fail
+ 23 expect() calls
+Ran 10 tests across 1 file. [192.00ms]

@@ -1,0 +1,2 @@
+No config files found
+(eval):1: no matches found: /Users/rambhiad/Code/Repositories/personal-projects/vamsa/.eslint*

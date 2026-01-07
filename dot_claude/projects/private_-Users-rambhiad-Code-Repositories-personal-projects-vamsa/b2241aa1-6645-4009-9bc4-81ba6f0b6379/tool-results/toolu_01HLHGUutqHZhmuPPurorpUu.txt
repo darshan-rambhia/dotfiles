@@ -1,0 +1,104 @@
+     1→import { describe, it, expect, mock, beforeEach } from "bun:test";
+     2→import { ConflictResolver } from "./conflict-resolver";
+     3→import type { Conflict } from "@/schemas/backup";
+     4→
+     5→// Mock dependencies
+     6→const mockFamilySettingsFindFirst = mock(() => Promise.resolve(null));
+     7→const mockFamilySettingsCreate = mock(() => Promise.resolve({}));
+     8→const mockFamilySettingsUpdate = mock(() => Promise.resolve({}));
+     9→const mockPersonFindUnique = mock(() => Promise.resolve(null));
+    10→const mockPersonCreate = mock(() => Promise.resolve({}));
+    11→const mockPersonUpdate = mock(() => Promise.resolve({}));
+    12→const mockUserFindUnique = mock(() => Promise.resolve(null));
+    13→const mockUserCreate = mock(() => Promise.resolve({}));
+    14→const mockUserUpdate = mock(() => Promise.resolve({}));
+    15→const mockRelationshipFindUnique = mock(() => Promise.resolve(null));
+    16→const mockRelationshipCreate = mock(() => Promise.resolve({}));
+    17→const mockRelationshipUpdate = mock(() => Promise.resolve({}));
+    18→const mockSuggestionCreate = mock(() => Promise.resolve({}));
+    19→const mockAuditLogCreate = mock(() => Promise.resolve({}));
+    20→
+    21→mock.module("@/lib/db", () => ({
+    22→  db: {
+    23→    familySettings: {
+    24→      findFirst: mockFamilySettingsFindFirst,
+    25→      create: mockFamilySettingsCreate,
+    26→      update: mockFamilySettingsUpdate,
+    27→    },
+    28→    person: {
+    29→      findUnique: mockPersonFindUnique,
+    30→      create: mockPersonCreate,
+    31→      update: mockPersonUpdate,
+    32→    },
+    33→    user: {
+    34→      findUnique: mockUserFindUnique,
+    35→      create: mockUserCreate,
+    36→      update: mockUserUpdate,
+    37→    },
+    38→    relationship: {
+    39→      findUnique: mockRelationshipFindUnique,
+    40→      create: mockRelationshipCreate,
+    41→      update: mockRelationshipUpdate,
+    42→    },
+    43→    suggestion: {
+    44→      create: mockSuggestionCreate,
+    45→    },
+    46→    auditLog: {
+    47→      create: mockAuditLogCreate,
+    48→    },
+    49→  },
+    50→}));
+    51→
+    52→describe("ConflictResolver", () => {
+    53→  let resolver: ConflictResolver;
+    54→  const mockImportedBy = {
+    55→    id: "admin-123",
+    56→    email: "admin@example.com",
+    57→    name: "Admin User",
+    58→  };
+    59→
+    60→  const mockExtractedFiles = new Map([
+    61→    [
+    62→      "data/settings.json",
+    63→      {
+    64→        familyName: "Test Family",
+    65→        description: "Test description",
+    66→        locale: "en",
+    67→        customLabels: {},
+    68→        defaultPrivacy: "PRIVATE",
+    69→        allowSelfRegistration: false,
+    70→        requireApprovalForEdits: true,
+    71→      },
+    72→    ],
+    73→    [
+    74→      "data/people.json",
+    75→      [
+    76→        {
+    77→          id: "person-1",
+    78→          firstName: "John",
+    79→          lastName: "Doe",
+    80→          email: "john@example.com",
+    81→          createdAt: "2024-01-01T12:00:00.000Z",
+    82→          updatedAt: "2024-01-01T12:00:00.000Z",
+    83→        },
+    84→        {
+    85→          id: "person-2",
+    86→          firstName: "Jane",
+    87→          lastName: "Smith",
+    88→          email: null,
+    89→          createdAt: "2024-01-02T12:00:00.000Z",
+    90→          updatedAt: "2024-01-02T12:00:00.000Z",
+    91→        },
+    92→      ],
+    93→    ],
+    94→    [
+    95→      "data/users.json",
+    96→      [
+    97→        {
+    98→          id: "user-1",
+    99→          email: "admin@example.com",
+   100→          name: "Admin User",
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

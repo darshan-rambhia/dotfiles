@@ -1,0 +1,18 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/scripts/dev.ts has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+    53→    // Step 1: Start PostgreSQL
+    54→    await runCommand("Starting PostgreSQL", ["bash", "./scripts/db-start.sh"]);
+    55→    console.log("✅ PostgreSQL started");
+    56→
+    57→    // Step 2: Run Prisma migrations
+    58→    await runCommand("Running Prisma migrations", [
+    59→      "bunx",
+    60→      "prisma",
+    61→      "migrate",
+    62→      "dev",
+    63→      "--url",
+    64→      process.env.DATABASE_URL || "postgresql://vamsa:password@localhost:5432/vamsa",
+    65→    ]);
+    66→    console.log("✅ Migrations complete");
+    67→
+    68→    // Step 3: Start Next.js dev server
+    69→    console.log("\n📋 Starting Next.js dev server...");

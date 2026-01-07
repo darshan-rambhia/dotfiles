@@ -1,0 +1,22 @@
+     1→import path from "node:path";
+     2→import { defineConfig } from "prisma/config";
+     3→
+     4→export default defineConfig({
+     5→  earlyAccess: true,
+     6→  schema: path.join(__dirname, "schema.prisma"),
+     7→
+     8→  migrate: {
+     9→    adapter: async () => {
+    10→      const { PrismaPg } = await import("@prisma/adapter-pg");
+    11→      const { Pool } = await import("pg");
+    12→      const connectionString = process.env.DATABASE_URL;
+    13→      const pool = new Pool({ connectionString });
+    14→      return new PrismaPg(pool);
+    15→    },
+    16→  },
+    17→});
+    18→
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

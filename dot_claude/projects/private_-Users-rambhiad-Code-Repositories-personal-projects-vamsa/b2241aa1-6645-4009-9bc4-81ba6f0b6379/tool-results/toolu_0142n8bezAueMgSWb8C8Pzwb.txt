@@ -1,0 +1,67 @@
+     1→import { GlobalRegistrator } from "@happy-dom/global-registrator";
+     2→import { afterEach, mock } from "bun:test";
+     3→import { cleanup } from "@testing-library/react";
+     4→import "@testing-library/jest-dom";
+     5→
+     6→// Register happy-dom globals
+     7→GlobalRegistrator.register();
+     8→
+     9→// Cleanup after each test
+    10→afterEach(() => {
+    11→  cleanup();
+    12→});
+    13→
+    14→// Mock Next.js navigation
+    15→mock.module("next/navigation", () => ({
+    16→  useRouter: () => ({
+    17→    push: mock(() => {}),
+    18→    replace: mock(() => {}),
+    19→    prefetch: mock(() => {}),
+    20→    back: mock(() => {}),
+    21→    forward: mock(() => {}),
+    22→    refresh: mock(() => {}),
+    23→  }),
+    24→  usePathname: () => "/",
+    25→  useSearchParams: () => new URLSearchParams(),
+    26→  useParams: () => ({}),
+    27→  notFound: mock(() => {}),
+    28→  redirect: mock(() => {}),
+    29→}));
+    30→
+    31→// Mock next-auth
+    32→mock.module("next-auth/react", () => ({
+    33→  useSession: mock(() => ({
+    34→    data: null,
+    35→    status: "unauthenticated",
+    36→  })),
+    37→  signIn: mock(() => {}),
+    38→  signOut: mock(() => {}),
+    39→  SessionProvider: ({ children }: { children: React.ReactNode }) => children,
+    40→}));
+    41→
+    42→// Mock window.matchMedia for components using media queries
+    43→Object.defineProperty(window, "matchMedia", {
+    44→  writable: true,
+    45→  value: mock((query: string) => ({
+    46→    matches: false,
+    47→    media: query,
+    48→    onchange: null,
+    49→    addListener: mock(() => {}),
+    50→    removeListener: mock(() => {}),
+    51→    addEventListener: mock(() => {}),
+    52→    removeEventListener: mock(() => {}),
+    53→    dispatchEvent: mock(() => {}),
+    54→  })),
+    55→});
+    56→
+    57→// Mock ResizeObserver
+    58→globalThis.ResizeObserver = mock(() => ({
+    59→  observe: mock(() => {}),
+    60→  unobserve: mock(() => {}),
+    61→  disconnect: mock(() => {}),
+    62→})) as unknown as typeof ResizeObserver;
+    63→
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

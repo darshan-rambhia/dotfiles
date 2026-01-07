@@ -1,0 +1,446 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+     1→import { describe, it, expect, mock, beforeEach } from "bun:test";
+     2→import { validateBackup, importBackup, getImportHistory } from "./restore";
+     3→
+     4→// Mock dependencies
+     5→const mockRequireAdmin = mock(() => Promise.resolve({}));
+     6→const mockDbTransaction = mock((callback: any) => callback({}));
+     7→const mockAuditLogCreate = mock(() => Promise.resolve({}));
+     8→const mockAuditLogFindMany = mock(() => Promise.resolve([]));
+     9→const mockPersonFindUnique = mock(() => Promise.resolve(null));
+    10→const mockPersonUpdate = mock(() => Promise.resolve({}));
+    11→
+    12→mock.module("@/lib/auth", () => ({
+    13→  requireAdmin: mockRequireAdmin,
+    14→}));
+    15→
+    16→mock.module("@/lib/db", () => ({
+    17→  db: {
+    18→    $transaction: mockDbTransaction,
+    19→    auditLog: {
+    20→      create: mockAuditLogCreate,
+    21→      findMany: mockAuditLogFindMany,
+    22→    },
+    23→    person: {
+    24→      findUnique: mockPersonFindUnique,
+    25→      update: mockPersonUpdate,
+    26→    },
+    27→  },
+    28→}));
+    29→
+    30→// Mock validator
+    31→const mockValidate = mock(() => Promise.resolve({}));
+    32→const mockGetExtractedFiles = mock(() => new Map());
+    33→const mockCleanup = mock(() => {});
+    34→
+    35→mock.module("@/lib/backup/validator", () => ({
+    36→  BackupValidator: class {
+    37→    validate = mockValidate;
+    38→    getExtractedFiles = mockGetExtractedFiles;
+    39→    cleanup = mockCleanup;
+    40→  },
+    41→}));
+    42→
+    43→// Mock conflict resolver
+    44→const mockImportData = mock(() =>
+    45→  Promise.resolve({
+    46→    statistics: {},
+    47→    errors: [],
+    48→    warnings: [],
+    49→  })
+    50→);
+    51→
+    52→mock.module("@/lib/backup/conflict-resolver", () => ({
+    53→  ConflictResolver: class {
+    54→    importData = mockImportData;
+    55→  },
+    56→}));
+    57→
+    58→const mockGatherBackupData = mock(() =>
+    59→  Promise.resolve({
+    60→    metadata: {},
+    61→    data: {
+    62→      people: [],
+    63→      relationships: [],
+    64→      users: [],
+    65→      suggestions: [],
+    66→      settings: null,
+    67→    },
+    68→    photos: [],
+    69→  })
+    70→);
+    71→
+    72→mock.module("@/actions/backup", () => ({
+    73→  gatherBackupData: mockGatherBackupData,
+    74→}));
+    75→
+    76→const mockUpload = mock(() => Promise.resolve("photos/test.jpg"));
+    77→const mockGetUrl = mock(() => "https://example.com/photos/test.jpg");
+    78→const mockDelete = mock(() => Promise.resolve(undefined));
+    79→
+    80→mock.module("@/lib/storage", () => ({
+    81→  getStorageAdapter: () => ({
+    82→    upload: mockUpload,
+    83→    getUrl: mockGetUrl,
+    84→    delete: mockDelete,
+    85→  }),
+    86→}));
+    87→
+    88→describe("validateBackup", () => {
+    89→  const mockSession = {
+    90→    id: "admin-123",
+    91→    email: "admin@example.com",
+    92→    name: "Admin User",
+    93→    role: "ADMIN" as const,
+    94→    personId: null,
+    95→    mustChangePassword: false,
+    96→  };
+    97→
+    98→  beforeEach(() => {
+    99→    mockRequireAdmin.mockReset();
+   100→    mockValidate.mockReset();
+   101→    mockRequireAdmin.mockResolvedValue(mockSession);
+   102→  });
+   103→
+   104→  it("should require admin authentication", async () => {
+   105→    mockRequireAdmin.mockRejectedValue(new Error("Unauthorized"));
+   106→
+   107→    const formData = new FormData();
+   108→    const testFile = new File(["test"], "backup.zip", {
+   109→      type: "application/zip",
+   110→    });
+   111→    formData.append("file", testFile);
+   112→
+   113→    await expect(validateBackup(formData)).rejects.toThrow("Unauthorized");
+   114→  });
+   115→
+   116→  it("should validate file presence", async () => {
+   117→    const formData = new FormData();
+   118→
+   119→    await expect(validateBackup(formData)).rejects.toThrow("No file provided");
+   120→  });
+   121→
+   122→  it("should validate file size", async () => {
+   123→    const formData = new FormData();
+   124→    // Create a large file (over 100MB)
+   125→    const largeContent = "x".repeat(101 * 1024 * 1024);
+   126→    const largeFile = new File([largeContent], "backup.zip", {
+   127→      type: "application/zip",
+   128→    });
+   129→    formData.append("file", largeFile);
+   130→
+   131→    await expect(validateBackup(formData)).rejects.toThrow(
+   132→      "File size exceeds 100MB limit"
+   133→    );
+   134→  });
+   135→
+   136→  it("should validate file type", async () => {
+   137→    const formData = new FormData();
+   138→    const invalidFile = new File(["test"], "backup.txt", {
+   139→      type: "text/plain",
+   140→    });
+   141→    formData.append("file", invalidFile);
+   142→
+   143→    await expect(validateBackup(formData)).rejects.toThrow(
+   144→      "File must be a ZIP archive"
+   145→    );
+   146→  });
+   147→
+   148→  it("should validate backup successfully", async () => {
+   149→    const formData = new FormData();
+   150→    const fileContent = "test zip content";
+   151→    const validFile = new File([fileContent], "backup.zip", {
+   152→      type: "application/zip",
+   153→    });
+   154→    formData.append("file", validFile);
+   155→
+   156→    const mockValidationResult = {
+   157→      isValid: true,
+   158→      metadata: {
+   159→        version: "1.0.0",
+   160→        exportedAt: "2024-01-01T12:00:00.000Z",
+   161→        exportedBy: { id: "admin", email: "admin@example.com", name: "Admin" },
+   162→        statistics: {
+   163→          totalPeople: 5,
+   164→          totalRelationships: 3,
+   165→          totalUsers: 2,
+   166→          totalSuggestions: 0,
+   167→          totalPhotos: 1,
+   168→          auditLogDays: 90,
+   169→          totalAuditLogs: 10,
+   170→        },
+   171→        dataFiles: ["data/people.json"],
+   172→        photoDirectories: [],
+   173→      },
+   174→      conflicts: [],
+   175→      statistics: {
+   176→        totalConflicts: 0,
+   177→        conflictsByType: {},
+   178→        conflictsBySeverity: {},
+   179→      },
+   180→      errors: [],
+   181→      warnings: [],
+   182→    };
+   183→
+   184→    mockValidate.mockResolvedValue(mockValidationResult);
+   185→
+   186→    const result = await validateBackup(formData);
+   187→
+   188→    expect(result).toEqual(mockValidationResult);
+   189→  });
+   190→
+   191→  it("should handle validation errors", async () => {
+   192→    const formData = new FormData();
+   193→    const fileContent = "test zip content";
+   194→    const validFile = new File([fileContent], "backup.zip", {
+   195→      type: "application/zip",
+   196→    });
+   197→    formData.append("file", validFile);
+   198→
+   199→    mockValidate.mockRejectedValue(new Error("Invalid ZIP structure"));
+   200→
+   201→    await expect(validateBackup(formData)).rejects.toThrow(
+   202→      "Validation failed: Invalid ZIP structure"
+   203→    );
+   204→  });
+   205→});
+   206→
+   207→describe("importBackup", () => {
+   208→  const mockSession = {
+   209→    id: "admin-123",
+   210→    email: "admin@example.com",
+   211→    name: "Admin User",
+   212→    role: "ADMIN" as const,
+   213→    personId: null,
+   214→    mustChangePassword: false,
+   215→  };
+   216→
+   217→  const mockValidationResult = {
+   218→    isValid: true,
+   219→    metadata: {
+   220→      version: "1.0.0",
+   221→      exportedAt: "2024-01-01T12:00:00.000Z",
+   222→      exportedBy: { id: "admin", email: "admin@example.com", name: "Admin" },
+   223→      statistics: {
+   224→        totalPeople: 5,
+   225→        totalRelationships: 3,
+   226→        totalUsers: 2,
+   227→        totalSuggestions: 0,
+   228→        totalPhotos: 1,
+   229→        auditLogDays: 90,
+   230→        totalAuditLogs: 10,
+   231→      },
+   232→      dataFiles: ["data/people.json"],
+   233→      photoDirectories: [],
+   234→    },
+   235→    conflicts: [],
+   236→    statistics: {
+   237→      totalConflicts: 0,
+   238→      conflictsByType: {},
+   239→      conflictsBySeverity: {},
+   240→    },
+   241→    errors: [],
+   242→    warnings: [],
+   243→  };
+   244→
+   245→  beforeEach(() => {
+   246→    mockRequireAdmin.mockReset();
+   247→    mockValidate.mockReset();
+   248→    mockImportData.mockReset();
+   249→    mockAuditLogCreate.mockReset();
+   250→    mockDbTransaction.mockReset();
+   251→
+   252→    mockRequireAdmin.mockResolvedValue(mockSession);
+   253→    mockDbTransaction.mockImplementation((callback: any) => callback({}));
+   254→    mockAuditLogCreate.mockResolvedValue({} as any);
+   255→  });
+   256→
+   257→  it("should require admin authentication", async () => {
+   258→    mockRequireAdmin.mockRejectedValue(new Error("Unauthorized"));
+   259→
+   260→    const formData = new FormData();
+   261→    const testFile = new File(["test"], "backup.zip", {
+   262→      type: "application/zip",
+   263→    });
+   264→    formData.append("file", testFile);
+   265→
+   266→    await expect(
+   267→      importBackup(formData, "skip", {
+   268→        createBackupBeforeImport: false,
+   269→        importPhotos: false,
+   270→        importAuditLogs: false,
+   271→      })
+   272→    ).rejects.toThrow("Unauthorized");
+   273→  });
+   274→
+   275→  it("should validate file presence", async () => {
+   276→    const formData = new FormData();
+   277→
+   278→    await expect(
+   279→      importBackup(formData, "skip", {
+   280→        createBackupBeforeImport: false,
+   281→        importPhotos: false,
+   282→        importAuditLogs: false,
+   283→      })
+   284→    ).rejects.toThrow("No file provided");
+   285→  });
+   286→
+   287→  it("should validate backup before import", async () => {
+   288→    const formData = new FormData();
+   289→    const fileContent = "test zip content";
+   290→    const validFile = new File([fileContent], "backup.zip", {
+   291→      type: "application/zip",
+   292→    });
+   293→    formData.append("file", validFile);
+   294→
+   295→    const invalidValidationResult = {
+   296→      ...mockValidationResult,
+   297→      isValid: false,
+   298→      errors: ["Invalid backup format"],
+   299→    };
+   300→
+   301→    mockValidate.mockResolvedValue(invalidValidationResult);
+   302→
+   303→    await expect(
+   304→      importBackup(formData, "skip", {
+   305→        createBackupBeforeImport: false,
+   306→        importPhotos: false,
+   307→        importAuditLogs: false,
+   308→      })
+   309→    ).rejects.toThrow("Invalid backup: Invalid backup format");
+   310→  });
+   311→
+   312→  it("should import backup successfully with skip strategy", async () => {
+   313→    const formData = new FormData();
+   314→    const fileContent = "test zip content";
+   315→    const validFile = new File([fileContent], "backup.zip", {
+   316→      type: "application/zip",
+   317→    });
+   318→    formData.append("file", validFile);
+   319→
+   320→    mockValidate.mockResolvedValue(mockValidationResult);
+   321→    mockGetExtractedFiles.mockReturnValue(new Map());
+   322→
+   323→    const mockImportResult = {
+   324→      statistics: {
+   325→        peopleImported: 5,
+   326→        relationshipsImported: 3,
+   327→        usersImported: 2,
+   328→        suggestionsImported: 0,
+   329→        photosImported: 0,
+   330→        auditLogsImported: 0,
+   331→        conflictsResolved: 0,
+   332→        skippedItems: 0,
+   333→      },
+   334→      errors: [],
+   335→      warnings: [],
+   336→    };
+   337→
+   338→    mockImportData.mockResolvedValue(mockImportResult);
+   339→
+   340→    const result = await importBackup(formData, "skip", {
+   341→      createBackupBeforeImport: false,
+   342→      importPhotos: false,
+   343→      importAuditLogs: false,
+   344→    });
+   345→
+   346→    expect(result).toMatchObject({
+   347→      success: true,
+   348→      importedAt: expect.any(String),
+   349→      importedBy: {
+   350→        id: "admin-123",
+   351→        email: "admin@example.com",
+   352→        name: "Admin User",
+   353→      },
+   354→      strategy: "skip",
+   355→      statistics: mockImportResult.statistics,
+   356→      errors: [],
+   357→      warnings: [],
+   358→    });
+   359→  });
+   360→});
+   361→
+   362→describe("getImportHistory", () => {
+   363→  const mockSession = {
+   364→    id: "admin-123",
+   365→    email: "admin@example.com",
+   366→    name: "Admin User",
+   367→    role: "ADMIN" as const,
+   368→    personId: null,
+   369→    mustChangePassword: false,
+   370→  };
+   371→
+   372→  beforeEach(() => {
+   373→    mockRequireAdmin.mockReset();
+   374→    mockAuditLogFindMany.mockReset();
+   375→    mockRequireAdmin.mockResolvedValue(mockSession);
+   376→  });
+   377→
+   378→  it("should require admin authentication", async () => {
+   379→    mockRequireAdmin.mockRejectedValue(new Error("Unauthorized"));
+   380→
+   381→    await expect(getImportHistory()).rejects.toThrow("Unauthorized");
+   382→  });
+   383→
+   384→  it("should return import history", async () => {
+   385→    const mockAuditLogs = [
+   386→      {
+   387→        id: "audit-1",
+   388→        createdAt: new Date("2024-01-01T12:00:00.000Z"),
+   389→        entityType: "BACKUP_IMPORT",
+   390→        newData: {
+   391→          strategy: "replace",
+   392→          statistics: { peopleImported: 5 },
+   393→        },
+   394→        user: {
+   395→          email: "admin@example.com",
+   396→          name: "Admin User",
+   397→        },
+   398→      },
+   399→      {
+   400→        id: "audit-2",
+   401→        createdAt: new Date("2024-01-02T12:00:00.000Z"),
+   402→        entityType: "BACKUP_IMPORT_FAILED",
+   403→        newData: {
+   404→          error: "Invalid backup format",
+   405→        },
+   406→        user: {
+   407→          email: "admin@example.com",
+   408→          name: null,
+   409→        },
+   410→      },
+   411→    ];
+   412→
+   413→    mockAuditLogFindMany.mockResolvedValue(mockAuditLogs as any);
+   414→
+   415→    const result = await getImportHistory();
+   416→
+   417→    expect(result).toEqual([
+   418→      {
+   419→        id: "audit-1",
+   420→        importedAt: "2024-01-01T12:00:00.000Z",
+   421→        importedBy: "Admin User",
+   422→        strategy: "replace",
+   423→        statistics: { peopleImported: 5 },
+   424→        success: true,
+   425→      },
+   426→      {
+   427→        id: "audit-2",
+   428→        importedAt: "2024-01-02T12:00:00.000Z",
+   429→        importedBy: "admin@example.com",
+   430→        strategy: "unknown",
+   431→        statistics: {},
+   432→        success: false,
+   433→      },
+   434→    ]);
+   435→  });
+   436→
+   437→  it("should handle empty history", async () => {
+   438→    mockAuditLogFindMany.mockResolvedValue([]);
+   439→
+   440→    const result = await getImportHistory();
+   441→
+   442→    expect(result).toEqual([]);
+   443→  });
+   444→});
+   445→

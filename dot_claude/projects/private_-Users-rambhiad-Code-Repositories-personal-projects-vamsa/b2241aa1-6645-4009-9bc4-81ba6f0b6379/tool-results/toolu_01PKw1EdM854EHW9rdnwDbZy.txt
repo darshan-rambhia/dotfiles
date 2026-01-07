@@ -1,0 +1,677 @@
+     1→import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+     2→import { ConflictResolver } from "./conflict-resolver";
+     3→import type { Conflict } from "@/schemas/backup";
+     4→
+     5→// Mock dependencies
+     6→vi.mock("@/lib/db", () => ({
+     7→  db: {
+     8→    familySettings: {
+     9→      findFirst: vi.fn(),
+    10→      create: vi.fn(),
+    11→      update: vi.fn(),
+    12→    },
+    13→    person: {
+    14→      findUnique: vi.fn(),
+    15→      create: vi.fn(),
+    16→      update: vi.fn(),
+    17→    },
+    18→    user: {
+    19→      findUnique: vi.fn(),
+    20→      create: vi.fn(),
+    21→      update: vi.fn(),
+    22→    },
+    23→    relationship: {
+    24→      findUnique: vi.fn(),
+    25→      create: vi.fn(),
+    26→      update: vi.fn(),
+    27→    },
+    28→    suggestion: {
+    29→      create: vi.fn(),
+    30→    },
+    31→    auditLog: {
+    32→      create: vi.fn(),
+    33→    },
+    34→  },
+    35→}));
+    36→
+    37→const { db } = await import("@/lib/db");
+    38→
+    39→describe("ConflictResolver", () => {
+    40→  let resolver: ConflictResolver;
+    41→  const mockImportedBy = {
+    42→    id: "admin-123",
+    43→    email: "admin@example.com",
+    44→    name: "Admin User",
+    45→  };
+    46→
+    47→  const mockExtractedFiles = new Map([
+    48→    [
+    49→      "data/settings.json",
+    50→      {
+    51→        familyName: "Test Family",
+    52→        description: "Test description",
+    53→        locale: "en",
+    54→        customLabels: {},
+    55→        defaultPrivacy: "PRIVATE",
+    56→        allowSelfRegistration: false,
+    57→        requireApprovalForEdits: true,
+    58→      },
+    59→    ],
+    60→    [
+    61→      "data/people.json",
+    62→      [
+    63→        {
+    64→          id: "person-1",
+    65→          firstName: "John",
+    66→          lastName: "Doe",
+    67→          email: "john@example.com",
+    68→          createdAt: "2024-01-01T12:00:00.000Z",
+    69→          updatedAt: "2024-01-01T12:00:00.000Z",
+    70→        },
+    71→        {
+    72→          id: "person-2",
+    73→          firstName: "Jane",
+    74→          lastName: "Smith",
+    75→          email: null,
+    76→          createdAt: "2024-01-02T12:00:00.000Z",
+    77→          updatedAt: "2024-01-02T12:00:00.000Z",
+    78→        },
+    79→      ],
+    80→    ],
+    81→    [
+    82→      "data/users.json",
+    83→      [
+    84→        {
+    85→          id: "user-1",
+    86→          email: "admin@example.com",
+    87→          name: "Admin User",
+    88→          personId: "person-1",
+    89→          role: "ADMIN",
+    90→          isActive: true,
+    91→          mustChangePassword: false,
+    92→          invitedById: null,
+    93→          createdAt: "2024-01-01T12:00:00.000Z",
+    94→          updatedAt: "2024-01-01T12:00:00.000Z",
+    95→          lastLoginAt: "2024-01-01T12:00:00.000Z",
+    96→        },
+    97→      ],
+    98→    ],
+    99→    [
+   100→      "data/relationships.json",
+   101→      [
+   102→        {
+   103→          id: "rel-1",
+   104→          personId: "person-1",
+   105→          relatedPersonId: "person-2",
+   106→          type: "SPOUSE",
+   107→          marriageDate: null,
+   108→          divorceDate: null,
+   109→          isActive: true,
+   110→          createdAt: "2024-01-01T12:00:00.000Z",
+   111→          updatedAt: "2024-01-01T12:00:00.000Z",
+   112→        },
+   113→      ],
+   114→    ],
+   115→    [
+   116→      "data/suggestions.json",
+   117→      [
+   118→        {
+   119→          id: "suggestion-1",
+   120→          type: "PERSON_UPDATE",
+   121→          targetPersonId: "person-1",
+   122→          suggestedData: { bio: "Updated bio" },
+   123→          reason: "Missing information",
+   124→          status: "PENDING",
+   125→          submittedById: "user-1",
+   126→          reviewedById: null,
+   127→          reviewNote: null,
+   128→          submittedAt: "2024-01-01T12:00:00.000Z",
+   129→          reviewedAt: null,
+   130→        },
+   131→      ],
+   132→    ],
+   133→    [
+   134→      "data/audit-logs.json",
+   135→      [
+   136→        {
+   137→          id: "audit-1",
+   138→          userId: "user-1",
+   139→          action: "CREATE",
+   140→          entityType: "PERSON",
+   141→          entityId: "person-1",
+   142→          previousData: null,
+   143→          newData: { firstName: "John", lastName: "Doe" },
+   144→          ipAddress: "127.0.0.1",
+   145→          userAgent: "test-agent",
+   146→          createdAt: "2024-01-01T12:00:00.000Z",
+   147→        },
+   148→      ],
+   149→    ],
+   150→  ]);
+   151→
+   152→  beforeEach(() => {
+   153→    vi.clearAllMocks();
+   154→
+   155→    // Mock successful database operations by default
+   156→    vi.mocked(db.familySettings.findFirst).mockResolvedValue(null);
+   157→    vi.mocked(db.familySettings.create).mockResolvedValue({} as any);
+   158→    vi.mocked(db.familySettings.update).mockResolvedValue({} as any);
+   159→    vi.mocked(db.person.findUnique).mockResolvedValue(null);
+   160→    vi.mocked(db.person.create).mockResolvedValue({} as any);
+   161→    vi.mocked(db.person.update).mockResolvedValue({} as any);
+   162→    vi.mocked(db.user.findUnique).mockResolvedValue(null);
+   163→    vi.mocked(db.user.create).mockResolvedValue({} as any);
+   164→    vi.mocked(db.user.update).mockResolvedValue({} as any);
+   165→    vi.mocked(db.relationship.findUnique).mockResolvedValue(null);
+   166→    vi.mocked(db.relationship.create).mockResolvedValue({} as any);
+   167→    vi.mocked(db.relationship.update).mockResolvedValue({} as any);
+   168→    vi.mocked(db.suggestion.create).mockResolvedValue({} as any);
+   169→    vi.mocked(db.auditLog.create).mockResolvedValue({} as any);
+   170→  });
+   171→
+   172→  afterEach(() => {
+   173→    vi.restoreAllMocks();
+   174→  });
+   175→
+   176→  describe("Skip Strategy", () => {
+   177→    beforeEach(() => {
+   178→      resolver = new ConflictResolver("skip", mockImportedBy);
+   179→    });
+   180→
+   181→    it("should skip importing settings when they already exist", async () => {
+   182→      // Mock existing settings
+   183→      vi.mocked(db.familySettings.findFirst).mockResolvedValue({
+   184→        id: "existing-settings",
+   185→        familyName: "Existing Family",
+   186→      } as any);
+   187→
+   188→      // Mock user lookup for suggestions and audit logs to succeed
+   189→      // Need to mock multiple calls since both suggestions and audit logs check for user
+   190→      vi.mocked(db.user.findUnique)
+   191→        .mockResolvedValueOnce({
+   192→          id: "user-1",
+   193→          email: "admin@example.com",
+   194→        } as any)
+   195→        .mockResolvedValueOnce({
+   196→          id: "user-1",
+   197→          email: "admin@example.com",
+   198→        } as any);
+   199→
+   200→      // Mock person lookup for suggestions to succeed
+   201→      vi.mocked(db.person.findUnique).mockResolvedValue({
+   202→        id: "person-1",
+   203→        firstName: "John",
+   204→      } as any);
+   205→
+   206→      const result = await resolver.importData(mockExtractedFiles, []);
+   207→
+   208→      expect(result.warnings).toContain(
+   209→        "Skipped family settings (already exists)"
+   210→      );
+   211→      expect(result.statistics.skippedItems).toBe(1);
+   212→      expect(db.familySettings.update).not.toHaveBeenCalled();
+   213→      expect(db.familySettings.create).not.toHaveBeenCalled();
+   214→    });
+   215→
+   216→    it("should skip people with conflicts", async () => {
+   217→      const conflicts: Conflict[] = [
+   218→        {
+   219→          type: "person",
+   220→          action: "update",
+   221→          existingId: "person-1",
+   222→          existingData: {},
+   223→          newData: { id: "person-1" },
+   224→          conflictFields: ["firstName"],
+   225→          severity: "medium",
+   226→          description: "Person conflict",
+   227→        },
+   228→      ];
+   229→
+   230→      // Mock user lookup for suggestions and audit logs to succeed
+   231→      vi.mocked(db.user.findUnique)
+   232→        .mockResolvedValueOnce({
+   233→          id: "user-1",
+   234→          email: "admin@example.com",
+   235→        } as any)
+   236→        .mockResolvedValueOnce({
+   237→          id: "user-1",
+   238→          email: "admin@example.com",
+   239→        } as any);
+   240→
+   241→      // Mock person lookup for suggestions to succeed
+   242→      vi.mocked(db.person.findUnique).mockResolvedValue({
+   243→        id: "person-1",
+   244→        firstName: "John",
+   245→      } as any);
+   246→
+   247→      const result = await resolver.importData(mockExtractedFiles, conflicts);
+   248→
+   249→      expect(result.warnings).toContain(
+   250→        "Skipped person John Doe due to conflicts"
+   251→      );
+   252→      expect(result.statistics.skippedItems).toBe(1);
+   253→      expect(result.statistics.peopleImported).toBe(1); // Only person-2 imported
+   254→    });
+   255→
+   256→    it("should skip users with conflicts", async () => {
+   257→      const conflicts: Conflict[] = [
+   258→        {
+   259→          type: "user",
+   260→          action: "update",
+   261→          existingId: "user-1",
+   262→          existingData: {},
+   263→          newData: { id: "user-1" },
+   264→          conflictFields: ["email"],
+   265→          severity: "high",
+   266→          description: "User conflict",
+   267→        },
+   268→      ];
+   269→
+   270→      const result = await resolver.importData(mockExtractedFiles, conflicts);
+   271→
+   272→      expect(result.warnings).toContain(
+   273→        "Skipped user admin@example.com due to conflicts"
+   274→      );
+   275→      // When user is skipped, suggestions and audit logs will also be skipped due to missing user reference
+   276→      expect(result.statistics.skippedItems).toBe(3); // user + suggestion + audit log
+   277→      expect(result.statistics.usersImported).toBe(0);
+   278→    });
+   279→  });
+   280→
+   281→  describe("Replace Strategy", () => {
+   282→    beforeEach(() => {
+   283→      resolver = new ConflictResolver("replace", mockImportedBy);
+   284→    });
+   285→
+   286→    it("should replace existing settings", async () => {
+   287→      // Mock existing settings
+   288→      vi.mocked(db.familySettings.findFirst).mockResolvedValue({
+   289→        id: "existing-settings",
+   290→        familyName: "Existing Family",
+   291→      } as any);
+   292→
+   293→      const result = await resolver.importData(mockExtractedFiles, []);
+   294→
+   295→      expect(db.familySettings.update).toHaveBeenCalledWith({
+   296→        where: { id: "existing-settings" },
+   297→        data: expect.objectContaining({
+   298→          familyName: "Test Family",
+   299→          description: "Test description",
+   300→        }),
+   301→      });
+   302→      expect(result.statistics.conflictsResolved).toBe(1);
+   303→    });
+   304→
+   305→    it("should replace existing people", async () => {
+   306→      // Mock existing person
+   307→      vi.mocked(db.person.findUnique).mockResolvedValue({
+   308→        id: "person-1",
+   309→        firstName: "Existing John",
+   310→      } as any);
+   311→
+   312→      const conflicts: Conflict[] = [
+   313→        {
+   314→          type: "person",
+   315→          action: "update",
+   316→          existingId: "person-1",
+   317→          existingData: {},
+   318→          newData: { id: "person-1" },
+   319→          conflictFields: ["firstName"],
+   320→          severity: "medium",
+   321→          description: "Person conflict",
+   322→        },
+   323→      ];
+   324→
+   325→      const result = await resolver.importData(mockExtractedFiles, conflicts);
+   326→
+   327→      expect(db.person.update).toHaveBeenCalledWith({
+   328→        where: { id: "person-1" },
+   329→        data: expect.objectContaining({
+   330→          firstName: "John",
+   331→          lastName: "Doe",
+   332→          email: "john@example.com",
+   333→        }),
+   334→      });
+   335→      expect(result.statistics.conflictsResolved).toBe(1);
+   336→      expect(result.statistics.peopleImported).toBe(2);
+   337→    });
+   338→
+   339→    it("should create new person when existing not found", async () => {
+   340→      const conflicts: Conflict[] = [
+   341→        {
+   342→          type: "person",
+   343→          action: "update",
+   344→          existingId: "person-1",
+   345→          existingData: {},
+   346→          newData: { id: "person-1" },
+   347→          conflictFields: ["firstName"],
+   348→          severity: "medium",
+   349→          description: "Person conflict",
+   350→        },
+   351→      ];
+   352→
+   353→      const result = await resolver.importData(mockExtractedFiles, conflicts);
+   354→
+   355→      expect(db.person.create).toHaveBeenCalledWith({
+   356→        data: expect.objectContaining({
+   357→          id: "person-1",
+   358→          firstName: "John",
+   359→          lastName: "Doe",
+   360→        }),
+   361→      });
+   362→      expect(result.statistics.peopleImported).toBe(2);
+   363→    });
+   364→  });
+   365→
+   366→  describe("Merge Strategy", () => {
+   367→    beforeEach(() => {
+   368→      resolver = new ConflictResolver("merge", mockImportedBy);
+   369→    });
+   370→
+   371→    it("should merge settings with existing data", async () => {
+   372→      // Mock existing settings
+   373→      vi.mocked(db.familySettings.findFirst).mockResolvedValue({
+   374→        id: "existing-settings",
+   375→        familyName: "Existing Family",
+   376→        description: null,
+   377→      } as any);
+   378→
+   379→      const result = await resolver.importData(mockExtractedFiles, []);
+   380→
+   381→      expect(db.familySettings.update).toHaveBeenCalledWith({
+   382→        where: { id: "existing-settings" },
+   383→        data: expect.objectContaining({
+   384→          familyName: "Test Family", // Updated
+   385→          description: "Test description", // Added
+   386→          // Other fields should be included too
+   387→        }),
+   388→      });
+   389→      expect(result.statistics.conflictsResolved).toBe(1);
+   390→    });
+   391→
+   392→    it("should merge people data", async () => {
+   393→      // Mock existing person
+   394→      vi.mocked(db.person.findUnique).mockResolvedValue({
+   395→        id: "person-1",
+   396→        firstName: "Existing John",
+   397→        lastName: "Doe",
+   398→        email: null,
+   399→        bio: "Existing bio",
+   400→      } as any);
+   401→
+   402→      const conflicts: Conflict[] = [
+   403→        {
+   404→          type: "person",
+   405→          action: "update",
+   406→          existingId: "person-1",
+   407→          existingData: {},
+   408→          newData: { id: "person-1" },
+   409→          conflictFields: ["firstName", "email"],
+   410→          severity: "medium",
+   411→          description: "Person conflict",
+   412→        },
+   413→      ];
+   414→
+   415→      const result = await resolver.importData(mockExtractedFiles, conflicts);
+   416→
+   417→      expect(db.person.update).toHaveBeenCalledWith({
+   418→        where: { id: "person-1" },
+   419→        data: expect.objectContaining({
+   420→          firstName: "John", // Updated
+   421→          email: "john@example.com", // Added
+   422→          // bio should be preserved from existing
+   423→        }),
+   424→      });
+   425→      expect(result.statistics.conflictsResolved).toBe(1);
+   426→    });
+   427→
+   428→    it("should skip high severity conflicts even in merge mode", async () => {
+   429→      const conflicts: Conflict[] = [
+   430→        {
+   431→          type: "person",
+   432→          action: "create",
+   433→          existingId: "existing-person",
+   434→          existingData: {},
+   435→          newData: { id: "person-1" },
+   436→          conflictFields: ["email"],
+   437→          severity: "high",
+   438→          description: "High severity conflict",
+   439→        },
+   440→      ];
+   441→
+   442→      // Mock user lookup for suggestions and audit logs to succeed
+   443→      vi.mocked(db.user.findUnique)
+   444→        .mockResolvedValueOnce({
+   445→          id: "user-1",
+   446→          email: "admin@example.com",
+   447→        } as any)
+   448→        .mockResolvedValueOnce({
+   449→          id: "user-1",
+   450→          email: "admin@example.com",
+   451→        } as any);
+   452→
+   453→      // Mock person lookup for suggestions to succeed
+   454→      vi.mocked(db.person.findUnique).mockResolvedValue({
+   455→        id: "person-1",
+   456→        firstName: "John",
+   457→      } as any);
+   458→
+   459→      const result = await resolver.importData(mockExtractedFiles, conflicts);
+   460→
+   461→      expect(result.warnings).toContain(
+   462→        "Skipped person John Doe due to conflicts"
+   463→      );
+   464→      expect(result.statistics.skippedItems).toBe(1);
+   465→    });
+   466→  });
+   467→
+   468→  describe("Data Import Order", () => {
+   469→    beforeEach(() => {
+   470→      resolver = new ConflictResolver("replace", mockImportedBy);
+   471→    });
+   472→
+   473→    it("should import data in correct order", async () => {
+   474→      // Mock user lookup for suggestions and audit logs to succeed
+   475→      vi.mocked(db.user.findUnique)
+   476→        .mockResolvedValueOnce({
+   477→          id: "user-1",
+   478→          email: "admin@example.com",
+   479→        } as any)
+   480→        .mockResolvedValueOnce({
+   481→          id: "user-1",
+   482→          email: "admin@example.com",
+   483→        } as any);
+   484→
+   485→      // Mock person lookup for suggestions to succeed
+   486→      vi.mocked(db.person.findUnique).mockResolvedValue({
+   487→        id: "person-1",
+   488→        firstName: "John",
+   489→      } as any);
+   490→
+   491→      const result = await resolver.importData(mockExtractedFiles, []);
+   492→
+   493→      // Verify all data types were imported
+   494→      expect(result.statistics.peopleImported).toBe(2);
+   495→      expect(result.statistics.usersImported).toBe(1);
+   496→      expect(result.statistics.relationshipsImported).toBe(1);
+   497→      expect(result.statistics.suggestionsImported).toBe(1);
+   498→      expect(result.statistics.auditLogsImported).toBe(1);
+   499→    });
+   500→
+   501→    it("should skip suggestions with missing references", async () => {
+   502→      // Mock user not found
+   503→      vi.mocked(db.user.findUnique).mockResolvedValue(null);
+   504→
+   505→      const result = await resolver.importData(mockExtractedFiles, []);
+   506→
+   507→      expect(result.warnings).toContain(
+   508→        "Skipped suggestion suggestion-1 - submitter not found"
+   509→      );
+   510→      expect(result.warnings).toContain(
+   511→        "Skipped audit log audit-1 - user not found"
+   512→      );
+   513→      expect(result.statistics.skippedItems).toBe(2); // suggestion + audit log
+   514→      expect(result.statistics.suggestionsImported).toBe(0);
+   515→    });
+   516→
+   517→    it("should skip audit logs with missing user references", async () => {
+   518→      // Mock user not found for audit log
+   519→      vi.mocked(db.user.findUnique)
+   520→        .mockResolvedValueOnce({ id: "user-1" } as any) // For suggestion check
+   521→        .mockResolvedValueOnce(null); // For audit log check
+   522→
+   523→      const result = await resolver.importData(mockExtractedFiles, []);
+   524→
+   525→      expect(result.warnings).toContain(
+   526→        "Skipped audit log audit-1 - user not found"
+   527→      );
+   528→      expect(result.statistics.auditLogsImported).toBe(0);
+   529→    });
+   530→  });
+   531→
+   532→  describe("Data Preparation", () => {
+   533→    beforeEach(() => {
+   534→      resolver = new ConflictResolver("replace", mockImportedBy);
+   535→    });
+   536→
+   537→    it("should prepare people data correctly", async () => {
+   538→      await resolver.importData(mockExtractedFiles, []);
+   539→
+   540→      expect(db.person.create).toHaveBeenCalledWith({
+   541→        data: expect.objectContaining({
+   542→          id: "person-1",
+   543→          firstName: "John",
+   544→          lastName: "Doe",
+   545→          email: "john@example.com",
+   546→          createdAt: expect.any(Date),
+   547→          updatedAt: expect.any(Date),
+   548→        }),
+   549→      });
+   550→    });
+   551→
+   552→    it("should prepare user data correctly", async () => {
+   553→      await resolver.importData(mockExtractedFiles, []);
+   554→
+   555→      expect(db.user.create).toHaveBeenCalledWith({
+   556→        data: expect.objectContaining({
+   557→          id: "user-1",
+   558→          email: "admin@example.com",
+   559→          name: "Admin User",
+   560→          personId: "person-1",
+   561→          role: "ADMIN",
+   562→          isActive: true,
+   563→          mustChangePassword: false,
+   564→          createdAt: expect.any(Date),
+   565→          updatedAt: expect.any(Date),
+   566→          lastLoginAt: expect.any(Date),
+   567→        }),
+   568→      });
+   569→    });
+   570→
+   571→    it("should prepare relationship data correctly", async () => {
+   572→      await resolver.importData(mockExtractedFiles, []);
+   573→
+   574→      expect(db.relationship.create).toHaveBeenCalledWith({
+   575→        data: expect.objectContaining({
+   576→          id: "rel-1",
+   577→          personId: "person-1",
+   578→          relatedPersonId: "person-2",
+   579→          type: "SPOUSE",
+   580→          marriageDate: null,
+   581→          divorceDate: null,
+   582→          isActive: true,
+   583→          createdAt: expect.any(Date),
+   584→          updatedAt: expect.any(Date),
+   585→        }),
+   586→      });
+   587→    });
+   588→  });
+   589→
+   590→  describe("Error Handling", () => {
+   591→    beforeEach(() => {
+   592→      resolver = new ConflictResolver("replace", mockImportedBy);
+   593→    });
+   594→
+   595→    it("should handle database errors gracefully", async () => {
+   596→      vi.mocked(db.person.create).mockRejectedValue(
+   597→        new Error("Database error")
+   598→      );
+   599→
+   600→      const result = await resolver.importData(mockExtractedFiles, []);
+   601→
+   602→      expect(result.errors).toContain(
+   603→        "Failed to import person John Doe: Database error"
+   604→      );
+   605→    });
+   606→
+   607→    it("should handle missing data files gracefully", async () => {
+   608→      const emptyFiles = new Map();
+   609→
+   610→      const result = await resolver.importData(emptyFiles, []);
+   611→
+   612→      expect(result.statistics.peopleImported).toBe(0);
+   613→      expect(result.statistics.usersImported).toBe(0);
+   614→      expect(result.errors).toHaveLength(0);
+   615→    });
+   616→
+   617→    it("should handle invalid data gracefully", async () => {
+   618→      const invalidFiles = new Map([["data/people.json", "not an array"]]);
+   619→
+   620→      const result = await resolver.importData(invalidFiles, []);
+   621→
+   622→      expect(result.statistics.peopleImported).toBe(0);
+   623→      expect(result.errors).toHaveLength(0); // Should not crash
+   624→    });
+   625→  });
+   626→
+   627→  describe("Statistics Tracking", () => {
+   628→    beforeEach(() => {
+   629→      resolver = new ConflictResolver("replace", mockImportedBy);
+   630→    });
+   631→
+   632→    it("should track import statistics correctly", async () => {
+   633→      const conflicts: Conflict[] = [
+   634→        {
+   635→          type: "person",
+   636→          action: "update",
+   637→          existingId: "person-1",
+   638→          existingData: {},
+   639→          newData: { id: "person-1" },
+   640→          conflictFields: ["firstName"],
+   641→          severity: "medium",
+   642→          description: "Person conflict",
+   643→        },
+   644→      ];
+   645→
+   646→      // Mock existing person for conflict resolution
+   647→      vi.mocked(db.person.findUnique).mockResolvedValue({
+   648→        id: "person-1",
+   649→        firstName: "Existing",
+   650→      } as any);
+   651→
+   652→      // Mock user lookup for suggestions and audit logs to succeed
+   653→      vi.mocked(db.user.findUnique).mockResolvedValue({
+   654→        id: "user-1",
+   655→        email: "admin@example.com",
+   656→      } as any);
+   657→
+   658→      const result = await resolver.importData(mockExtractedFiles, conflicts);
+   659→
+   660→      expect(result.statistics).toEqual({
+   661→        peopleImported: 2,
+   662→        relationshipsImported: 1,
+   663→        usersImported: 1,
+   664→        suggestionsImported: 1,
+   665→        photosImported: 0,
+   666→        auditLogsImported: 1,
+   667→        conflictsResolved: 1,
+   668→        skippedItems: 0,
+   669→      });
+   670→    });
+   671→  });
+   672→});
+   673→
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

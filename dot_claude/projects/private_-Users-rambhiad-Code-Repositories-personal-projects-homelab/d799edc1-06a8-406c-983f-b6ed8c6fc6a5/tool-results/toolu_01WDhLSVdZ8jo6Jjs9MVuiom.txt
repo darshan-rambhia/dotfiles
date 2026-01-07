@@ -1,0 +1,54 @@
+proxmox-homelab-45r: Epic: Migrate from Authelia to Authentik
+Status: open
+Priority: P1
+Type: epic
+Created: 2025-12-21 00:15
+Updated: 2025-12-21 01:02
+
+Description:
+Complete migration from Authelia to Authentik as the centralized identity provider.
+
+## Overview
+Replace Authelia with Authentik to gain:
+- Native Google/GitHub OAuth federation
+- OIDC provider capabilities for apps with native SSO support
+- Forward auth for apps without native OAuth
+- Centralized user/group management
+- Jellyfin SSO plugin compatibility
+
+## Phases
+
+### Phase 1: Infrastructure
+- Deploy Authentik alongside Traefik in LXC 200
+- Configure Google OAuth source
+- Setup forward auth middleware in Traefik
+
+### Phase 2: Dashboard & Utility Apps (Forward Auth)
+- Homepage, Dashy, Pulse, Arcane, Stirling-PDF
+- Prometheus, Alertmanager
+
+### Phase 3: Media & Network Apps (Forward Auth)
+- Uptime Kuma, qBittorrent
+- Sonarr, Radarr, Lidarr, Prowlarr, Bazarr, SABnzbd
+- AdGuard, Traefik Dashboard, ntfy
+
+### Phase 4: Native OIDC Apps
+- Grafana, OpenWebUI, Paperless-ngx, n8n, Jellyseerr
+
+### Phase 5: Media Apps (Native OIDC)
+- Immich, Jellyfin
+
+### Phase 6: Cleanup
+- Decommission Authelia
+
+## Success Criteria
+- [ ] All services authenticated via Authentik
+- [ ] Google OAuth login working for all users
+- [ ] Authelia fully decommissioned
+- [ ] All configuration managed as code (OpenTofu/Ansible)
+
+Acceptance Criteria:
+- [ ] All services authenticated via Authentik
+- [ ] Google OAuth login working for all users
+- [ ] Authelia fully decommissioned
+- [ ] All configuration managed as code (OpenTofu/Ansible)

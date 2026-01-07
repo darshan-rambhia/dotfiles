@@ -1,0 +1,26 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/lib/db.ts has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+     1→import { PrismaClient } from "@prisma/client";
+     2→import { PrismaPg } from "@prisma/adapter-pg";
+     3→import { Pool } from "pg";
+     4→
+     5→const globalForPrisma = globalThis as unknown as {
+     6→  prisma: PrismaClient | undefined;
+     7→  pool: Pool | undefined;
+     8→};
+     9→
+    10→function createPrismaClient() {
+    11→  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    12→  globalForPrisma.pool = pool;
+    13→
+    14→  const adapter = new PrismaPg(pool);
+    15→
+    16→  return new PrismaClient({
+    17→    adapter,
+    18→    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+    19→  });
+    20→}
+    21→
+    22→export const db = globalForPrisma.prisma ?? createPrismaClient();
+    23→
+    24→if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+    25→

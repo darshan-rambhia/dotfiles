@@ -1,0 +1,235 @@
+Exit code 1
+bun test v1.3.5 (1e86cebd)
+
+src/actions/restore.test.ts:
+Backup validation error: 23 |   const session = await requireAdmin();
+24 | 
+25 |   try {
+26 |     const file = formData.get("file") as File;
+27 |     if (!file) {
+28 |       throw new Error("No file provided");
+                 ^
+error: No file provided
+      at validateBackup (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:28:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:119:52)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:116:39)
+
+Backup validation error: 29 |     }
+30 | 
+31 |     // Validate file size (max 100MB)
+32 |     const maxSize = 100 * 1024 * 1024; // 100MB
+33 |     if (file.size > maxSize) {
+34 |       throw new Error("File size exceeds 100MB limit");
+                 ^
+error: File size exceeds 100MB limit
+      at validateBackup (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:34:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:131:52)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:122:35)
+
+Backup validation error: 34 |       throw new Error("File size exceeds 100MB limit");
+35 |     }
+36 | 
+37 |     // Validate file type
+38 |     if (!file.name.endsWith(".zip")) {
+39 |       throw new Error("File must be a ZIP archive");
+                 ^
+error: File must be a ZIP archive
+      at validateBackup (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:39:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:143:52)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:136:35)
+
+Backup validation error: 194 |     const validFile = new File([fileContent], "backup.zip", {
+195 |       type: "application/zip",
+196 |     });
+197 |     formData.append("file", validFile);
+198 | 
+199 |     mockValidate.mockRejectedValue(new Error("Invalid ZIP structure"));
+                                         ^
+error: Invalid ZIP structure
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:199:36)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:191:41)
+
+Backup import error: 68 |   const session = await requireAdmin();
+69 | 
+70 |   try {
+71 |     const file = formData.get("file") as File;
+72 |     if (!file) {
+73 |       throw new Error("No file provided");
+                 ^
+error: No file provided
+      at importBackup (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:73:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:284:15)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:275:39)
+
+Backup import error: 80 |     // Validate backup first
+81 |     const validator = new BackupValidator(buffer);
+82 |     const validationResult = await validator.validate();
+83 | 
+84 |     if (!validationResult.isValid) {
+85 |       throw new Error(`Invalid backup: ${validationResult.errors.join(", ")}`);
+                 ^
+error: Invalid backup: Invalid backup format
+      at importBackup (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:85:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:309:15)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:287:46)
+
+Backup import error: 114 |         );
+115 |         statistics.photosImported = photosImported;
+116 |       }
+117 | 
+118 |       // Log the import action
+119 |       await tx.auditLog.create({
+                     ^
+TypeError: undefined is not an object (evaluating 'tx.auditLog.create')
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:119:16)
+      at async importBackup (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:96:35)
+      at async <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:340:26)
+
+167 |       });
+168 |     } catch (logError) {
+169 |       console.error("Failed to log import error:", logError);
+170 |     }
+171 | 
+172 |     throw new Error(
+                ^
+error: Import failed: undefined is not an object (evaluating 'tx.auditLog.create')
+      at importBackup (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:172:11)
+      at async <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:340:26)
+(fail) importBackup > should import 
+
+... [30068 characters truncated] ...
+
+ived).toBe(expected)
+
+Expected: 0
+Received: 5
+
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/lib/backup/conflict-resolver.test.ts:630:48)
+(fail) ConflictResolver > Error Handling > should handle missing data files gracefully [0.05ms]
+635 |     it("should handle invalid data gracefully", async () => {
+636 |       const invalidFiles = new Map([["data/people.json", "not an array"]]);
+637 | 
+638 |       const result = await resolver.importData(invalidFiles, []);
+639 | 
+640 |       expect(result.statistics.peopleImported).toBe(0);
+                                                     ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 5
+
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/lib/backup/conflict-resolver.test.ts:640:48)
+(fail) ConflictResolver > Error Handling > should handle invalid data gracefully [0.05ms]
+673 |         email: "admin@example.com",
+674 |       } as any);
+675 | 
+676 |       const result = await resolver.importData(mockExtractedFiles, conflicts);
+677 | 
+678 |       expect(result.statistics).toEqual({
+                                      ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "auditLogsImported": 1,
+-   "conflictsResolved": 1,
+-   "peopleImported": 2,
++   "auditLogsImported": 0,
++   "conflictsResolved": 0,
++   "peopleImported": 5,
+    "photosImported": 0,
+-   "relationshipsImported": 1,
++   "relationshipsImported": 3,
+    "skippedItems": 0,
+-   "suggestionsImported": 1,
+-   "usersImported": 1,
++   "suggestionsImported": 0,
++   "usersImported": 2,
+  }
+
+- Expected  - 6
++ Received  + 6
+
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/lib/backup/conflict-resolver.test.ts:678:33)
+(fail) ConflictResolver > Statistics Tracking > should track import statistics correctly [0.09ms]
+
+src/app/api/admin/backup/export/route.test.ts:
+Backup export error: ZodError: [
+  {
+    "origin": "number",
+    "code": "too_small",
+    "minimum": 1,
+    "inclusive": true,
+    "path": [
+      "auditLogDays"
+    ],
+    "message": "Too small: expected number to be >=1"
+  }
+]
+
+Backup export error: 228 |     expect(mockLogBackupExport).toHaveBeenCalled();
+229 |   });
+230 | 
+231 |   it("should handle backup data gathering errors", async () => {
+232 |     mockGatherBackupData.mockRejectedValue(
+233 |       new Error("Database connection failed")
+            ^
+error: Database connection failed
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/app/api/admin/backup/export/route.test.ts:233:7)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/app/api/admin/backup/export/route.test.ts:231:52)
+
+Backup export error: Unknown error
+Backup export error: 37 |         { status: 429 }
+38 |       );
+39 |     }
+40 | 
+41 |     // Parse and validate input
+42 |     const body = await request.json();
+                                    ^
+SyntaxError: JSON Parse error: Unexpected EOF
+      at async POST (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/app/api/admin/backup/export/route.ts:42:32)
+      at async <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/app/api/admin/backup/export/route.test.ts:276:28)
+
+Failed to add photo for person person-1: ENOENT: no such file or directory, open 'data/uploads/123456-photo.jpg'
+    path: "data/uploads/123456-photo.jpg",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+
+Added 0 photos to backup archive
+Failed to add photo for person person-1: ENOENT: no such file or directory, open 'data/uploads/123456-photo.jpg'
+    path: "data/uploads/123456-photo.jpg",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+
+Added 0 photos to backup archive
+Failed to add photo for person person-1: ENOENT: no such file or directory, open 'data/uploads/123456-photo.jpg'
+    path: "data/uploads/123456-photo.jpg",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+
+Added 0 photos to backup archive
+------------------------------|---------|---------|-------------------
+File                          | % Funcs | % Lines | Uncovered Line #s
+------------------------------|---------|---------|-------------------
+All files                     |   60.00 |   67.99 |
+ src/components/ui/button.tsx |  100.00 |  100.00 | 
+ src/lib/auth-options.ts      |    0.00 |   25.00 | 45-83,90-110,112-113,127-151
+ src/lib/auth.ts              |    0.00 |   25.00 | 4,8-9,13-17,21-25,29-33
+ src/lib/db.ts                |  100.00 |  100.00 | 
+ src/lib/storage/index.ts     |    0.00 |   11.76 | 6-20
+ src/lib/storage/local.ts     |    0.00 |   18.18 | 9-34
+ src/lib/utils.ts             |  100.00 |  100.00 | 
+ src/schemas/backup.ts        |  100.00 |  100.00 | 
+ src/schemas/person.ts        |  100.00 |  100.00 | 
+ src/schemas/user.ts          |  100.00 |  100.00 | 
+------------------------------|---------|---------|-------------------
+
+ 114 pass
+ 46 fail
+ 169 expect() calls
+Ran 160 tests across 10 files. [574.00ms]

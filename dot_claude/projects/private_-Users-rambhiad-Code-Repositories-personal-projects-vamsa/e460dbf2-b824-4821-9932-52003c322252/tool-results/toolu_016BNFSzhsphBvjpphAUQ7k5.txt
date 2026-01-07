@@ -1,0 +1,40 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/scripts/dev.ts has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+     7→ * 2. Run Prisma migrations
+     8→ * 3. Start Next.js dev server
+     9→ */
+    10→
+    11→import { $ } from "bun";
+    12→
+    13→// Load environment variables from .env file
+    14→const loadEnv = async () => {
+    15→  try {
+    16→    const envFile = await Bun.file(".env").text();
+    17→    envFile.split("\n").forEach((line) => {
+    18→      const trimmed = line.trim();
+    19→      if (trimmed && !trimmed.startsWith("#")) {
+    20→        const [key, ...valueParts] = trimmed.split("=");
+    21→        let value = valueParts.join("=").trim();
+    22→        // Remove quotes if present
+    23→        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    24→          value = value.slice(1, -1);
+    25→        }
+    26→        if (!process.env[key]) {
+    27→          process.env[key] = value;
+    28→        }
+    29→      }
+    30→    });
+    31→  } catch {
+    32→    // .env file not found, use defaults
+    33→    if (!process.env.DATABASE_URL) {
+    34→      process.env.DATABASE_URL = "postgresql://vamsa:password@localhost:5432/vamsa";
+    35→    }
+    36→  }
+    37→};
+    38→
+    39→await loadEnv();
+    40→
+    41→const runCommand = async (label: string, command: string[]) => {
+    42→  console.log(`\n📋 ${label}...`);
+    43→  try {
+    44→    await $`${command}`;
+    45→  } catch {

@@ -1,0 +1,121 @@
+Exit code 1
+$ bun run scripts/validate.ts --check
+
+src/actions/restore.test.ts:
+Backup validation error: 35 |   await deps.requireAdmin();
+36 | 
+37 |   try {
+38 |     const file = formData.get("file") as File;
+39 |     if (!file) {
+40 |       throw new Error("No file provided");
+                 ^
+error: No file provided
+      at validateBackupCore (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:40:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:158:62)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:154:39)
+
+Backup validation error: 41 |     }
+42 | 
+43 |     // Validate file size (max 100MB)
+44 |     const maxSize = 100 * 1024 * 1024; // 100MB
+45 |     if (file.size > maxSize) {
+46 |       throw new Error("File size exceeds 100MB limit");
+                 ^
+error: File size exceeds 100MB limit
+      at validateBackupCore (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:46:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:173:62)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:163:35)
+
+Backup validation error: 46 |       throw new Error("File size exceeds 100MB limit");
+47 |     }
+48 | 
+49 |     // Validate file type
+50 |     if (!file.name.endsWith(".zip")) {
+51 |       throw new Error("File must be a ZIP archive");
+                 ^
+error: File must be a ZIP archive
+      at validateBackupCore (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:51:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:186:62)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:178:35)
+
+Backup validation error: 238 | 
+239 |   it("should handle validation errors", async () => {
+240 |     const deps = createMockDependencies({
+241 |       createValidator: () => ({
+242 |         validate: async () => {
+243 |           throw new Error("Invalid ZIP structure");
+                      ^
+error: Invalid ZIP structure
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:243:17)
+      at validate (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:242:31)
+      at validateBackupCore (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:60:36)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:256:62)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:239:41)
+
+Backup import error: 82 |   const session = await deps.requireAdmin();
+83 | 
+84 |   try {
+85 |     const file = formData.get("file") as File;
+86 |     if (!file) {
+87 |       throw new Error("No file provided");
+                 ^
+error: No file provided
+      at importBackupCore (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:87:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:293:15)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:287:39)
+
+Backup import error: 94 |     // Validate backup first
+95 |     const validator = deps.createValidator(buffer);
+96 |     const validationResult = await validator.validate();
+97 | 
+98 |     if (!validationResult.isValid) {
+99 |       throw new Error(`Invalid backup: ${validationResult.errors.join(", ")}`);
+                 ^
+error: Invalid backup: Invalid backup format
+      at importBackupCore (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:99:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:324:15)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:296:46)
+
+Failed to create pre-import backup: 799 |   };
+800 | 
+801 |   it("should handle error creating pre-import backup gracefully", async () => {
+802 |     const deps = createMockDependencies({
+803 |       gatherBackupData: async () => {
+804 |         throw new Error("Database error");
+                    ^
+error: Database error
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:804:15)
+      at gatherBackupData (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:803:37)
+      at createPreImportBackup (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:268:51)
+      at createPreImportBackup (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:260:3)
+      at importB
+
+... [67299 characters truncated] ...
+
+e for type 'string' is missing in type '({ id: string; firstName: string; lastName: string; email: string; createdAt: string; updatedAt: string; } | { id: string; firstName: string; lastName: string; email: null; createdAt: string; updatedAt: string; })[]'.
+src/lib/backup/conflict-resolver.test.ts(620,48): error TS2345: Argument of type 'Map<string, { familyName: string; description: string; locale: string; customLabels: {}; defaultPrivacy: string; allowSelfRegistration: boolean; requireApprovalForEdits: boolean; } | ({ ...; } | { ...; })[] | { ...; }[] | { ...; }[] | { ...; }[] | { ...; }[]>' is not assignable to parameter of type 'Map<string, ExtractedFileContent>'.
+  Type '{ familyName: string; description: string; locale: string; customLabels: {}; defaultPrivacy: string; allowSelfRegistration: boolean; requireApprovalForEdits: boolean; } | ({ id: string; ... 4 more ...; updatedAt: string; } | { ...; })[] | { ...; }[] | { ...; }[] | { ...; }[] | { ...; }[]' is not assignable to type 'ExtractedFileContent'.
+    Type '({ id: string; firstName: string; lastName: string; email: string; createdAt: string; updatedAt: string; } | { id: string; firstName: string; lastName: string; email: null; createdAt: string; updatedAt: string; })[]' is not assignable to type 'ExtractedFileContent'.
+      Type '({ id: string; firstName: string; lastName: string; email: string; createdAt: string; updatedAt: string; } | { id: string; firstName: string; lastName: string; email: null; createdAt: string; updatedAt: string; })[]' is not assignable to type 'Record<string, unknown>'.
+        Index signature for type 'string' is missing in type '({ id: string; firstName: string; lastName: string; email: string; createdAt: string; updatedAt: string; } | { id: string; firstName: string; lastName: string; email: null; createdAt: string; updatedAt: string; })[]'.
+src/lib/backup/conflict-resolver.test.ts(640,48): error TS2345: Argument of type 'Map<string, string>' is not assignable to parameter of type 'Map<string, ExtractedFileContent>'.
+  Type 'string' is not assignable to type 'ExtractedFileContent'.
+src/lib/backup/conflict-resolver.test.ts(678,48): error TS2345: Argument of type 'Map<string, { familyName: string; description: string; locale: string; customLabels: {}; defaultPrivacy: string; allowSelfRegistration: boolean; requireApprovalForEdits: boolean; } | ({ ...; } | { ...; })[] | { ...; }[] | { ...; }[] | { ...; }[] | { ...; }[]>' is not assignable to parameter of type 'Map<string, ExtractedFileContent>'.
+  Type '{ familyName: string; description: string; locale: string; customLabels: {}; defaultPrivacy: string; allowSelfRegistration: boolean; requireApprovalForEdits: boolean; } | ({ id: string; ... 4 more ...; updatedAt: string; } | { ...; })[] | { ...; }[] | { ...; }[] | { ...; }[] | { ...; }[]' is not assignable to type 'ExtractedFileContent'.
+    Type '({ id: string; firstName: string; lastName: string; email: string; createdAt: string; updatedAt: string; } | { id: string; firstName: string; lastName: string; email: null; createdAt: string; updatedAt: string; })[]' is not assignable to type 'ExtractedFileContent'.
+      Type '({ id: string; firstName: string; lastName: string; email: string; createdAt: string; updatedAt: string; } | { id: string; firstName: string; lastName: string; email: null; createdAt: string; updatedAt: string; })[]' is not assignable to type 'Record<string, unknown>'.
+        Index signature for type 'string' is missing in type '({ id: string; firstName: string; lastName: string; email: string; createdAt: string; updatedAt: string; } | { id: string; firstName: string; lastName: string; email: null; createdAt: string; updatedAt: string; })[]'.
+src/lib/storage/index.test.ts(35,14): error TS2339: Property 'fail' does not exist on type 'Expect'.
+src/lib/storage/index.test.ts(50,14): error TS2339: Property 'fail' does not exist on type 'Expect'.
+src/lib/storage/local.test.ts(126,23): error TS2493: Tuple type '[]' of length '0' has no element at index '1'.
+src/lib/storage/local.test.ts(126,35): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '{ recursive: boolean; }' is not assignable to parameter of type 'undefined'.
+  Overload 2 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '{ recursive: boolean; }' is not assignable to parameter of type 'undefined'.
+src/lib/storage/local.test.ts(137,23): error TS2493: Tuple type '[]' of length '0' has no element at index '1'.
+src/lib/storage/local.test.ts(137,32): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type 'Buffer<ArrayBuffer>' is not assignable to parameter of type 'undefined'.
+  Overload 2 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type 'Buffer<ArrayBuffer>' is not assignable to parameter of type 'undefined'.

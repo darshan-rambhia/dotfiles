@@ -1,0 +1,104 @@
+     1→import { describe, it, expect, mock, beforeEach, beforeAll } from "bun:test";
+     2→
+     3→// Mock dependencies - must be defined before mock.module calls
+     4→const mockRequireAdmin = mock(() => Promise.resolve({}));
+     5→const mockDbTransaction = mock((callback: any) => callback({}));
+     6→const mockAuditLogCreate = mock(() => Promise.resolve({}));
+     7→const mockAuditLogFindMany = mock(() => Promise.resolve([]));
+     8→const mockPersonFindUnique = mock(() => Promise.resolve(null));
+     9→const mockPersonUpdate = mock(() => Promise.resolve({}));
+    10→
+    11→mock.module("@/lib/auth", () => ({
+    12→  requireAdmin: mockRequireAdmin,
+    13→}));
+    14→
+    15→mock.module("@/lib/db", () => ({
+    16→  db: {
+    17→    $transaction: mockDbTransaction,
+    18→    auditLog: {
+    19→      create: mockAuditLogCreate,
+    20→      findMany: mockAuditLogFindMany,
+    21→    },
+    22→    person: {
+    23→      findUnique: mockPersonFindUnique,
+    24→      update: mockPersonUpdate,
+    25→    },
+    26→  },
+    27→}));
+    28→
+    29→// Mock validator
+    30→const mockValidate = mock(() => Promise.resolve({}));
+    31→const mockGetExtractedFiles = mock(() => new Map());
+    32→const mockCleanup = mock(() => {});
+    33→
+    34→mock.module("@/lib/backup/validator", () => ({
+    35→  BackupValidator: class {
+    36→    validate = mockValidate;
+    37→    getExtractedFiles = mockGetExtractedFiles;
+    38→    cleanup = mockCleanup;
+    39→  },
+    40→}));
+    41→
+    42→// Mock conflict resolver
+    43→const mockImportData = mock(() =>
+    44→  Promise.resolve({
+    45→    statistics: {},
+    46→    errors: [],
+    47→    warnings: [],
+    48→  })
+    49→);
+    50→
+    51→mock.module("@/lib/backup/conflict-resolver", () => ({
+    52→  ConflictResolver: class {
+    53→    importData = mockImportData;
+    54→  },
+    55→}));
+    56→
+    57→const mockGatherBackupData = mock(() =>
+    58→  Promise.resolve({
+    59→    metadata: {},
+    60→    data: {
+    61→      people: [],
+    62→      relationships: [],
+    63→      users: [],
+    64→      suggestions: [],
+    65→      settings: null,
+    66→    },
+    67→    photos: [],
+    68→  })
+    69→);
+    70→
+    71→mock.module("@/actions/backup", () => ({
+    72→  gatherBackupData: mockGatherBackupData,
+    73→}));
+    74→
+    75→const mockUpload = mock(() => Promise.resolve("photos/test.jpg"));
+    76→const mockGetUrl = mock(() => "https://example.com/photos/test.jpg");
+    77→const mockDelete = mock(() => Promise.resolve(undefined));
+    78→
+    79→mock.module("@/lib/storage", () => ({
+    80→  getStorageAdapter: () => ({
+    81→    upload: mockUpload,
+    82→    getUrl: mockGetUrl,
+    83→    delete: mockDelete,
+    84→  }),
+    85→}));
+    86→
+    87→describe("validateBackup", () => {
+    88→  const mockSession = {
+    89→    id: "admin-123",
+    90→    email: "admin@example.com",
+    91→    name: "Admin User",
+    92→    role: "ADMIN" as const,
+    93→    personId: null,
+    94→    mustChangePassword: false,
+    95→  };
+    96→
+    97→  beforeEach(() => {
+    98→    mockRequireAdmin.mockReset();
+    99→    mockValidate.mockReset();
+   100→    mockRequireAdmin.mockResolvedValue(mockSession);
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

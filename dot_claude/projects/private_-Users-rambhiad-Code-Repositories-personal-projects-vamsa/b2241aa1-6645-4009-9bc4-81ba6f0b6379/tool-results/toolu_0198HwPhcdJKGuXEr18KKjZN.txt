@@ -1,0 +1,52 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/lib/utils.test.ts has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+   129→    expect(formatDateForInput("invalid")).toBe("");
+   130→  });
+   131→});
+   132→
+   133→describe("calculateAge", () => {
+   134→  afterEach(() => {
+   135→    setSystemTime();
+   136→  });
+   137→
+   138→  it("returns null for null dateOfBirth", () => {
+   139→    expect(calculateAge(null)).toBeNull();
+   140→  });
+   141→
+   142→  it("returns null for undefined dateOfBirth", () => {
+   143→    expect(calculateAge(undefined)).toBeNull();
+   144→  });
+   145→
+   146→  it("calculates age correctly", () => {
+   147→    setSystemTime(new Date(2024, 5, 15));
+   148→    const dob = new Date(1990, 5, 15);
+   149→    expect(calculateAge(dob)).toBe(34);
+   150→  });
+   151→
+   152→  it("calculates age when birthday hasn't occurred this year", () => {
+   153→    setSystemTime(new Date(2024, 5, 14));
+   154→    const dob = new Date(1990, 5, 15);
+   155→    expect(calculateAge(dob)).toBe(33);
+   156→  });
+   157→
+   158→  it("calculates age with dateOfPassing", () => {
+   159→    const dob = new Date(1990, 5, 15);
+   160→    const dop = new Date(2020, 5, 15);
+   161→    expect(calculateAge(dob, dop)).toBe(30);
+   162→  });
+   163→
+   164→  it("calculates age when passing occurred before birthday in year", () => {
+   165→    const dob = new Date(1990, 5, 15);
+   166→    const dop = new Date(2020, 5, 14);
+   167→    expect(calculateAge(dob, dop)).toBe(29);
+   168→  });
+   169→
+   170→  it("handles same month but earlier day", () => {
+   171→    setSystemTime(new Date(2024, 5, 10));
+   172→    const dob = new Date(1990, 5, 15);
+   173→    expect(calculateAge(dob)).toBe(33);
+   174→  });
+   175→});
+   176→
+   177→describe("generateRandomPassword", () => {
+   178→  it("generates password with default length", () => {
+   179→    const password = generateRandomPassword();

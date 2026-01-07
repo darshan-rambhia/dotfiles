@@ -1,0 +1,21 @@
+# Resource Requirements and Architecture Changes in 2025.10
+
+## Database Connection Increase
+
+The most significant resource change is increased PostgreSQL demand. According to the release notes: "it is expected that authentik will use roughly 50% more database connections to Postgres" following Redis removal.
+
+## What Replaces Redis
+
+authentik has migrated all Redis functionality to PostgreSQL:
+- **Caching**: Now handled by Postgres cache layer
+- **Task queuing**: Moved to Postgres (completed in 2025.8)
+- **Session storage**: The embedded proxy outpost now stores sessions in Postgres
+- **WebSocket connections**: Postgres manages real-time communication
+
+## PostgreSQL Requirements
+
+The shift introduces a new TLS requirement: "If your Postgres instance requires a TLS connection, authentik now requires TLS 1.3 or the Extended Master Secret extension to connect to Postgres."
+
+## Architectural Benefit
+
+This consolidation simplifies deployment by eliminating a separate Redis instance entirely, though it trades infrastructure simplification for increased database load. Organizations should plan for moderately higher Postgres resource allocation (CPU, memory, and connection pools) when upgrading to 2025.10.

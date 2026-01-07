@@ -1,0 +1,50 @@
+🔍 Running in CHECK mode (no fixes applied)
+
+🚀 Running validation checks sequentially...
+
+
+📋 Tests...
+bun test v1.3.5 (1e86cebd)
+
+src/actions/restore.test.ts:
+Backup validation error: 35 |   await deps.requireAdmin();
+36 | 
+37 |   try {
+38 |     const file = formData.get("file") as File;
+39 |     if (!file) {
+40 |       throw new Error("No file provided");
+                 ^
+error: No file provided
+      at validateBackupCore (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:40:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:158:62)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:154:39)
+
+Backup validation error: 41 |     }
+42 | 
+43 |     // Validate file size (max 100MB)
+44 |     const maxSize = 100 * 1024 * 1024; // 100MB
+45 |     if (file.size > maxSize) {
+46 |       throw new Error("File size exceeds 100MB limit");
+                 ^
+error: File size exceeds 100MB limit
+      at validateBackupCore (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:46:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:173:62)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:163:35)
+
+Backup validation error: 46 |       throw new Error("File size exceeds 100MB limit");
+47 |     }
+48 | 
+49 |     // Validate file type
+50 |     if (!file.name.endsWith(".zip")) {
+51 |       throw new Error("File must be a ZIP archive");
+                 ^
+error: File must be a ZIP archive
+      at validateBackupCore (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:51:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:186:62)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:178:35)
+
+Backup validation error: 238 | 
+239 |   it("should handle validation errors", async () => {
+240 |     const deps = createMockDependencies({
+241 |       createValidator: () => ({
+242 |         validate: async () => {

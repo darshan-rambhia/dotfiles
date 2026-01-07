@@ -1,0 +1,399 @@
+     1→import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+     2→import { POST } from "./route";
+     3→import { NextRequest } from "next/server";
+     4→
+     5→// Mock dependencies
+     6→vi.mock("@/lib/auth", () => ({
+     7→  getSession: vi.fn(),
+     8→}));
+     9→
+    10→vi.mock("@/actions/backup", () => ({
+    11→  gatherBackupData: vi.fn(),
+    12→  logBackupExport: vi.fn(),
+    13→}));
+    14→
+    15→vi.mock("@/lib/storage", () => ({
+    16→  getStorageAdapter: vi.fn(),
+    17→}));
+    18→
+    19→const { getSession } = await import("@/lib/auth");
+    20→const { gatherBackupData, logBackupExport } = await import("@/actions/backup");
+    21→
+    22→describe("/api/admin/backup/export", () => {
+    23→  let testCounter = 0;
+    24→
+    25→  const createMockAdminSession = () => ({
+    26→    user: {
+    27→      id: `admin-${testCounter++}`, // Unique ID for each test
+    28→      email: "admin@example.com",
+    29→      name: "Admin User",
+    30→      role: "ADMIN" as const,
+    31→      personId: null,
+    32→      mustChangePassword: false,
+    33→    },
+    34→    expires: "2024-12-31T23:59:59.999Z",
+    35→  });
+    36→
+    37→  const mockBackupData = {
+    38→    metadata: {
+    39→      version: "1.0.0",
+    40→      exportedAt: "2024-01-01T12:00:00.000Z",
+    41→      exportedBy: {
+    42→        id: "admin-123",
+    43→        email: "admin@example.com",
+    44→        name: "Admin User",
+    45→      },
+    46→      statistics: {
+    47→        totalPeople: 5,
+    48→        totalRelationships: 3,
+    49→        totalUsers: 2,
+    50→        totalSuggestions: 0,
+    51→        totalPhotos: 1,
+    52→        auditLogDays: 90,
+    53→        totalAuditLogs: 10,
+    54→      },
+    55→      dataFiles: [
+    56→        "data/people.json",
+    57→        "data/relationships.json",
+    58→        "data/users.json",
+    59→        "data/suggestions.json",
+    60→        "data/settings.json",
+    61→      ],
+    62→      photoDirectories: ["photos/person-1/"],
+    63→    },
+    64→    data: {
+    65→      people: [
+    66→        {
+    67→          id: "person-1",
+    68→          firstName: "John",
+    69→          lastName: "Doe",
+    70→          email: "john@example.com",
+    71→          maidenName: null,
+    72→          dateOfBirth: null,
+    73→          dateOfPassing: null,
+    74→          birthPlace: null,
+    75→          nativePlace: null,
+    76→          gender: null,
+    77→          photoUrl: null,
+    78→          bio: null,
+    79→          phone: null,
+    80→          currentAddress: null,
+    81→          workAddress: null,
+    82→          profession: null,
+    83→          employer: null,
+    84→          socialLinks: null,
+    85→          isLiving: true,
+    86→          createdAt: new Date("2024-01-01"),
+    87→          updatedAt: new Date("2024-01-01"),
+    88→          createdById: null,
+    89→        },
+    90→      ],
+    91→      relationships: [],
+    92→      users: [
+    93→        {
+    94→          id: "user-1",
+    95→          email: "admin@example.com",
+    96→          name: "Admin User",
+    97→          personId: null,
+    98→          role: "ADMIN" as const,
+    99→          isActive: true,
+   100→          mustChangePassword: false,
+   101→          invitedById: null,
+   102→          createdAt: new Date("2024-01-01"),
+   103→          updatedAt: new Date("2024-01-01"),
+   104→          lastLoginAt: new Date("2024-01-01"),
+   105→        },
+   106→      ],
+   107→      suggestions: [],
+   108→      settings: {
+   109→        familyName: "Test Family",
+   110→        description: "Test description",
+   111→      },
+   112→    },
+   113→    photos: [
+   114→      {
+   115→        id: "person-1",
+   116→        photoUrl: "/api/uploads/123456-photo.jpg",
+   117→      },
+   118→    ],
+   119→  };
+   120→
+   121→  beforeEach(() => {
+   122→    vi.clearAllMocks();
+   123→    vi.mocked(getSession).mockResolvedValue(createMockAdminSession());
+   124→    vi.mocked(gatherBackupData).mockResolvedValue(mockBackupData as any);
+   125→    vi.mocked(logBackupExport).mockResolvedValue();
+   126→
+   127→    // Mock console to avoid issues in error handling
+   128→    vi.spyOn(console, "error").mockImplementation(() => {});
+   129→
+   130→    // Use fake timers to control time and avoid rate limiting conflicts
+   131→    vi.useFakeTimers();
+   132→    vi.setSystemTime(new Date("2024-01-01T00:00:00.000Z"));
+   133→
+   134→    // Clear rate limiting state by advancing time far enough
+   135→    // This ensures each test starts with a clean rate limiting state
+   136→    vi.advanceTimersByTime(10 * 60 * 1000); // 10 minutes to be safe
+   137→  });
+   138→
+   139→  afterEach(() => {
+   140→    vi.useRealTimers();
+   141→    vi.restoreAllMocks();
+   142→  });
+   143→
+   144→  const createRequest = (body: any) => {
+   145→    return new NextRequest("http://localhost:3000/api/admin/backup/export", {
+   146→      method: "POST",
+   147→      body: JSON.stringify(body),
+   148→      headers: {
+   149→        "Content-Type": "application/json",
+   150→      },
+   151→    });
+   152→  };
+   153→
+   154→  it("should require authentication", async () => {
+   155→    vi.mocked(getSession).mockResolvedValue(null);
+   156→
+   157→    const request = createRequest({
+   158→      includePhotos: true,
+   159→      includeAuditLogs: true,
+   160→      auditLogDays: 90,
+   161→    });
+   162→
+   163→    const response = await POST(request);
+   164→    expect(response.status).toBe(403);
+   165→
+   166→    const data = await response.json();
+   167→    expect(data.error).toBe("Forbidden");
+   168→  });
+   169→
+   170→  it("should require admin role", async () => {
+   171→    vi.mocked(getSession).mockResolvedValue({
+   172→      user: {
+   173→        id: `user-${testCounter++}`,
+   174→        email: "user@example.com",
+   175→        role: "MEMBER" as const,
+   176→        personId: null,
+   177→        mustChangePassword: false,
+   178→      },
+   179→      expires: "2024-12-31T23:59:59.999Z",
+   180→    });
+   181→
+   182→    const request = createRequest({
+   183→      includePhotos: true,
+   184→      includeAuditLogs: true,
+   185→      auditLogDays: 90,
+   186→    });
+   187→
+   188→    const response = await POST(request);
+   189→    expect(response.status).toBe(403);
+   190→
+   191→    const data = await response.json();
+   192→    expect(data.error).toBe("Forbidden");
+   193→  });
+   194→
+   195→  it("should enforce rate limiting", async () => {
+   196→    const request1 = createRequest({
+   197→      includePhotos: true,
+   198→      includeAuditLogs: true,
+   199→      auditLogDays: 90,
+   200→    });
+   201→
+   202→    const request2 = createRequest({
+   203→      includePhotos: true,
+   204→      includeAuditLogs: true,
+   205→      auditLogDays: 90,
+   206→    });
+   207→
+   208→    // First request should succeed
+   209→    const response1 = await POST(request1);
+   210→    expect(response1.status).toBe(200);
+   211→
+   212→    // Second request should be rate limited (no time advancement)
+   213→    const response2 = await POST(request2);
+   214→    expect(response2.status).toBe(429);
+   215→
+   216→    const data = await response2.json();
+   217→    expect(data.error).toContain("Please wait");
+   218→    expect(data.remainingTime).toBeGreaterThan(0);
+   219→  });
+   220→
+   221→  it("should validate input parameters", async () => {
+   222→    const request = createRequest({
+   223→      includePhotos: true,
+   224→      includeAuditLogs: true,
+   225→      auditLogDays: 0, // Invalid: below minimum
+   226→    });
+   227→
+   228→    const response = await POST(request);
+   229→    expect(response.status).toBe(400);
+   230→
+   231→    const data = await response.json();
+   232→    expect(data.error).toBeDefined();
+   233→  });
+   234→
+   235→  it("should create backup export successfully", async () => {
+   236→    const request = createRequest({
+   237→      includePhotos: true,
+   238→      includeAuditLogs: true,
+   239→      auditLogDays: 90,
+   240→    });
+   241→
+   242→    const response = await POST(request);
+   243→    expect(response.status).toBe(200);
+   244→
+   245→    // Check response headers
+   246→    expect(response.headers.get("Content-Type")).toBe("application/zip");
+   247→    expect(response.headers.get("Content-Disposition")).toMatch(
+   248→      /attachment; filename="vamsa-backup-.*\.zip"/
+   249→    );
+   250→    expect(response.headers.get("Cache-Control")).toBe("no-cache");
+   251→
+   252→    // Verify backup data was gathered
+   253→    expect(gatherBackupData).toHaveBeenCalledWith({
+   254→      includePhotos: true,
+   255→      includeAuditLogs: true,
+   256→      auditLogDays: 90,
+   257→    });
+   258→
+   259→    // Verify audit log was created
+   260→    expect(logBackupExport).toHaveBeenCalled();
+   261→  });
+   262→
+   263→  it("should handle backup data gathering errors", async () => {
+   264→    vi.mocked(gatherBackupData).mockRejectedValue(
+   265→      new Error("Database connection failed")
+   266→    );
+   267→
+   268→    const request = createRequest({
+   269→      includePhotos: true,
+   270→      includeAuditLogs: true,
+   271→      auditLogDays: 90,
+   272→    });
+   273→
+   274→    const response = await POST(request);
+   275→    expect(response.status).toBe(400);
+   276→
+   277→    const data = await response.json();
+   278→    expect(data.error).toBe("Database connection failed");
+   279→  });
+   280→
+   281→  it("should handle unknown errors", async () => {
+   282→    vi.mocked(gatherBackupData).mockRejectedValue("Unknown error");
+   283→
+   284→    const request = createRequest({
+   285→      includePhotos: true,
+   286→      includeAuditLogs: true,
+   287→      auditLogDays: 90,
+   288→    });
+   289→
+   290→    const response = await POST(request);
+   291→    expect(response.status).toBe(500);
+   292→
+   293→    const data = await response.json();
+   294→    expect(data.error).toBe("Failed to create backup");
+   295→  });
+   296→
+   297→  it("should handle missing request body", async () => {
+   298→    const request = new NextRequest(
+   299→      "http://localhost:3000/api/admin/backup/export",
+   300→      {
+   301→        method: "POST",
+   302→        headers: {
+   303→          "Content-Type": "application/json",
+   304→        },
+   305→      }
+   306→    );
+   307→
+   308→    const response = await POST(request);
+   309→    expect(response.status).toBe(400);
+   310→  });
+   311→
+   312→  it("should use default values for optional parameters", async () => {
+   313→    const request = createRequest({});
+   314→
+   315→    const response = await POST(request);
+   316→    expect(response.status).toBe(200);
+   317→
+   318→    expect(gatherBackupData).toHaveBeenCalledWith({
+   319→      includePhotos: true,
+   320→      includeAuditLogs: true,
+   321→      auditLogDays: 90,
+   322→    });
+   323→  });
+   324→
+   325→  it("should handle backup without photos", async () => {
+   326→    const request = createRequest({
+   327→      includePhotos: false,
+   328→      includeAuditLogs: true,
+   329→      auditLogDays: 90,
+   330→    });
+   331→
+   332→    const response = await POST(request);
+   333→    expect(response.status).toBe(200);
+   334→
+   335→    expect(gatherBackupData).toHaveBeenCalledWith({
+   336→      includePhotos: false,
+   337→      includeAuditLogs: true,
+   338→      auditLogDays: 90,
+   339→    });
+   340→  });
+   341→
+   342→  it("should handle backup without audit logs", async () => {
+   343→    const request = createRequest({
+   344→      includePhotos: true,
+   345→      includeAuditLogs: false,
+   346→      auditLogDays: 90,
+   347→    });
+   348→
+   349→    const response = await POST(request);
+   350→    expect(response.status).toBe(200);
+   351→
+   352→    expect(gatherBackupData).toHaveBeenCalledWith({
+   353→      includePhotos: true,
+   354→      includeAuditLogs: false,
+   355→      auditLogDays: 90,
+   356→    });
+   357→  });
+   358→
+   359→  it("should generate unique filenames", async () => {
+   360→    // Use a different user for the second request to avoid rate limiting
+   361→    const firstUserSession = createMockAdminSession();
+   362→    vi.mocked(getSession).mockResolvedValueOnce(firstUserSession);
+   363→
+   364→    const request1 = createRequest({
+   365→      includePhotos: true,
+   366→      includeAuditLogs: true,
+   367→      auditLogDays: 90,
+   368→    });
+   369→
+   370→    const response1 = await POST(request1);
+   371→    expect(response1.status).toBe(200);
+   372→
+   373→    // Advance time to ensure different timestamp for second request
+   374→    vi.advanceTimersByTime(1000); // 1 second
+   375→
+   376→    // Use a different user for the second request
+   377→    const secondUserSession = createMockAdminSession();
+   378→    vi.mocked(getSession).mockResolvedValueOnce(secondUserSession);
+   379→
+   380→    const request2 = createRequest({
+   381→      includePhotos: true,
+   382→      includeAuditLogs: true,
+   383→      auditLogDays: 90,
+   384→    });
+   385→
+   386→    const response2 = await POST(request2);
+   387→    expect(response2.status).toBe(200);
+   388→
+   389→    const filename1 = response1.headers.get("Content-Disposition");
+   390→    const filename2 = response2.headers.get("Content-Disposition");
+   391→
+   392→    expect(filename1).not.toBe(filename2);
+   393→  });
+   394→});
+   395→
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

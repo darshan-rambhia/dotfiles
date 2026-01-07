@@ -1,0 +1,154 @@
+     1→import { describe, it, expect } from "vitest";
+     2→import { loginSchema, registerSchema, changePasswordSchema } from "./user";
+     3→
+     4→describe("loginSchema", () => {
+     5→  it("validates valid login data", () => {
+     6→    const validData = {
+     7→      email: "user@example.com",
+     8→      password: "password123",
+     9→    };
+    10→
+    11→    const result = loginSchema.safeParse(validData);
+    12→    expect(result.success).toBe(true);
+    13→  });
+    14→
+    15→  it("requires email", () => {
+    16→    const invalidData = {
+    17→      password: "password123",
+    18→    };
+    19→
+    20→    const result = loginSchema.safeParse(invalidData);
+    21→    expect(result.success).toBe(false);
+    22→  });
+    23→
+    24→  it("requires password", () => {
+    25→    const invalidData = {
+    26→      email: "user@example.com",
+    27→    };
+    28→
+    29→    const result = loginSchema.safeParse(invalidData);
+    30→    expect(result.success).toBe(false);
+    31→  });
+    32→
+    33→  it("validates email format", () => {
+    34→    const invalidData = {
+    35→      email: "not-an-email",
+    36→      password: "password123",
+    37→    };
+    38→
+    39→    const result = loginSchema.safeParse(invalidData);
+    40→    expect(result.success).toBe(false);
+    41→  });
+    42→
+    43→  it("requires password to be non-empty", () => {
+    44→    const invalidData = {
+    45→      email: "user@example.com",
+    46→      password: "",
+    47→    };
+    48→
+    49→    const result = loginSchema.safeParse(invalidData);
+    50→    expect(result.success).toBe(false);
+    51→  });
+    52→});
+    53→
+    54→describe("registerSchema", () => {
+    55→  it("validates valid registration data", () => {
+    56→    const validData = {
+    57→      name: "John Doe",
+    58→      email: "john@example.com",
+    59→      password: "password123",
+    60→      confirmPassword: "password123",
+    61→    };
+    62→
+    63→    const result = registerSchema.safeParse(validData);
+    64→    expect(result.success).toBe(true);
+    65→  });
+    66→
+    67→  it("requires name", () => {
+    68→    const invalidData = {
+    69→      email: "john@example.com",
+    70→      password: "password123",
+    71→      confirmPassword: "password123",
+    72→    };
+    73→
+    74→    const result = registerSchema.safeParse(invalidData);
+    75→    expect(result.success).toBe(false);
+    76→  });
+    77→
+    78→  it("requires passwords to match", () => {
+    79→    const invalidData = {
+    80→      name: "John Doe",
+    81→      email: "john@example.com",
+    82→      password: "password123",
+    83→      confirmPassword: "different123",
+    84→    };
+    85→
+    86→    const result = registerSchema.safeParse(invalidData);
+    87→    expect(result.success).toBe(false);
+    88→  });
+    89→
+    90→  it("validates email format", () => {
+    91→    const invalidData = {
+    92→      name: "John Doe",
+    93→      email: "invalid-email",
+    94→      password: "password123",
+    95→      confirmPassword: "password123",
+    96→    };
+    97→
+    98→    const result = registerSchema.safeParse(invalidData);
+    99→    expect(result.success).toBe(false);
+   100→  });
+   101→});
+   102→
+   103→describe("changePasswordSchema", () => {
+   104→  it("validates valid password change data", () => {
+   105→    const validData = {
+   106→      currentPassword: "oldpassword123",
+   107→      newPassword: "newpassword123",
+   108→      confirmPassword: "newpassword123",
+   109→    };
+   110→
+   111→    const result = changePasswordSchema.safeParse(validData);
+   112→    expect(result.success).toBe(true);
+   113→  });
+   114→
+   115→  it("requires current password", () => {
+   116→    const invalidData = {
+   117→      newPassword: "newpassword123",
+   118→      confirmPassword: "newpassword123",
+   119→    };
+   120→
+   121→    const result = changePasswordSchema.safeParse(invalidData);
+   122→    expect(result.success).toBe(false);
+   123→  });
+   124→
+   125→  it("requires new password to be at least 8 characters", () => {
+   126→    const invalidData = {
+   127→      currentPassword: "oldpassword123",
+   128→      newPassword: "short",
+   129→      confirmPassword: "short",
+   130→    };
+   131→
+   132→    const result = changePasswordSchema.safeParse(invalidData);
+   133→    expect(result.success).toBe(false);
+   134→  });
+   135→
+   136→  it("requires passwords to match", () => {
+   137→    const invalidData = {
+   138→      currentPassword: "oldpassword123",
+   139→      newPassword: "newpassword123",
+   140→      confirmPassword: "different123",
+   141→    };
+   142→
+   143→    const result = changePasswordSchema.safeParse(invalidData);
+   144→    expect(result.success).toBe(false);
+   145→    if (!result.success) {
+   146→      expect(result.error.issues[0].path).toContain("confirmPassword");
+   147→    }
+   148→  });
+   149→});
+   150→
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

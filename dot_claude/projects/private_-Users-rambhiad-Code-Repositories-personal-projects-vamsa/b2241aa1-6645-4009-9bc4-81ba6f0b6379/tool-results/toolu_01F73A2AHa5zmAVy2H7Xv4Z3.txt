@@ -1,0 +1,134 @@
+   250→    conflicts: [],
+   251→    statistics: {
+   252→      totalConflicts: 0,
+   253→      conflictsByType: {},
+   254→      conflictsBySeverity: {},
+   255→    },
+   256→    errors: [],
+   257→    warnings: [],
+   258→  };
+   259→
+   260→  beforeEach(() => {
+   261→    mockRequireAdmin.mockReset();
+   262→    mockValidate.mockReset();
+   263→    mockImportData.mockReset();
+   264→    mockAuditLogCreate.mockReset();
+   265→    mockDbTransaction.mockReset();
+   266→
+   267→    mockRequireAdmin.mockResolvedValue(mockSession);
+   268→    mockDbTransaction.mockImplementation((callback: any) => callback({}));
+   269→    mockAuditLogCreate.mockResolvedValue({} as any);
+   270→  });
+   271→
+   272→  it("should require admin authentication", async () => {
+   273→    mockRequireAdmin.mockRejectedValue(new Error("Unauthorized"));
+   274→
+   275→    const formData = new FormData();
+   276→    const testFile = new File(["test"], "backup.zip", {
+   277→      type: "application/zip",
+   278→    });
+   279→    formData.append("file", testFile);
+   280→
+   281→    await expect(
+   282→      importBackup(formData, "skip", {
+   283→        createBackupBeforeImport: false,
+   284→        importPhotos: false,
+   285→        importAuditLogs: false,
+   286→      })
+   287→    ).rejects.toThrow("Unauthorized");
+   288→  });
+   289→
+   290→  it("should validate file presence", async () => {
+   291→    const formData = new FormData();
+   292→
+   293→    await expect(
+   294→      importBackup(formData, "skip", {
+   295→        createBackupBeforeImport: false,
+   296→        importPhotos: false,
+   297→        importAuditLogs: false,
+   298→      })
+   299→    ).rejects.toThrow("No file provided");
+   300→  });
+   301→
+   302→  it("should validate backup before import", async () => {
+   303→    const formData = new FormData();
+   304→    const fileContent = "test zip content";
+   305→    const validFile = new File([fileContent], "backup.zip", {
+   306→      type: "application/zip",
+   307→    });
+   308→    formData.append("file", validFile);
+   309→
+   310→    const invalidValidationResult = {
+   311→      ...mockValidationResult,
+   312→      isValid: false,
+   313→      errors: ["Invalid backup format"],
+   314→    };
+   315→
+   316→    mockValidate.mockResolvedValue(invalidValidationResult);
+   317→
+   318→    await expect(
+   319→      importBackup(formData, "skip", {
+   320→        createBackupBeforeImport: false,
+   321→        importPhotos: false,
+   322→        importAuditLogs: false,
+   323→      })
+   324→    ).rejects.toThrow("Invalid backup: Invalid backup format");
+   325→  });
+   326→
+   327→  it("should import backup successfully with skip strategy", async () => {
+   328→    const formData = new FormData();
+   329→    const fileContent = "test zip content";
+   330→    const validFile = new File([fileContent], "backup.zip", {
+   331→      type: "application/zip",
+   332→    });
+   333→    formData.append("file", validFile);
+   334→
+   335→    mockValidate.mockResolvedValue(mockValidationResult);
+   336→    mockGetExtractedFiles.mockReturnValue(new Map());
+   337→
+   338→    const mockImportResult = {
+   339→      statistics: {
+   340→        peopleImported: 5,
+   341→        relationshipsImported: 3,
+   342→        usersImported: 2,
+   343→        suggestionsImported: 0,
+   344→        photosImported: 0,
+   345→        auditLogsImported: 0,
+   346→        conflictsResolved: 0,
+   347→        skippedItems: 0,
+   348→      },
+   349→      errors: [],
+   350→      warnings: [],
+   351→    };
+   352→
+   353→    mockImportData.mockResolvedValue(mockImportResult);
+   354→
+   355→    const result = await importBackup(formData, "skip", {
+   356→      createBackupBeforeImport: false,
+   357→      importPhotos: false,
+   358→      importAuditLogs: false,
+   359→    });
+   360→
+   361→    expect(result).toMatchObject({
+   362→      success: true,
+   363→      importedAt: expect.any(String),
+   364→      importedBy: {
+   365→        id: "admin-123",
+   366→        email: "admin@example.com",
+   367→        name: "Admin User",
+   368→      },
+   369→      strategy: "skip",
+   370→      statistics: mockImportResult.statistics,
+   371→      errors: [],
+   372→      warnings: [],
+   373→    });
+   374→  });
+   375→});
+   376→
+   377→describe("getImportHistory", () => {
+   378→  const mockSession = {
+   379→    id: "admin-123",
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

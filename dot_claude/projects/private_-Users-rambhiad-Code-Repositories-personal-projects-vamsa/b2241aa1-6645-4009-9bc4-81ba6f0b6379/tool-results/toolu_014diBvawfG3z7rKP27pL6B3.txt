@@ -1,0 +1,70 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/test.setup.ts has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+     1→import { GlobalRegistrator } from "@happy-dom/global-registrator";
+     2→import { afterEach, mock } from "bun:test";
+     3→import "@testing-library/jest-dom";
+     4→
+     5→// Register happy-dom globals before anything else
+     6→GlobalRegistrator.register();
+     7→
+     8→// Re-import cleanup after DOM is registered
+     9→const { cleanup } = await import("@testing-library/react");
+    10→
+    11→// Cleanup after each test
+    12→afterEach(() => {
+    13→  cleanup();
+    14→});
+    15→
+    16→// Mock Next.js navigation
+    17→mock.module("next/navigation", () => ({
+    18→  useRouter: () => ({
+    19→    push: mock(() => {}),
+    20→    replace: mock(() => {}),
+    21→    prefetch: mock(() => {}),
+    22→    back: mock(() => {}),
+    23→    forward: mock(() => {}),
+    24→    refresh: mock(() => {}),
+    25→  }),
+    26→  usePathname: () => "/",
+    27→  useSearchParams: () => new URLSearchParams(),
+    28→  useParams: () => ({}),
+    29→  notFound: mock(() => {}),
+    30→  redirect: mock(() => {}),
+    31→}));
+    32→
+    33→// Mock next-auth
+    34→mock.module("next-auth/react", () => ({
+    35→  useSession: () => ({
+    36→    data: null,
+    37→    status: "unauthenticated",
+    38→  }),
+    39→  signIn: mock(() => {}),
+    40→  signOut: mock(() => {}),
+    41→  SessionProvider: ({ children }: { children: React.ReactNode }) => children,
+    42→}));
+    43→
+    44→// Mock window.matchMedia for components using media queries
+    45→if (typeof window !== "undefined") {
+    46→  Object.defineProperty(window, "matchMedia", {
+    47→    writable: true,
+    48→    value: (query: string) => ({
+    49→      matches: false,
+    50→      media: query,
+    51→      onchange: null,
+    52→      addListener: () => {},
+    53→      removeListener: () => {},
+    54→      addEventListener: () => {},
+    55→      removeEventListener: () => {},
+    56→      dispatchEvent: () => false,
+    57→    }),
+    58→  });
+    59→}
+    60→
+    61→// Mock ResizeObserver
+    62→if (typeof globalThis.ResizeObserver === "undefined") {
+    63→  globalThis.ResizeObserver = class ResizeObserver {
+    64→    observe() {}
+    65→    unobserve() {}
+    66→    disconnect() {}
+    67→  };
+    68→}
+    69→

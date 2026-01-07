@@ -1,0 +1,18 @@
+Database Management Commands
+
+Usage: bun run db <command> [options]
+
+Commands:
+  start      Start PostgreSQL container
+  stop       Stop PostgreSQL container
+  migrate    Run pending migrations
+  push       Push schema changes to database
+  seed       Seed the database with initial data
+  generate   Generate Prisma client
+  studio     Open Prisma Studio
+  reset      Reset database (destructive) - requires --force flag
+
+Examples:
+  bun run db start
+  bun run db migrate
+  bun run db reset --force

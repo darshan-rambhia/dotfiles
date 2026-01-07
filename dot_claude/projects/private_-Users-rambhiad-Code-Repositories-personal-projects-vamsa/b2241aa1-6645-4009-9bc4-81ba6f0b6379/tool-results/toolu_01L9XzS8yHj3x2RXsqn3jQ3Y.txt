@@ -1,0 +1,156 @@
+     1→"use server";
+     2→
+     3→import { requireAdmin } from "@/lib/auth";
+     4→import { db } from "@/lib/db";
+     5→import {
+     6→  backupExportSchema,
+     7→  type BackupExportInput,
+     8→  type BackupMetadata,
+     9→} from "@/schemas/backup";
+    10→
+    11→export async function gatherBackupData(input: BackupExportInput) {
+    12→  const session = await requireAdmin();
+    13→  const validated = backupExportSchema.parse(input);
+    14→
+    15→  // Calculate date cutoff for audit logs
+    16→  const auditLogCutoff = new Date();
+    17→  auditLogCutoff.setDate(auditLogCutoff.getDate() - validated.auditLogDays);
+    18→
+    19→  // Gather all data in parallel for better performance
+    20→  const [
+    21→    people,
+    22→    relationships,
+    23→    users,
+    24→    suggestions,
+    25→    settings,
+    26→    auditLogs,
+    27→    peopleWithPhotos,
+    28→  ] = await Promise.all([
+    29→    // Get all people
+    30→    db.person.findMany({
+    31→      orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+    32→    }),
+    33→
+    34→    // Get all relationships
+    35→    db.relationship.findMany({
+    36→      orderBy: { createdAt: "asc" },
+    37→    }),
+    38→
+    39→    // Get all users (exclude password hashes for security)
+    40→    db.user.findMany({
+    41→      select: {
+    42→        id: true,
+    43→        email: true,
+    44→        name: true,
+    45→        personId: true,
+    46→        role: true,
+    47→        isActive: true,
+    48→        mustChangePassword: true,
+    49→        invitedById: true,
+    50→        createdAt: true,
+    51→        updatedAt: true,
+    52→        lastLoginAt: true,
+    53→      },
+    54→      orderBy: { createdAt: "asc" },
+    55→    }),
+    56→
+    57→    // Get all pending suggestions
+    58→    db.suggestion.findMany({
+    59→      orderBy: { submittedAt: "desc" },
+    60→    }),
+    61→
+    62→    // Get family settings
+    63→    db.familySettings.findFirst(),
+    64→
+    65→    // Get recent audit logs
+    66→    validated.includeAuditLogs
+    67→      ? db.auditLog.findMany({
+    68→          where: {
+    69→            createdAt: {
+    70→              gte: auditLogCutoff,
+    71→            },
+    72→          },
+    73→          orderBy: { createdAt: "desc" },
+    74→        })
+    75→      : [],
+    76→
+    77→    // Get people with photos for photo collection
+    78→    validated.includePhotos
+    79→      ? db.person.findMany({
+    80→          where: {
+    81→            photoUrl: {
+    82→              not: null,
+    83→            },
+    84→          },
+    85→          select: {
+    86→            id: true,
+    87→            photoUrl: true,
+    88→          },
+    89→        })
+    90→      : [],
+    91→  ]);
+    92→
+    93→  // Create metadata
+    94→  const metadata: BackupMetadata = {
+    95→    version: "1.0.0",
+    96→    exportedAt: new Date().toISOString(),
+    97→    exportedBy: {
+    98→      id: session.id,
+    99→      email: session.email,
+   100→      name: session.name || null,
+   101→    },
+   102→    statistics: {
+   103→      totalPeople: people.length,
+   104→      totalRelationships: relationships.length,
+   105→      totalUsers: users.length,
+   106→      totalSuggestions: suggestions.length,
+   107→      totalPhotos: peopleWithPhotos.length,
+   108→      auditLogDays: validated.auditLogDays,
+   109→      totalAuditLogs: auditLogs.length,
+   110→    },
+   111→    dataFiles: [
+   112→      "data/people.json",
+   113→      "data/relationships.json",
+   114→      "data/users.json",
+   115→      "data/suggestions.json",
+   116→      "data/settings.json",
+   117→      ...(validated.includeAuditLogs ? ["data/audit-logs.json"] : []),
+   118→    ],
+   119→    photoDirectories: peopleWithPhotos.map((p) => `photos/${p.id}/`),
+   120→  };
+   121→
+   122→  return {
+   123→    metadata,
+   124→    data: {
+   125→      people,
+   126→      relationships,
+   127→      users,
+   128→      suggestions,
+   129→      settings,
+   130→      ...(validated.includeAuditLogs && { auditLogs }),
+   131→    },
+   132→    photos: peopleWithPhotos,
+   133→  };
+   134→}
+   135→
+   136→export async function logBackupExport() {
+   137→  const session = await requireAdmin();
+   138→
+   139→  await db.auditLog.create({
+   140→    data: {
+   141→      userId: session.id,
+   142→      action: "CREATE",
+   143→      entityType: "BACKUP_EXPORT",
+   144→      entityId: null,
+   145→      newData: {
+   146→        timestamp: new Date().toISOString(),
+   147→        type: "full_export",
+   148→      },
+   149→    },
+   150→  });
+   151→}
+   152→
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

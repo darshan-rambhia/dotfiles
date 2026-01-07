@@ -1,0 +1,212 @@
+$ bun run test && bun run test:backup
+$ bun test src/schemas src/lib/utils.test.ts src/components
+bun test v1.3.5 (1e86cebd)
+------------------------------|---------|---------|-------------------
+File                          | % Funcs | % Lines | Uncovered Line #s
+------------------------------|---------|---------|-------------------
+All files                     |  100.00 |  100.00 |
+ src/components/ui/button.tsx |  100.00 |  100.00 | 
+ src/lib/utils.ts             |  100.00 |  100.00 | 
+ src/schemas/backup.ts        |  100.00 |  100.00 | 
+ src/schemas/person.ts        |  100.00 |  100.00 | 
+ src/schemas/user.ts          |  100.00 |  100.00 | 
+------------------------------|---------|---------|-------------------
+
+ 89 pass
+ 0 fail
+ 104 expect() calls
+Ran 89 tests across 5 files. [182.00ms]
+$ bun test src/actions/backup.test.ts && bun test src/actions/restore.test.ts && bun test src/lib/backup/validator.test.ts && bun test src/lib/backup/conflict-resolver.test.ts && bun test src/app/api/admin/backup
+bun test v1.3.5 (1e86cebd)
+-----------------------|---------|---------|-------------------
+File                   | % Funcs | % Lines | Uncovered Line #s
+-----------------------|---------|---------|-------------------
+All files              |  100.00 |  100.00 |
+ src/schemas/backup.ts |  100.00 |  100.00 | 
+-----------------------|---------|---------|-------------------
+
+ 11 pass
+ 0 fail
+ 19 expect() calls
+Ran 11 tests across 1 file. [125.00ms]
+bun test v1.3.5 (1e86cebd)
+
+src/actions/restore.test.ts:
+Backup validation error: 23 |   const session = await requireAdmin();
+24 | 
+25 |   try {
+26 |     const file = formData.get("file") as File;
+27 |     if (!file) {
+28 |       throw new Error("No file provided");
+                 ^
+error: No file provided
+      at validateBackup (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:28:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:134:52)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:131:39)
+
+Backup validation error: 29 |     }
+30 | 
+31 |     // Validate file size (max 100MB)
+32 |     const maxSize = 100 * 1024 * 1024; // 100MB
+33 |     if (file.size > maxSize) {
+34 |       throw new Error("File size exceeds 100MB limit");
+                 ^
+error: File size exceeds 100MB limit
+      at validateBackup (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:34:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:146:52)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:137:35)
+
+Backup validation error: 34 |       throw new Error("File size exceeds 100MB limit");
+35 |     }
+36 | 
+37 |     // Validate file type
+38 |     if (!file.name.endsWith(".zip")) {
+39 |       throw new Error("File must be a ZIP archive");
+                 ^
+error: File must be a ZIP archive
+      at validateBackup (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:39:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:158:52)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:151:35)
+
+Backup validation error: 209 |     const validFile = new File([fileContent], "backup.zip", {
+210 |       type: "application/zip",
+211 |     });
+212 |     formData.append("file", validFile);
+213 | 
+214 |     mockValidate.mockRejectedValue(new Error("Invalid ZIP structure"));
+                                         ^
+error: Invalid ZIP structure
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:214:36)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:206:41)
+
+Backup import error: 68 |   const session = await requireAdmin();
+69 | 
+70 |   try {
+71 |     const file = formData.get("file") as File;
+72 |     if (!file) {
+73 |       throw new Error("No file provided");
+                 ^
+error: No file provided
+      at importBackup (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:73:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:301:15)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:292:39)
+
+Backup import error: 80 |     // Validate backup first
+81 |     const validator = new BackupValidator(buffer);
+82 |     const validationResult = await validator.validate();
+83 | 
+84 |     if (!validationResult.isValid) {
+85 |       throw new Error(`Invalid backup: ${validationResult.errors.join(", ")}`);
+                 ^
+error: Invalid backup: Invalid backup format
+      at importBackup (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.ts:85:13)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:326:15)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/restore.test.ts:304:46)
+
+-----------|---------|---------|-------------------
+File       | % Funcs | % Lines | Uncovered Line #s
+-----------|---------|---------|-------------------
+All files  |    0.00 |    0.00 |
+-----------|---------|---------|-------------------
+
+ 13 pass
+ 0 fail
+ 13 expect() calls
+Ran 13 tests across 1 file. [177.00ms]
+bun test v1.3.5 (1e86cebd)
+-----------------------|---------|---------|-------------------
+File                   | % Funcs | % Lines | Uncovered Line #s
+-----------------------|---------|---------|-------------------
+All files              |  100.00 |  100.00 |
+ src/schemas/backup.ts |  100.00 |  100.00 | 
+-----------------------|---------|---------|-------------------
+
+ 18 pass
+ 0 fail
+ 31 expect() calls
+Ran 18 tests across 1 file. [124.00ms]
+bun test v1.3.5 (1e86cebd)
+-----------|---------|---------|-------------------
+File       | % Funcs | % Lines | Uncovered Line #s
+-----------|---------|---------|-------------------
+All files  |    0.00 |    0.00 |
+-----------|---------|---------|-------------------
+
+ 19 pass
+ 0 fail
+ 44 expect() calls
+Ran 19 tests across 1 file. [117.00ms]
+bun test v1.3.5 (1e86cebd)
+
+src/app/api/admin/backup/export/route.test.ts:
+Backup export error: ZodError: [
+  {
+    "origin": "number",
+    "code": "too_small",
+    "minimum": 1,
+    "inclusive": true,
+    "path": [
+      "auditLogDays"
+    ],
+    "message": "Too small: expected number to be >=1"
+  }
+]
+
+Backup export error: 230 |     expect(mockLogBackupExport).toHaveBeenCalled();
+231 |   });
+232 | 
+233 |   it("should handle backup data gathering errors", async () => {
+234 |     mockGatherBackupData.mockRejectedValue(
+235 |       new Error("Database connection failed")
+            ^
+error: Database connection failed
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/app/api/admin/backup/export/route.test.ts:235:7)
+      at <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/app/api/admin/backup/export/route.test.ts:233:52)
+
+Backup export error: Unknown error
+Backup export error: 37 |         { status: 429 }
+38 |       );
+39 |     }
+40 | 
+41 |     // Parse and validate input
+42 |     const body = await request.json();
+                                    ^
+SyntaxError: JSON Parse error: Unexpected EOF
+      at async POST (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/app/api/admin/backup/export/route.ts:42:32)
+      at async <anonymous> (/Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/app/api/admin/backup/export/route.test.ts:278:28)
+
+Failed to add photo for person person-1: ENOENT: no such file or directory, open 'data/uploads/123456-photo.jpg'
+    path: "data/uploads/123456-photo.jpg",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+
+Added 0 photos to backup archive
+Failed to add photo for person person-1: ENOENT: no such file or directory, open 'data/uploads/123456-photo.jpg'
+    path: "data/uploads/123456-photo.jpg",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+
+Added 0 photos to backup archive
+Failed to add photo for person person-1: ENOENT: no such file or directory, open 'data/uploads/123456-photo.jpg'
+    path: "data/uploads/123456-photo.jpg",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+
+Added 0 photos to backup archive
+-----------------------|---------|---------|-------------------
+File                   | % Funcs | % Lines | Uncovered Line #s
+-----------------------|---------|---------|-------------------
+All files              |  100.00 |  100.00 |
+ src/schemas/backup.ts |  100.00 |  100.00 | 
+-----------------------|---------|---------|-------------------
+
+ 10 pass
+ 0 fail
+ 23 expect() calls
+Ran 10 tests across 1 file. [176.00ms]

@@ -1,0 +1,24 @@
+     1→generator client {
+     2→  provider = "prisma-client-js"
+     3→}
+     4→
+     5→datasource db {
+     6→  provider = "postgresql"
+     7→  url      = env("DATABASE_URL")
+     8→}
+     9→
+    10→enum Gender {
+    11→  MALE
+    12→  FEMALE
+    13→  OTHER
+    14→  PREFER_NOT_TO_SAY
+    15→}
+    16→
+    17→enum UserRole {
+    18→  ADMIN
+    19→  MEMBER
+    20→  VIEWER
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

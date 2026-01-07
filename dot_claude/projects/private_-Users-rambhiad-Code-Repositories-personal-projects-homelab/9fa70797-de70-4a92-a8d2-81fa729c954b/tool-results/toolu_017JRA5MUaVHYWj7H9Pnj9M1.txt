@@ -1,0 +1,1068 @@
+     1→package provider
+     2→
+     3→import (
+     4→	"context"
+     5→	"crypto/sha256"
+     6→	"encoding/hex"
+     7→	"fmt"
+     8→	"io"
+     9→	"os"
+    10→	"path/filepath"
+    11→	"strings"
+    12→
+    13→	"github.com/darshan-rambhia/gosftp"
+    14→	"github.com/darshan-rambhia/terraform-provider-filesync/internal/diff"
+    15→	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+    16→	"github.com/hashicorp/terraform-plugin-framework/path"
+    17→	"github.com/hashicorp/terraform-plugin-framework/resource"
+    18→	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+    19→	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+    20→	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+    21→	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+    22→	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+    23→	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+    24→	"github.com/hashicorp/terraform-plugin-framework/types"
+    25→	"github.com/hashicorp/terraform-plugin-log/tflog"
+    26→)
+    27→
+    28→// Ensure provider defined types fully satisfy framework interfaces.
+    29→var _ resource.Resource = &FileResource{}
+    30→var _ resource.ResourceWithImportState = &FileResource{}
+    31→
+    32→func NewFileResource() resource.Resource {
+    33→	return &FileResource{
+    34→		sshClientFactory: DefaultSSHClientFactory,
+    35→	}
+    36→}
+    37→
+    38→// SSHClientFactory is a function type that creates SSH clients.
+    39→// This allows for dependency injection in tests.
+    40→type SSHClientFactory func(config gosftp.Config) (gosftp.ClientInterface, error)
+    41→
+    42→// DefaultSSHClientFactory creates real SSH clients.
+    43→var DefaultSSHClientFactory SSHClientFactory = func(config gosftp.Config) (gosftp.ClientInterface, error) {
+    44→	return gosftp.NewClient(config)
+    45→}
+    46→
+    47→// FileResource defines the resource implementation.
+    48→type FileResource struct {
+    49→	providerConfig   *FilesyncProviderModel
+    50→	sshClientFactory SSHClientFactory
+    51→}
+    52→
+    53→// FileResourceModel describes the resource data model.
+    54→type FileResourceModel struct {
+    55→	// Required.
+    56→	Source      types.String `tfsdk:"source"`
+    57→	Destination types.String `tfsdk:"destination"`
+    58→	Host        types.String `tfsdk:"host"`
+    59→
+    60→	// Optional - connection settings (override provider defaults).
+    61→	SSHUser            types.String `tfsdk:"ssh_user"`
+    62→	SSHPrivateKey      types.String `tfsdk:"ssh_private_key"`
+    63→	SSHKeyPath         types.String `tfsdk:"ssh_key_path"`
+    64→	SSHPort            types.Int64  `tfsdk:"ssh_port"`
+    65→	SSHPassword        types.String `tfsdk:"ssh_password"`
+    66→	SSHCertificate     types.String `tfsdk:"ssh_certificate"`
+    67→	SSHCertificatePath types.String `tfsdk:"ssh_certificate_path"`
+    68→
+    69→	// Optional - bastion/jump host settings.
+    70→	BastionHost     types.String `tfsdk:"bastion_host"`
+    71→	BastionPort     types.Int64  `tfsdk:"bastion_port"`
+    72→	BastionUser     types.String `tfsdk:"bastion_user"`
+    73→	BastionKey      types.String `tfsdk:"bastion_private_key"`
+    74→	BastionKeyPath  types.String `tfsdk:"bastion_key_path"`
+    75→	BastionPassword types.String `tfsdk:"bastion_password"`
+    76→
+    77→	// Optional - security settings.
+    78→	InsecureIgnoreHostKey types.Bool   `tfsdk:"insecure_ignore_host_key"`
+    79→	KnownHostsFile        types.String `tfsdk:"known_hosts_file"`
+    80→	StrictHostKeyChecking types.String `tfsdk:"strict_host_key_checking"`
+    81→
+    82→	// Optional - file attributes.
+    83→	Owner types.String `tfsdk:"owner"`
+    84→	Group types.String `tfsdk:"group"`
+    85→	Mode  types.String `tfsdk:"mode"`
+    86→
+    87→	// Optional - sync behavior.
+    88→	CheckRemoteOnPlan types.Bool `tfsdk:"check_remote_on_plan"`
+    89→	ImportSyncsLocal  types.Bool `tfsdk:"import_syncs_local"`
+    90→
+    91→	// Computed.
+    92→	ID         types.String `tfsdk:"id"`
+    93→	SourceHash types.String `tfsdk:"source_hash"`
+    94→	Size       types.Int64  `tfsdk:"size"`
+    95→}
+    96→
+    97→func (r *FileResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+    98→	resp.TypeName = req.ProviderTypeName + "_file"
+    99→}
+   100→
+   101→func (r *FileResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+   102→	resp.Schema = schema.Schema{
+   103→		MarkdownDescription: `
+   104→Manages a single file on a remote host via SSH/SFTP.
+   105→
+   106→## Behavior
+   107→
+   108→- **Plan**: Compares local file hash against state. Shows change if local file modified.
+   109→  - If ` + "`check_remote_on_plan = true`" + `, also connects to remote to detect drift early.
+   110→- **Apply**:
+   111→  1. Connects to remote host via SSH
+   112→  2. Checks remote file hash against state (drift detection)
+   113→  3. If remote was modified externally, fails with error showing diff
+   114→  4. If no drift, uploads new file content
+   115→  5. Sets ownership and permissions
+   116→  6. Updates state with new hash
+   117→
+   118→## Drift Detection
+   119→
+   120→If someone modifies the remote file outside of Terraform, apply will fail:
+   121→
+   122→` + "```" + `
+   123→Error: Remote file drift detected
+   124→
+   125→  Resource: filesync_file.config
+   126→  File: /etc/myapp/app.conf
+   127→
+   128→  Expected (from state): sha256:abc123...
+   129→  Found (on remote):     sha256:def456...
+   130→
+   131→  To resolve:
+   132→    - terraform import with import_syncs_local=true  # Accept remote as source of truth
+   133→    - terraform apply -replace=filesync_file.config  # Force overwrite
+   134→` + "```" + `
+   135→
+   136→### Early Drift Detection (check_remote_on_plan)
+   137→
+   138→Set ` + "`check_remote_on_plan = true`" + ` to detect drift during ` + "`terraform plan`" + `:
+   139→
+   140→` + "```hcl" + `
+   141→resource "filesync_file" "config" {
+   142→  source      = "./config.json"
+   143→  destination = "/app/config.json"
+   144→  host        = "192.168.1.100"
+   145→
+   146→  check_remote_on_plan = true  # Warn about drift during plan
+   147→}
+   148→` + "```" + `
+   149→
+   150→This adds latency to planning (requires SSH connection) but provides early warning.
+   151→
+   152→## Importing Existing Remote Files
+   153→
+   154→Use ` + "`import_syncs_local = true`" + ` to download remote file content to local path during import:
+   155→
+   156→` + "```hcl" + `
+   157→resource "filesync_file" "workflow" {
+   158→  source      = "./workflows/my-workflow.json"
+   159→  destination = "/app/workflow.json"
+   160→  host        = "192.168.1.100"
+   161→
+   162→  import_syncs_local = true  # Download remote to local on import
+   163→}
+   164→` + "```" + `
+   165→
+   166→Then import:
+   167→` + "```bash" + `
+   168→terraform import filesync_file.workflow "192.168.1.100:/app/workflow.json"
+   169→` + "```" + `
+   170→
+   171→The remote file content will be written to ` + "`./workflows/my-workflow.json`" + `.
+   172→
+   173→## Example Usage
+   174→
+   175→` + "```hcl" + `
+   176→resource "filesync_file" "nginx_config" {
+   177→  source      = "${path.module}/configs/nginx.conf"
+   178→  destination = "/etc/nginx/nginx.conf"
+   179→  host        = "192.168.1.100"
+   180→
+   181→  owner = "root"
+   182→  group = "root"
+   183→  mode  = "0644"
+   184→
+   185→  ssh_user     = "deploy"
+   186→  ssh_key_path = "~/.ssh/deploy_key"
+   187→}
+   188→` + "```" + `
+   189→`,
+   190→		Attributes: map[string]schema.Attribute{
+   191→			// Required.
+   192→			"source": schema.StringAttribute{
+   193→				MarkdownDescription: "Path to the local source file. Can be relative or absolute path.",
+   194→				Required:            true,
+   195→			},
+   196→			"destination": schema.StringAttribute{
+   197→				MarkdownDescription: "Absolute path on the remote host where the file should be placed.",
+   198→				Required:            true,
+   199→				Validators: []validator.String{
+   200→					AbsolutePath(),
+   201→				},
+   202→			},
+   203→			"host": schema.StringAttribute{
+   204→				MarkdownDescription: "Remote host address (IP or hostname).",
+   205→				Required:            true,
+   206→			},
+   207→
+   208→			// Optional - connection.
+   209→			"ssh_user": schema.StringAttribute{
+   210→				MarkdownDescription: "SSH user. Overrides provider default.",
+   211→				Optional:            true,
+   212→				Computed:            true,
+   213→				Default:             stringdefault.StaticString("root"),
+   214→			},
+   215→			"ssh_private_key": schema.StringAttribute{
+   216→				MarkdownDescription: "SSH private key content. Mutually exclusive with ssh_key_path.",
+   217→				Optional:            true,
+   218→				Sensitive:           true,
+   219→				Validators: []validator.String{
+   220→					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("ssh_key_path")),
+   221→				},
+   222→			},
+   223→			"ssh_key_path": schema.StringAttribute{
+   224→				MarkdownDescription: "Path to SSH private key file. Mutually exclusive with ssh_private_key.",
+   225→				Optional:            true,
+   226→				Validators: []validator.String{
+   227→					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("ssh_private_key")),
+   228→				},
+   229→			},
+   230→			"ssh_port": schema.Int64Attribute{
+   231→				MarkdownDescription: "SSH port. Defaults to 22.",
+   232→				Optional:            true,
+   233→				Computed:            true,
+   234→				Default:             int64default.StaticInt64(22),
+   235→			},
+   236→			"ssh_password": schema.StringAttribute{
+   237→				MarkdownDescription: "SSH password for password authentication. Overrides provider default.",
+   238→				Optional:            true,
+   239→				Sensitive:           true,
+   240→			},
+   241→			"ssh_certificate": schema.StringAttribute{
+   242→				MarkdownDescription: "SSH certificate content for certificate authentication. Used with ssh_private_key or ssh_key_path. Overrides provider default.",
+   243→				Optional:            true,
+   244→				Sensitive:           true,
+   245→			},
+   246→			"ssh_certificate_path": schema.StringAttribute{
+   247→				MarkdownDescription: "Path to SSH certificate file for certificate authentication. Used with ssh_private_key or ssh_key_path. Overrides provider default.",
+   248→				Optional:            true,
+   249→			},
+   250→
+   251→			// Optional - bastion/jump host.
+   252→			"bastion_host": schema.StringAttribute{
+   253→				MarkdownDescription: "Bastion/jump host address for multi-hop SSH connections.",
+   254→				Optional:            true,
+   255→			},
+   256→			"bastion_port": schema.Int64Attribute{
+   257→				MarkdownDescription: "Bastion host SSH port. Defaults to 22.",
+   258→				Optional:            true,
+   259→			},
+   260→			"bastion_user": schema.StringAttribute{
+   261→				MarkdownDescription: "SSH user for bastion host. Falls back to ssh_user if not set.",
+   262→				Optional:            true,
+   263→			},
+   264→			"bastion_private_key": schema.StringAttribute{
+   265→				MarkdownDescription: "SSH private key content for bastion host (sensitive). Falls back to ssh_private_key if not set.",
+   266→				Optional:            true,
+   267→				Sensitive:           true,
+   268→			},
+   269→			"bastion_key_path": schema.StringAttribute{
+   270→				MarkdownDescription: "Path to SSH private key file for bastion host. Falls back to ssh_key_path if not set.",
+   271→				Optional:            true,
+   272→			},
+   273→			"bastion_password": schema.StringAttribute{
+   274→				MarkdownDescription: "SSH password for bastion host (sensitive).",
+   275→				Optional:            true,
+   276→				Sensitive:           true,
+   277→			},
+   278→
+   279→			// Optional - security settings.
+   280→			"insecure_ignore_host_key": schema.BoolAttribute{
+   281→				MarkdownDescription: "Skip SSH host key verification. WARNING: This is insecure and should only be used for testing or in trusted environments. Defaults to false.",
+   282→				Optional:            true,
+   283→			},
+   284→			"known_hosts_file": schema.StringAttribute{
+   285→				MarkdownDescription: "Path to a custom known_hosts file for SSH host key verification. Supports ~ expansion. If not set, uses the default ~/.ssh/known_hosts. Ignored if insecure_ignore_host_key is true.",
+   286→				Optional:            true,
+   287→			},
+   288→			"strict_host_key_checking": schema.StringAttribute{
+   289→				MarkdownDescription: "SSH host key checking mode (like OpenSSH StrictHostKeyChecking). Valid values: `yes` (default) - strict checking, fail if unknown or mismatched; `no` - skip all verification (insecure); `accept-new` - accept and save new keys, fail on mismatch. Takes precedence over insecure_ignore_host_key if both are set.",
+   290→				Optional:            true,
+   291→			},
+   292→
+   293→			// Optional - file attributes.
+   294→			"owner": schema.StringAttribute{
+   295→				MarkdownDescription: "File owner on remote. Defaults to the SSH user.",
+   296→				Optional:            true,
+   297→				Computed:            true,
+   298→				Default:             stringdefault.StaticString("root"),
+   299→				Validators: []validator.String{
+   300→					UnixOwner(),
+   301→				},
+   302→			},
+   303→			"group": schema.StringAttribute{
+   304→				MarkdownDescription: "File group on remote. Defaults to the SSH user's primary group.",
+   305→				Optional:            true,
+   306→				Computed:            true,
+   307→				Default:             stringdefault.StaticString("root"),
+   308→				Validators: []validator.String{
+   309→					UnixGroup(),
+   310→				},
+   311→			},
+   312→			"mode": schema.StringAttribute{
+   313→				MarkdownDescription: "File permissions in octal notation (e.g., '0644' for rw-r--r--). Must be 3-4 digits. Defaults to '0644'.",
+   314→				Optional:            true,
+   315→				Computed:            true,
+   316→				Default:             stringdefault.StaticString("0644"),
+   317→				Validators: []validator.String{
+   318→					OctalMode(),
+   319→				},
+   320→			},
+   321→
+   322→			// Optional - sync behavior.
+   323→			"check_remote_on_plan": schema.BoolAttribute{
+   324→				MarkdownDescription: "If true, connects to the remote host during plan to detect drift. " +
+   325→					"This adds latency to planning but provides early warning if remote files were modified outside Terraform. " +
+   326→					"When drift is detected, a warning is shown in the plan output. Defaults to false.",
+   327→				Optional: true,
+   328→			},
+   329→			"import_syncs_local": schema.BoolAttribute{
+   330→				MarkdownDescription: "If true, when importing an existing remote file, the remote content is written to the local source path. " +
+   331→					"This allows you to import a remote file and have the local file created/updated to match. " +
+   332→					"The source attribute must still be set in the config to specify where to write the file. Defaults to false.",
+   333→				Optional: true,
+   334→			},
+   335→
+   336→			// Computed.
+   337→			"id": schema.StringAttribute{
+   338→				MarkdownDescription: "Resource identifier (host:destination).",
+   339→				Computed:            true,
+   340→				PlanModifiers: []planmodifier.String{
+   341→					stringplanmodifier.UseStateForUnknown(),
+   342→				},
+   343→			},
+   344→			"source_hash": schema.StringAttribute{
+   345→				MarkdownDescription: "SHA256 hash of the source file in format `sha256:<hex>`. Updated when local file changes.",
+   346→				Computed:            true,
+   347→				PlanModifiers: []planmodifier.String{
+   348→					sourceHashPlanModifier{},
+   349→				},
+   350→			},
+   351→			"size": schema.Int64Attribute{
+   352→				MarkdownDescription: "Size of the file in bytes.",
+   353→				Computed:            true,
+   354→				PlanModifiers: []planmodifier.Int64{
+   355→					sourceSizePlanModifier{},
+   356→				},
+   357→			},
+   358→		},
+   359→	}
+   360→}
+   361→
+   362→func (r *FileResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+   363→	if req.ProviderData == nil {
+   364→		return
+   365→	}
+   366→
+   367→	config, ok := req.ProviderData.(*FilesyncProviderModel)
+   368→	if !ok {
+   369→		resp.Diagnostics.AddError(
+   370→			"Unexpected Resource Configure Type",
+   371→			fmt.Sprintf("Expected *FilesyncProviderModel, got: %T", req.ProviderData),
+   372→		)
+   373→		return
+   374→	}
+   375→
+   376→	r.providerConfig = config
+   377→}
+   378→
+   379→func (r *FileResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+   380→	var data FileResourceModel
+   381→
+   382→	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+   383→	if resp.Diagnostics.HasError() {
+   384→		return
+   385→	}
+   386→
+   387→	ctx = tflog.SetField(ctx, "host", data.Host.ValueString())
+   388→	ctx = tflog.SetField(ctx, "source", data.Source.ValueString())
+   389→	ctx = tflog.SetField(ctx, "destination", data.Destination.ValueString())
+   390→
+   391→	tflog.Info(ctx, "Creating file resource")
+   392→
+   393→	// Calculate source file hash.
+   394→	hash, size, err := hashFile(data.Source.ValueString())
+   395→	if err != nil {
+   396→		resp.Diagnostics.AddError("Failed to read source file", err.Error())
+   397→		return
+   398→	}
+   399→	tflog.Debug(ctx, "Computed source file hash", map[string]interface{}{
+   400→		"hash": hash,
+   401→		"size": size,
+   402→	})
+   403→
+   404→	// Create SSH client.
+   405→	tflog.Debug(ctx, "Establishing SSH connection")
+   406→	client, err := r.createSSHClient(&data)
+   407→	if err != nil {
+   408→		resp.Diagnostics.AddError("Failed to create SSH connection", err.Error())
+   409→		return
+   410→	}
+   411→	defer r.releaseSSHClient(&data, client)
+   412→	tflog.Debug(ctx, "SSH connection established")
+   413→
+   414→	// Upload file.
+   415→	tflog.Debug(ctx, "Uploading file")
+   416→	if err := client.UploadFile(ctx, data.Source.ValueString(), data.Destination.ValueString()); err != nil {
+   417→		resp.Diagnostics.AddError("Failed to upload file", err.Error())
+   418→		return
+   419→	}
+   420→	tflog.Debug(ctx, "File uploaded successfully")
+   421→
+   422→	// Set ownership and permissions.
+   423→	tflog.Debug(ctx, "Setting file attributes", map[string]interface{}{
+   424→		"owner": data.Owner.ValueString(),
+   425→		"group": data.Group.ValueString(),
+   426→		"mode":  data.Mode.ValueString(),
+   427→	})
+   428→	if err := client.SetFileAttributes(
+   429→		ctx,
+   430→		data.Destination.ValueString(),
+   431→		data.Owner.ValueString(),
+   432→		data.Group.ValueString(),
+   433→		data.Mode.ValueString(),
+   434→	); err != nil {
+   435→		resp.Diagnostics.AddError("Failed to set file attributes", err.Error())
+   436→		return
+   437→	}
+   438→
+   439→	// Set computed values.
+   440→	data.ID = types.StringValue(fmt.Sprintf("%s:%s", data.Host.ValueString(), data.Destination.ValueString()))
+   441→	data.SourceHash = types.StringValue(hash)
+   442→	data.Size = types.Int64Value(size)
+   443→
+   444→	tflog.Info(ctx, "File resource created successfully", map[string]interface{}{
+   445→		"id":   data.ID.ValueString(),
+   446→		"size": size,
+   447→	})
+   448→
+   449→	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+   450→}
+   451→
+   452→func (r *FileResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+   453→	var data FileResourceModel
+   454→
+   455→	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+   456→	if resp.Diagnostics.HasError() {
+   457→		return
+   458→	}
+   459→
+   460→	ctx = tflog.SetField(ctx, "id", data.ID.ValueString())
+   461→	tflog.Debug(ctx, "Reading file resource state")
+   462→
+   463→	// Read refreshes state from the resource.
+   464→	// IMPORTANT: We do NOT update source_hash here. The source_hash represents
+   465→	// what was last successfully synced to the remote, not the current local file.
+   466→	// This allows Terraform to detect local file changes during plan.
+   467→	//
+   468→	// The plan modifier on source_hash computes the current local file hash
+   469→	// and triggers an update when it differs from the stored state hash.
+   470→
+   471→	sourcePath := data.Source.ValueString()
+   472→
+   473→	// If source is not set (e.g., after import), don't remove from state.
+   474→	// The user needs to update their config to include the source attribute.
+   475→	if sourcePath == "" || data.Source.IsNull() || data.Source.IsUnknown() {
+   476→		tflog.Debug(ctx, "Source path not set (possibly after import), preserving state")
+   477→		// Preserve the current state - source will be set in next apply.
+   478→		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+   479→		return
+   480→	}
+   481→
+   482→	// Check if this is a post-import situation where we need to sync local from remote.
+   483→	// Conditions:
+   484→	// 1. import_syncs_local is true
+   485→	// 2. source_hash is empty/null (indicates fresh import or never synced)
+   486→	// 3. Local file doesn't exist OR differs from what we expect
+   487→	localFileExists := true
+   488→	if _, err := os.Stat(sourcePath); os.IsNotExist(err) {
+   489→		localFileExists = false
+   490→	}
+   491→
+   492→	shouldSyncFromRemote := !data.ImportSyncsLocal.IsNull() &&
+   493→		data.ImportSyncsLocal.ValueBool() &&
+   494→		(data.SourceHash.IsNull() || data.SourceHash.ValueString() == "") &&
+   495→		!localFileExists
+   496→
+   497→	if shouldSyncFromRemote {
+   498→		tflog.Info(ctx, "Post-import sync: downloading remote file to local source path")
+   499→		if err := r.syncLocalFromRemote(ctx, &data); err != nil {
+   500→			resp.Diagnostics.AddError(
+   501→				"Failed to sync local file from remote",
+   502→				fmt.Sprintf("import_syncs_local is enabled but sync failed: %v", err),
+   503→			)
+   504→			return
+   505→		}
+   506→
+   507→		// After syncing, compute the hash of the now-local file and update state.
+   508→		hash, size, err := hashFile(sourcePath)
+   509→		if err != nil {
+   510→			resp.Diagnostics.AddError(
+   511→				"Failed to compute hash after sync",
+   512→				fmt.Sprintf("Could not hash synced file %s: %v", sourcePath, err),
+   513→			)
+   514→			return
+   515→		}
+   516→
+   517→		data.SourceHash = types.StringValue(hash)
+   518→		data.Size = types.Int64Value(size)
+   519→
+   520→		tflog.Info(ctx, "Successfully synced local file and updated state", map[string]interface{}{
+   521→			"source": sourcePath,
+   522→			"hash":   hash,
+   523→			"size":   size,
+   524→		})
+   525→
+   526→		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+   527→		return
+   528→	}
+   529→
+   530→	if !localFileExists {
+   531→		tflog.Info(ctx, "Source file no longer exists, removing resource from state", map[string]interface{}{
+   532→			"source": sourcePath,
+   533→		})
+   534→		// Source file was deleted - remove from state.
+   535→		resp.State.RemoveResource(ctx)
+   536→		return
+   537→	}
+   538→
+   539→	// Check for remote drift if check_remote_on_plan is enabled.
+   540→	hasDrift, remoteHash, err := r.checkRemoteDrift(ctx, &data)
+   541→	if err != nil {
+   542→		// Add warning but don't fail - drift check is informational.
+   543→		resp.Diagnostics.AddWarning(
+   544→			"Remote drift check failed",
+   545→			fmt.Sprintf("Could not check remote file for drift: %v\n\n"+
+   546→				"This may indicate connectivity issues. The apply will still check for drift.", err),
+   547→		)
+   548→	} else if hasDrift {
+   549→		if remoteHash == "" {
+   550→			resp.Diagnostics.AddWarning(
+   551→				"Remote file missing",
+   552→				fmt.Sprintf("Remote file %s does not exist but is expected.\n\n"+
+   553→					"The file may have been deleted outside of Terraform.\n"+
+   554→					"Run 'terraform apply' to recreate the file.",
+   555→					data.Destination.ValueString()),
+   556→			)
+   557→		} else {
+   558→			resp.Diagnostics.AddWarning(
+   559→				"Remote file drift detected",
+   560→				fmt.Sprintf("Remote file %s has been modified outside of Terraform.\n\n"+
+   561→					"  Expected (from state): %s\n"+
+   562→					"  Found (on remote):     %s\n\n"+
+   563→					"To resolve:\n"+
+   564→					"  - Run 'terraform apply' to overwrite remote with local (will fail with drift error)\n"+
+   565→					"  - Run 'terraform apply -replace=%s' to force overwrite\n"+
+   566→					"  - Run 'terraform import' with import_syncs_local=true to accept remote changes",
+   567→					data.Destination.ValueString(),
+   568→					data.SourceHash.ValueString(),
+   569→					remoteHash,
+   570→					fmt.Sprintf("filesync_file.%s", data.ID.ValueString())),
+   571→			)
+   572→		}
+   573→	}
+   574→
+   575→	tflog.Debug(ctx, "File resource state preserved")
+   576→	// State is unchanged - we preserve the existing source_hash.
+   577→	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+   578→}
+   579→
+   580→func (r *FileResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+   581→	var data FileResourceModel
+   582→	var state FileResourceModel
+   583→
+   584→	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+   585→	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+   586→	if resp.Diagnostics.HasError() {
+   587→		return
+   588→	}
+   589→
+   590→	ctx = tflog.SetField(ctx, "host", data.Host.ValueString())
+   591→	ctx = tflog.SetField(ctx, "source", data.Source.ValueString())
+   592→	ctx = tflog.SetField(ctx, "destination", data.Destination.ValueString())
+   593→
+   594→	tflog.Info(ctx, "Updating file resource")
+   595→
+   596→	// Calculate new source file hash.
+   597→	newHash, size, err := hashFile(data.Source.ValueString())
+   598→	if err != nil {
+   599→		resp.Diagnostics.AddError("Failed to read source file", err.Error())
+   600→		return
+   601→	}
+   602→	tflog.Debug(ctx, "Computed new source file hash", map[string]interface{}{
+   603→		"new_hash":  newHash,
+   604→		"old_hash":  state.SourceHash.ValueString(),
+   605→		"size":      size,
+   606→		"unchanged": newHash == state.SourceHash.ValueString(),
+   607→	})
+   608→
+   609→	// Create SSH client.
+   610→	tflog.Debug(ctx, "Establishing SSH connection")
+   611→	client, err := r.createSSHClient(&data)
+   612→	if err != nil {
+   613→		resp.Diagnostics.AddError("Failed to create SSH connection", err.Error())
+   614→		return
+   615→	}
+   616→	defer r.releaseSSHClient(&data, client)
+   617→	tflog.Debug(ctx, "SSH connection established")
+   618→
+   619→	// Check for remote drift - compare remote hash with what we expect from state.
+   620→	tflog.Debug(ctx, "Checking for remote drift")
+   621→	remoteHash, err := client.GetFileHash(ctx, data.Destination.ValueString())
+   622→	if err != nil {
+   623→		// Check if file doesn't exist (could be first create after import).
+   624→		// We need to distinguish between "file not found" and other errors.
+   625→		exists, existsErr := client.FileExists(ctx, data.Destination.ValueString())
+   626→		if existsErr != nil {
+   627→			// Can't even check if file exists - report the connection/permission issue.
+   628→			resp.Diagnostics.AddError(
+   629→				"Failed to check remote file",
+   630→				fmt.Sprintf("Could not verify remote file state at %s: %v", data.Destination.ValueString(), existsErr),
+   631→			)
+   632→			return
+   633→		}
+   634→		if exists {
+   635→			// File exists but we can't read it - permission issue.
+   636→			resp.Diagnostics.AddError(
+   637→				"Cannot read remote file",
+   638→				fmt.Sprintf("Remote file %s exists but cannot be read (permission denied?): %v", data.Destination.ValueString(), err),
+   639→			)
+   640→			return
+   641→		}
+   642→		tflog.Debug(ctx, "Remote file does not exist (first upload after import)")
+   643→		// File doesn't exist - this is OK for first create after import, continue with upload.
+   644→	} else if remoteHash != state.SourceHash.ValueString() {
+   645→		tflog.Warn(ctx, "Remote file drift detected", map[string]interface{}{
+   646→			"expected_hash": state.SourceHash.ValueString(),
+   647→			"remote_hash":   remoteHash,
+   648→		})
+   649→		// Drift detected! Try to generate a content diff for better error message
+   650→		var diffContent string
+   651→
+   652→		// Read local file content for diff.
+   653→		localContent, localErr := os.ReadFile(data.Source.ValueString())
+   654→		if localErr == nil {
+   655→			// Read remote file content for diff (limit to 100KB).
+   656→			remoteContent, remoteErr := client.ReadFileContent(ctx, data.Destination.ValueString(), diff.MaxDiffSize)
+   657→			if remoteErr == nil {
+   658→				diffContent = diff.GenerateUnifiedDiff(localContent, remoteContent, data.Destination.ValueString())
+   659→			}
+   660→		}
+   661→
+   662→		errorMsg := diff.FormatDriftError(
+   663→			data.ID.ValueString(),
+   664→			data.Destination.ValueString(),
+   665→			state.SourceHash.ValueString(),
+   666→			remoteHash,
+   667→			diffContent,
+   668→		)
+   669→
+   670→		resp.Diagnostics.AddError("Remote file drift detected", errorMsg)
+   671→		return
+   672→	} else {
+   673→		tflog.Debug(ctx, "No remote drift detected")
+   674→	}
+   675→
+   676→	// Upload file.
+   677→	tflog.Debug(ctx, "Uploading file")
+   678→	if err := client.UploadFile(ctx, data.Source.ValueString(), data.Destination.ValueString()); err != nil {
+   679→		resp.Diagnostics.AddError("Failed to upload file", err.Error())
+   680→		return
+   681→	}
+   682→	tflog.Debug(ctx, "File uploaded successfully")
+   683→
+   684→	// Set ownership and permissions.
+   685→	tflog.Debug(ctx, "Setting file attributes", map[string]interface{}{
+   686→		"owner": data.Owner.ValueString(),
+   687→		"group": data.Group.ValueString(),
+   688→		"mode":  data.Mode.ValueString(),
+   689→	})
+   690→	if err := client.SetFileAttributes(
+   691→		ctx,
+   692→		data.Destination.ValueString(),
+   693→		data.Owner.ValueString(),
+   694→		data.Group.ValueString(),
+   695→		data.Mode.ValueString(),
+   696→	); err != nil {
+   697→		resp.Diagnostics.AddError("Failed to set file attributes", err.Error())
+   698→		return
+   699→	}
+   700→
+   701→	// Update computed values.
+   702→	data.ID = types.StringValue(fmt.Sprintf("%s:%s", data.Host.ValueString(), data.Destination.ValueString()))
+   703→	data.SourceHash = types.StringValue(newHash)
+   704→	data.Size = types.Int64Value(size)
+   705→
+   706→	tflog.Info(ctx, "File resource updated successfully", map[string]interface{}{
+   707→		"id":   data.ID.ValueString(),
+   708→		"size": size,
+   709→	})
+   710→
+   711→	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+   712→}
+   713→
+   714→func (r *FileResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+   715→	var data FileResourceModel
+   716→
+   717→	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+   718→	if resp.Diagnostics.HasError() {
+   719→		return
+   720→	}
+   721→
+   722→	ctx = tflog.SetField(ctx, "host", data.Host.ValueString())
+   723→	ctx = tflog.SetField(ctx, "destination", data.Destination.ValueString())
+   724→	ctx = tflog.SetField(ctx, "id", data.ID.ValueString())
+   725→
+   726→	tflog.Info(ctx, "Deleting file resource")
+   727→
+   728→	// Create SSH client.
+   729→	tflog.Debug(ctx, "Establishing SSH connection")
+   730→	client, err := r.createSSHClient(&data)
+   731→	if err != nil {
+   732→		resp.Diagnostics.AddError("Failed to create SSH connection", err.Error())
+   733→		return
+   734→	}
+   735→	defer r.releaseSSHClient(&data, client)
+   736→	tflog.Debug(ctx, "SSH connection established")
+   737→
+   738→	// Delete remote file.
+   739→	tflog.Debug(ctx, "Deleting remote file")
+   740→	if err := client.DeleteFile(ctx, data.Destination.ValueString()); err != nil {
+   741→		resp.Diagnostics.AddError("Failed to delete remote file", err.Error())
+   742→		return
+   743→	}
+   744→
+   745→	tflog.Info(ctx, "File resource deleted successfully")
+   746→}
+   747→
+   748→func (r *FileResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+   749→	// Import format: "host:destination".
+   750→	// Example: "192.168.1.100:/etc/myapp/config.json"
+   751→	//
+   752→	// After import, the user must update the config to set:.
+   753→	// - source (required): path to the local source file
+   754→	// - ssh_key_path or ssh_private_key (required): SSH credentials
+   755→	//
+   756→	// If import_syncs_local=true in the config, the remote file content will be
+   757→	// written to the source path during the first Read after import.
+   758→	//
+   759→	// Then run `terraform apply` to sync state with the config.
+   760→
+   761→	id := req.ID
+   762→	tflog.Info(ctx, "Importing file resource", map[string]interface{}{
+   763→		"import_id": id,
+   764→	})
+   765→
+   766→	// Parse the import ID - format is "host:destination".
+   767→	// The destination is an absolute path, so we split on the first ":".
+   768→	colonIdx := strings.Index(id, ":")
+   769→	if colonIdx == -1 || colonIdx == 0 || colonIdx == len(id)-1 {
+   770→		resp.Diagnostics.AddError(
+   771→			"Invalid Import ID",
+   772→			fmt.Sprintf(
+   773→				"Import ID must be in format 'host:destination' (e.g., '192.168.1.100:/etc/myapp/config.json').\n"+
+   774→					"Got: %s", id,
+   775→			),
+   776→		)
+   777→		return
+   778→	}
+   779→
+   780→	host := id[:colonIdx]
+   781→	destination := id[colonIdx+1:]
+   782→
+   783→	// Validate destination is an absolute path.
+   784→	if !strings.HasPrefix(destination, "/") {
+   785→		resp.Diagnostics.AddError(
+   786→			"Invalid Import ID",
+   787→			fmt.Sprintf(
+   788→				"Destination must be an absolute path starting with '/'.\n"+
+   789→					"Got: %s", destination,
+   790→			),
+   791→		)
+   792→		return
+   793→	}
+   794→
+   795→	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
+   796→	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("host"), host)...)
+   797→	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("destination"), destination)...)
+   798→}
+   799→
+   800→// syncLocalFromRemote downloads the remote file content to the local source path.
+   801→// This is called during Read when import_syncs_local=true and the local file
+   802→// doesn't exist or differs from remote.
+   803→func (r *FileResource) syncLocalFromRemote(ctx context.Context, data *FileResourceModel) error {
+   804→	sourcePath := data.Source.ValueString()
+   805→	if sourcePath == "" {
+   806→		return fmt.Errorf("source path is not set - add 'source' attribute to your config")
+   807→	}
+   808→
+   809→	tflog.Info(ctx, "Syncing local file from remote (import_syncs_local=true)", map[string]interface{}{
+   810→		"source":      sourcePath,
+   811→		"destination": data.Destination.ValueString(),
+   812→	})
+   813→
+   814→	// Create SSH client.
+   815→	client, err := r.createSSHClient(data)
+   816→	if err != nil {
+   817→		return fmt.Errorf("failed to create SSH connection: %w", err)
+   818→	}
+   819→	defer r.releaseSSHClient(data, client)
+   820→
+   821→	// Check if remote file exists.
+   822→	exists, err := client.FileExists(ctx, data.Destination.ValueString())
+   823→	if err != nil {
+   824→		return fmt.Errorf("failed to check if remote file exists: %w", err)
+   825→	}
+   826→	if !exists {
+   827→		return fmt.Errorf("remote file %s does not exist", data.Destination.ValueString())
+   828→	}
+   829→
+   830→	// Read remote file content.
+   831→	content, err := client.ReadFileContent(ctx, data.Destination.ValueString(), 0) // 0 = no limit
+   832→	if err != nil {
+   833→		return fmt.Errorf("failed to read remote file content: %w", err)
+   834→	}
+   835→
+   836→	// Create parent directories if needed.
+   837→	dir := filepath.Dir(sourcePath)
+   838→	if err := os.MkdirAll(dir, 0755); err != nil {
+   839→		return fmt.Errorf("failed to create parent directory %s: %w", dir, err)
+   840→	}
+   841→
+   842→	// Write content to local file atomically (write to temp, then rename).
+   843→	tmpPath := sourcePath + ".tmp"
+   844→	if err := os.WriteFile(tmpPath, content, 0644); err != nil {
+   845→		return fmt.Errorf("failed to write temporary file %s: %w", tmpPath, err)
+   846→	}
+   847→
+   848→	if err := os.Rename(tmpPath, sourcePath); err != nil {
+   849→		os.Remove(tmpPath) // Clean up temp file on error.
+   850→		return fmt.Errorf("failed to rename temporary file to %s: %w", sourcePath, err)
+   851→	}
+   852→
+   853→	tflog.Info(ctx, "Successfully synced local file from remote", map[string]interface{}{
+   854→		"source": sourcePath,
+   855→		"size":   len(content),
+   856→	})
+   857→
+   858→	return nil
+   859→}
+   860→
+   861→// Helper functions.
+   862→
+   863→// getSSHConfig builds an SSH config from resource data.
+   864→func (r *FileResource) getSSHConfig(data *FileResourceModel) gosftp.Config {
+   865→	return BuildSSHConfig(data, r.providerConfig)
+   866→}
+   867→
+   868→// isPoolingEnabled checks if connection pooling is enabled.
+   869→func (r *FileResource) isPoolingEnabled() bool {
+   870→	return r.providerConfig != nil &&
+   871→		!r.providerConfig.ConnectionPoolEnabled.IsNull() &&
+   872→		r.providerConfig.ConnectionPoolEnabled.ValueBool()
+   873→}
+   874→
+   875→// createSSHClient creates or retrieves an SSH client (from pool if enabled).
+   876→func (r *FileResource) createSSHClient(data *FileResourceModel) (gosftp.ClientInterface, error) {
+   877→	config := r.getSSHConfig(data)
+   878→
+   879→	// Use connection pool if enabled.
+   880→	if r.isPoolingEnabled() && r.providerConfig != nil && r.providerConfig.pool != nil {
+   881→		return r.providerConfig.pool.GetOrCreate(config)
+   882→	}
+   883→
+   884→	// Otherwise, create a new connection using the factory.
+   885→	factory := r.sshClientFactory
+   886→	if factory == nil {
+   887→		factory = DefaultSSHClientFactory
+   888→	}
+   889→	client, err := factory(config)
+   890→	if err != nil {
+   891→		// Provide detailed error message for debugging SSH connection issues.
+   892→		return nil, fmt.Errorf("%w (host=%s, port=%d, user=%s, insecure_ignore_host_key=%v, has_key=%v, has_password=%v)",
+   893→			err,
+   894→			config.Host,
+   895→			config.Port,
+   896→			config.User,
+   897→			config.InsecureIgnoreHostKey,
+   898→			config.KeyPath != "" || config.PrivateKey != "",
+   899→			config.Password != "",
+   900→		)
+   901→	}
+   902→	return client, nil
+   903→}
+   904→
+   905→// releaseSSHClient releases a connection back to the pool (if pooling enabled).
+   906→// If pooling is disabled, this closes the connection.
+   907→func (r *FileResource) releaseSSHClient(data *FileResourceModel, client gosftp.ClientInterface) {
+   908→	if r.isPoolingEnabled() && r.providerConfig != nil && r.providerConfig.pool != nil {
+   909→		config := r.getSSHConfig(data)
+   910→		r.providerConfig.pool.Release(config)
+   911→		// Don't close - the pool manages the connection lifecycle.
+   912→	} else {
+   913→		// Not pooling - close the connection.
+   914→		client.Close()
+   915→	}
+   916→}
+   917→
+   918→func hashFile(path string) (string, int64, error) {
+   919→	f, err := os.Open(path)
+   920→	if err != nil {
+   921→		return "", 0, err
+   922→	}
+   923→	defer f.Close()
+   924→
+   925→	h := sha256.New()
+   926→	size, err := io.Copy(h, f)
+   927→	if err != nil {
+   928→		return "", 0, err
+   929→	}
+   930→
+   931→	return "sha256:" + hex.EncodeToString(h.Sum(nil)), size, nil
+   932→}
+   933→
+   934→// sourceHashPlanModifier computes the source file hash during planning.
+   935→// This allows Terraform to detect local file changes and trigger updates.
+   936→type sourceHashPlanModifier struct{}
+   937→
+   938→func (m sourceHashPlanModifier) Description(_ context.Context) string {
+   939→	return "Computes hash from current local source file to detect changes."
+   940→}
+   941→
+   942→func (m sourceHashPlanModifier) MarkdownDescription(_ context.Context) string {
+   943→	return "Computes hash from current local source file to detect changes."
+   944→}
+   945→
+   946→func (m sourceHashPlanModifier) PlanModifyString(ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+   947→	// If resource is being destroyed, don't compute hash.
+   948→	if req.Plan.Raw.IsNull() {
+   949→		return
+   950→	}
+   951→
+   952→	// Get the source path from the plan.
+   953→	var sourcePath types.String
+   954→	diags := req.Plan.GetAttribute(ctx, path.Root("source"), &sourcePath)
+   955→	resp.Diagnostics.Append(diags...)
+   956→	if resp.Diagnostics.HasError() || sourcePath.IsUnknown() || sourcePath.IsNull() {
+   957→		return
+   958→	}
+   959→
+   960→	// Compute hash of the current local file.
+   961→	hash, _, err := hashFile(sourcePath.ValueString())
+   962→	if err != nil {
+   963→		// File doesn't exist or can't be read - let Create/Update handle the error.
+   964→		// Use unknown value to indicate we can't compute it.
+   965→		resp.PlanValue = types.StringUnknown()
+   966→		return
+   967→	}
+   968→
+   969→	// Set the planned value to the current local file hash.
+   970→	// If this differs from state, Terraform will trigger an update.
+   971→	resp.PlanValue = types.StringValue(hash)
+   972→}
+   973→
+   974→// remoteDriftChecker is used to check for remote drift during the Read phase.
+   975→// This is called when check_remote_on_plan is true.
+   976→// Note: We can't check during plan modifiers because they don't have access to
+   977→// provider config (SSH credentials). Instead, we check during Read which runs
+   978→// as part of refresh during plan.
+   979→func (r *FileResource) checkRemoteDrift(ctx context.Context, data *FileResourceModel) (hasDrift bool, remoteHash string, err error) {
+   980→	// Skip if check_remote_on_plan is not enabled.
+   981→	if data.CheckRemoteOnPlan.IsNull() || !data.CheckRemoteOnPlan.ValueBool() {
+   982→		return false, "", nil
+   983→	}
+   984→
+   985→	// Skip if we don't have state hash to compare against.
+   986→	if data.SourceHash.IsNull() || data.SourceHash.IsUnknown() {
+   987→		return false, "", nil
+   988→	}
+   989→
+   990→	tflog.Debug(ctx, "Checking remote for drift (check_remote_on_plan=true)")
+   991→
+   992→	// Create SSH client.
+   993→	client, err := r.createSSHClient(data)
+   994→	if err != nil {
+   995→		return false, "", fmt.Errorf("failed to create SSH connection for drift check: %w", err)
+   996→	}
+   997→	defer r.releaseSSHClient(data, client)
+   998→
+   999→	// Check if file exists.
+  1000→	exists, err := client.FileExists(ctx, data.Destination.ValueString())
+  1001→	if err != nil {
+  1002→		return false, "", fmt.Errorf("failed to check if remote file exists: %w", err)
+  1003→	}
+  1004→	if !exists {
+  1005→		// File doesn't exist on remote - this is drift (file was deleted).
+  1006→		return true, "", nil
+  1007→	}
+  1008→
+  1009→	// Get remote file hash.
+  1010→	remoteHash, err = client.GetFileHash(ctx, data.Destination.ValueString())
+  1011→	if err != nil {
+  1012→		return false, "", fmt.Errorf("failed to get remote file hash: %w", err)
+  1013→	}
+  1014→
+  1015→	// Compare with state hash.
+  1016→	stateHash := data.SourceHash.ValueString()
+  1017→	if remoteHash != stateHash {
+  1018→		tflog.Warn(ctx, "Remote drift detected", map[string]interface{}{
+  1019→			"state_hash":  stateHash,
+  1020→			"remote_hash": remoteHash,
+  1021→		})
+  1022→		return true, remoteHash, nil
+  1023→	}
+  1024→
+  1025→	tflog.Debug(ctx, "No remote drift detected")
+  1026→	return false, remoteHash, nil
+  1027→}
+  1028→
+  1029→// sourceSizePlanModifier computes the source file size during planning.
+  1030→type sourceSizePlanModifier struct{}
+  1031→
+  1032→func (m sourceSizePlanModifier) Description(_ context.Context) string {
+  1033→	return "Computes size from current local source file."
+  1034→}
+  1035→
+  1036→func (m sourceSizePlanModifier) MarkdownDescription(_ context.Context) string {
+  1037→	return "Computes size from current local source file."
+  1038→}
+  1039→
+  1040→func (m sourceSizePlanModifier) PlanModifyInt64(ctx context.Context, req planmodifier.Int64Request, resp *planmodifier.Int64Response) {
+  1041→	// If resource is being destroyed, don't compute size.
+  1042→	if req.Plan.Raw.IsNull() {
+  1043→		return
+  1044→	}
+  1045→
+  1046→	// Get the source path from the plan.
+  1047→	var sourcePath types.String
+  1048→	diags := req.Plan.GetAttribute(ctx, path.Root("source"), &sourcePath)
+  1049→	resp.Diagnostics.Append(diags...)
+  1050→	if resp.Diagnostics.HasError() || sourcePath.IsUnknown() || sourcePath.IsNull() {
+  1051→		return
+  1052→	}
+  1053→
+  1054→	// Get file size.
+  1055→	info, err := os.Stat(sourcePath.ValueString())
+  1056→	if err != nil {
+  1057→		// File doesn't exist or can't be read - let Create/Update handle the error.
+  1058→		resp.PlanValue = types.Int64Unknown()
+  1059→		return
+  1060→	}
+  1061→
+  1062→	resp.PlanValue = types.Int64Value(info.Size())
+  1063→}
+  1064→
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

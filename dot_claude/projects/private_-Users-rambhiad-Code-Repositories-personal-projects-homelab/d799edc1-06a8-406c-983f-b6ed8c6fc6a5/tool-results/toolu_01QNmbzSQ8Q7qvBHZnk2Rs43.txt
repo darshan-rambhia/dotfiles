@@ -1,0 +1,237 @@
+     1→# =============================================================================
+     2→# Traefik LXC - Reverse Proxy & Ingress Controller
+     3→# =============================================================================
+     4→# Container ID: 200
+     5→#
+     6→# This deployment uses the docker-lxc module which handles:
+     7→#   1. LXC container creation with Docker pre-installed
+     8→#   2. File sync via rsync (file-sync module)
+     9→#   3. Docker Compose deployment
+    10→#   4. Proxmox notes generation
+    11→# =============================================================================
+    12→
+    13→# -----------------------------------------------------------------------------
+    14→# App-specific Variables
+    15→# -----------------------------------------------------------------------------
+    16→
+    17→variable "container_id" {
+    18→  description = "Container ID for Traefik LXC"
+    19→  type        = number
+    20→  default     = 200
+    21→}
+    22→
+    23→variable "cores" {
+    24→  description = "CPU cores"
+    25→  type        = number
+    26→  default     = 2
+    27→}
+    28→
+    29→variable "memory" {
+    30→  description = "Memory in MB"
+    31→  type        = number
+    32→  default     = 2048
+    33→}
+    34→
+    35→variable "swap" {
+    36→  description = "Swap in MB"
+    37→  type        = number
+    38→  default     = 1024
+    39→}
+    40→
+    41→variable "rootfs_size" {
+    42→  description = "Root filesystem size in GB"
+    43→  type        = number
+    44→  default     = 8
+    45→}
+    46→
+    47→variable "rootfs_storage" {
+    48→  description = "Storage pool for root filesystem"
+    49→  type        = string
+    50→  default     = "nvme-containers"
+    51→}
+    52→
+    53→# -----------------------------------------------------------------------------
+    54→# Traefik Container
+    55→# -----------------------------------------------------------------------------
+    56→
+    57→module "traefik" {
+    58→  source = "../../modules/docker-lxc"
+    59→
+    60→  name         = "traefik"
+    61→  container_id = var.container_id
+    62→  proxmox_node = var.proxmox_node
+    63→
+    64→  # Network (dual-NIC: container network + LAN for external access)
+    65→  container_ip = "${local.ip_registry.dashboards.traefik}${local.network.container_netmask}"
+    66→  lan_ip       = "${local.lan_ips.traefik}${local.network.lan_netmask}"
+    67→
+    68→  # Resources
+    69→  cores  = var.cores
+    70→  memory = var.memory
+    71→  swap   = var.swap
+    72→
+    73→  rootfs_storage = var.rootfs_storage
+    74→  rootfs_size    = var.rootfs_size
+    75→
+    76→  # MUST be privileged for binding to ports 80/443
+    77→  unprivileged = false
+    78→
+    79→  # Deployment
+    80→  deploy_dir  = "${path.module}/deploy"
+    81→  target_path = "/config"
+    82→
+    83→  # Exclude migrated routes (managed by traefik-route module), env templates, and .tpl files
+    84→  exclude_patterns = ["^migrated-dynamic/", "^\\.env", "\\.tpl$"]
+    85→
+    86→  # SSH
+    87→  ssh_public_key       = local.ssh_public_key
+    88→  ssh_private_key_path = var.ssh_private_key_path
+    89→  proxmox_ssh_host     = var.proxmox_ssh_host
+    90→
+    91→  # Template with Docker pre-installed
+    92→  template = var.lxc_template_docker
+    93→
+    94→  # Proxmox Notes
+    95→  service_name        = "Traefik"
+    96→  service_description = "Reverse proxy and ingress controller for all homelab services"
+    97→
+    98→  service_urls = {
+    99→    dashboard_internal = "https://traefik.${var.domain_internal}/dashboard/"
+   100→    direct             = "http://${local.traefik_ip}:8080/dashboard/"
+   101→  }
+   102→
+   103→  services = [
+   104→    { name = "HTTP", port = 80, info = "HTTP entrypoint (redirects to HTTPS)" },
+   105→    { name = "HTTPS", port = 443, info = "HTTPS entrypoint with Let's Encrypt" },
+   106→    { name = "Metrics", port = 8082, info = "Prometheus metrics endpoint" }
+   107→  ]
+   108→
+   109→  custom_notes = file("${path.module}/notes.md")
+   110→
+   111→  tags = ["traefik", "ingress", "reverse-proxy"]
+   112→}
+   113→
+   114→# -----------------------------------------------------------------------------
+   115→# Create .env file with secrets
+   116→# -----------------------------------------------------------------------------
+   117→# Generate .env file locally with secrets from 1Password, then sync to container
+   118→
+   119→resource "local_sensitive_file" "traefik_env" {
+   120→  content = templatefile("${path.module}/deploy/.env.tpl", {
+   121→    cf_api_token = local.op.cloudflare_api_token
+   122→    cf_api_email = local.op.cloudflare_email
+   123→  })
+   124→  filename        = "${path.module}/.terraform/traefik.env"
+   125→  file_permission = "0600"
+   126→}
+   127→
+   128→resource "filesync_file" "traefik_env" {
+   129→  source      = local_sensitive_file.traefik_env.filename
+   130→  destination = "/config/.env"
+   131→  host        = local.traefik_ip
+   132→
+   133→  mode = "0600"
+   134→
+   135→  depends_on = [module.traefik]
+   136→}
+   137→
+   138→# -----------------------------------------------------------------------------
+   139→# Alloy Auth Middleware (for Loki/Prometheus push endpoints)
+   140→# -----------------------------------------------------------------------------
+   141→# Creates authenticated endpoints for Alloy agents to push logs and metrics
+   142→
+   143→resource "local_sensitive_file" "alloy_auth_config" {
+   144→  content = templatefile("${path.module}/deploy/dynamic/alloy-auth.yml.tpl", {
+   145→    htpasswd      = local.op.alloy_telemetry_htpasswd
+   146→    domain        = var.domain_internal
+   147→    monitoring_ip = local.ip_registry.monitoring.monitoring
+   148→  })
+   149→  filename        = "${path.module}/.terraform/alloy-auth.yml"
+   150→  file_permission = "0600"
+   151→}
+   152→
+   153→resource "filesync_file" "alloy_auth_config" {
+   154→  source      = local_sensitive_file.alloy_auth_config.filename
+   155→  destination = "/config/dynamic/alloy-auth.yml"
+   156→  host        = local.traefik_ip
+   157→
+   158→  mode = "0644"
+   159→
+   160→  depends_on = [module.traefik]
+   161→}
+   162→
+   163→# -----------------------------------------------------------------------------
+   164→# Backup Configuration - PBS Client
+   165→# -----------------------------------------------------------------------------
+   166→
+   167→module "traefik_sidecars" {
+   168→  source = "../../modules/lxc-sidecars"
+   169→
+   170→  container_id   = module.traefik.container_id
+   171→  container_ip   = module.traefik.ip_address
+   172→  container_name = "traefik"
+   173→
+   174→  proxmox_ssh_host             = var.proxmox_ssh_host
+   175→  proxmox_ssh_private_key_path = var.ssh_private_key_path
+   176→
+   177→  backup = {
+   178→    enabled   = true
+   179→    schedule  = "Sun 03:00"  # Weekly backup
+   180→    retention = "4"          # Keep 4 weekly backups
+   181→    namespace = "lxc-200"
+   182→
+   183→    pre_backup_commands = []  # No database - config only
+   184→
+   185→    include_paths = ["/config"]
+   186→    exclude_paths = ["/config/acme.json", "/config/logs/**"]
+   187→
+   188→    ntfy_priority = "default"
+   189→    ntfy_tags     = "backup,traefik"
+   190→  }
+   191→
+   192→  # Container monitoring agents
+   193→  pulse_agent = {
+   194→    enabled     = true
+   195→    pulse_token = local.agent_tokens["traefik"].pulse_token
+   196→  }
+   197→
+   198→  arcane_agent = {
+   199→    enabled         = true
+   200→    bootstrap_token = local.agent_tokens["traefik"].arcane_bootstrap_token
+   201→  }
+   202→
+   203→  alloy_agent = {
+   204→    enabled  = true
+   205→    username = local.op.alloy_telemetry_username
+   206→    password = local.op.alloy_telemetry_password
+   207→  }
+   208→
+   209→  depends_on = [module.traefik]
+   210→}
+   211→
+   212→# -----------------------------------------------------------------------------
+   213→# Outputs
+   214→# -----------------------------------------------------------------------------
+   215→
+   216→output "container_id" {
+   217→  value = module.traefik.container_id
+   218→}
+   219→
+   220→output "ip_address" {
+   221→  value = module.traefik.ip_address
+   222→}
+   223→
+   224→output "ssh_command" {
+   225→  value = module.traefik.ssh_command
+   226→}
+   227→
+   228→output "urls" {
+   229→  value = {
+   230→    dashboard_internal = "https://traefik.${var.domain_internal}/dashboard/"
+   231→  }
+   232→}
+   233→
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

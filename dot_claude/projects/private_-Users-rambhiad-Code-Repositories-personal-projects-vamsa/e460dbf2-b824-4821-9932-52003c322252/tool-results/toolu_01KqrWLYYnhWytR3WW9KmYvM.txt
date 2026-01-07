@@ -1,0 +1,20 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/scripts/validate.ts has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+    22→    ? ["prettier", "--check", "."]
+    23→    : ["prettier", "--write", "."],
+    24→};
+    25→
+    26→const runCommand = async (label: string, cmd: string[]) => {
+    27→  console.log(`\n📋 ${label}...`);
+    28→  try {
+    29→    await $`${cmd}`;
+    30→    console.log(`✅ ${label} passed`);
+    31→    return true;
+    32→  } catch {
+    33→    console.error(`❌ ${label} failed`);
+    34→    return false;
+    35→  }
+    36→};
+    37→
+    38→const runParallel = async () => {
+    39→  console.log("🚀 Running validation checks in parallel...\n");
+    40→

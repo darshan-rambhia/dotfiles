@@ -1,0 +1,462 @@
+The file /Users/rambhiad/Code/Repositories/personal-projects/vamsa/src/actions/backup.test.ts has been updated. Here's the result of running `cat -n` on a snippet of the edited file:
+     1→import { describe, it, expect } from "bun:test";
+     2→import { gatherBackupDataCore, logBackupExportCore } from "./backup";
+     3→import type { BackupDependencies, AuthSession } from "@/lib/backup/types";
+     4→
+     5→// Create mock session
+     6→const createMockSession = (): AuthSession => ({
+     7→  id: "admin-123",
+     8→  email: "admin@example.com",
+     9→  name: "Admin User",
+    10→  role: "ADMIN",
+    11→  personId: null,
+    12→  mustChangePassword: false,
+    13→});
+    14→
+    15→// Mock data
+    16→const mockPeople = [
+    17→  {
+    18→    id: "person-1",
+    19→    firstName: "John",
+    20→    lastName: "Doe",
+    21→    email: "john@example.com",
+    22→    createdAt: new Date("2024-01-01"),
+    23→    updatedAt: new Date("2024-01-01"),
+    24→  },
+    25→  {
+    26→    id: "person-2",
+    27→    firstName: "Jane",
+    28→    lastName: "Smith",
+    29→    email: null,
+    30→    createdAt: new Date("2024-01-02"),
+    31→    updatedAt: new Date("2024-01-02"),
+    32→  },
+    33→];
+    34→
+    35→const mockRelationships = [
+    36→  {
+    37→    id: "rel-1",
+    38→    personId: "person-1",
+    39→    relatedPersonId: "person-2",
+    40→    type: "SPOUSE",
+    41→    createdAt: new Date("2024-01-01"),
+    42→    updatedAt: new Date("2024-01-01"),
+    43→  },
+    44→];
+    45→
+    46→const mockUsers = [
+    47→  {
+    48→    id: "user-1",
+    49→    email: "admin@example.com",
+    50→    name: "Admin User",
+    51→    personId: "person-1",
+    52→    role: "ADMIN",
+    53→    isActive: true,
+    54→    mustChangePassword: false,
+    55→    invitedById: null,
+    56→    createdAt: new Date("2024-01-01"),
+    57→    updatedAt: new Date("2024-01-01"),
+    58→    lastLoginAt: new Date("2024-01-01"),
+    59→  },
+    60→];
+    61→
+    62→const mockSuggestions = [
+    63→  {
+    64→    id: "suggestion-1",
+    65→    type: "PERSON_UPDATE",
+    66→    targetPersonId: "person-1",
+    67→    suggestedData: { bio: "Updated bio" },
+    68→    reason: "Missing information",
+    69→    status: "PENDING",
+    70→    submittedById: "user-1",
+    71→    reviewedById: null,
+    72→    reviewNote: null,
+    73→    submittedAt: new Date("2024-01-01"),
+    74→    reviewedAt: null,
+    75→  },
+    76→];
+    77→
+    78→const mockSettings = {
+    79→  id: "settings-1",
+    80→  familyName: "Test Family",
+    81→  description: "Test family tree",
+    82→  locale: "en",
+    83→  customLabels: {},
+    84→  defaultPrivacy: "PRIVATE",
+    85→  allowSelfRegistration: false,
+    86→  requireApprovalForEdits: true,
+    87→};
+    88→
+    89→const mockAuditLogs = [
+    90→  {
+    91→    id: "audit-1",
+    92→    userId: "user-1",
+    93→    action: "CREATE",
+    94→    entityType: "PERSON",
+    95→    entityId: "person-1",
+    96→    previousData: null,
+    97→    newData: { firstName: "John", lastName: "Doe" },
+    98→    ipAddress: "127.0.0.1",
+    99→    userAgent: "test-agent",
+   100→    createdAt: new Date("2024-01-01"),
+   101→  },
+   102→];
+   103→
+   104→const mockPeopleWithPhotos = [
+   105→  {
+   106→    id: "person-1",
+   107→    photoUrl: "/api/uploads/123456-photo.jpg",
+   108→  },
+   109→];
+   110→
+   111→// Create mock dependencies for testing
+   112→function createMockDependencies(
+   113→  overrides: Partial<BackupDependencies> = {}
+   114→): BackupDependencies {
+   115→  const mockSession = createMockSession();
+   116→  let personFindManyCallCount = 0;
+   117→
+   118→  return {
+   119→    requireAdmin: async () => mockSession,
+   120→    db: {
+   121→      person: {
+   122→        findMany: async () => {
+   123→          personFindManyCallCount++;
+   124→          // First call returns all people, second call returns people with photos
+   125→          return personFindManyCallCount === 1 ? mockPeople : mockPeopleWithPhotos;
+   126→        },
+   127→      },
+   128→      relationship: {
+   129→        findMany: async () => mockRelationships,
+   130→      },
+   131→      user: {
+   132→        findMany: async () => mockUsers,
+   133→      },
+   134→      suggestion: {
+   135→        findMany: async () => mockSuggestions,
+   136→      },
+   137→      familySettings: {
+   138→        findFirst: async () => mockSettings,
+   139→      },
+   140→      auditLog: {
+   141→        findMany: async () => mockAuditLogs,
+   142→        create: async () => ({}),
+   143→      },
+   144→    } as any,
+   145→    ...overrides,
+   146→  };
+   147→}
+   148→
+   149→describe("gatherBackupDataCore", () => {
+   150→  it("should require admin authentication", async () => {
+   151→    const deps = createMockDependencies({
+   152→      requireAdmin: async () => {
+   153→        throw new Error("Unauthorized");
+   154→      },
+   155→    });
+   156→
+   157→    await expect(
+   158→      gatherBackupDataCore(
+   159→        {
+   160→          includePhotos: true,
+   161→          includeAuditLogs: true,
+   162→          auditLogDays: 90,
+   163→        },
+   164→        deps
+   165→      )
+   166→    ).rejects.toThrow("Unauthorized");
+   167→  });
+   168→
+   169→  it("should gather all data with default options", async () => {
+   170→    const deps = createMockDependencies();
+   171→
+   172→    const result = await gatherBackupDataCore(
+   173→      {
+   174→        includePhotos: true,
+   175→        includeAuditLogs: true,
+   176→        auditLogDays: 90,
+   177→      },
+   178→      deps
+   179→    );
+   180→
+   181→    expect(result.metadata).toEqual({
+   182→      version: "1.0.0",
+   183→      exportedAt: expect.any(String),
+   184→      exportedBy: {
+   185→        id: "admin-123",
+   186→        email: "admin@example.com",
+   187→        name: "Admin User",
+   188→      },
+   189→      statistics: {
+   190→        totalPeople: 2,
+   191→        totalRelationships: 1,
+   192→        totalUsers: 1,
+   193→        totalSuggestions: 1,
+   194→        totalPhotos: 1,
+   195→        auditLogDays: 90,
+   196→        totalAuditLogs: 1,
+   197→      },
+   198→      dataFiles: [
+   199→        "data/people.json",
+   200→        "data/relationships.json",
+   201→        "data/users.json",
+   202→        "data/suggestions.json",
+   203→        "data/settings.json",
+   204→        "data/audit-logs.json",
+   205→      ],
+   206→      photoDirectories: ["photos/person-1/"],
+   207→    });
+   208→
+   209→    expect(result.data.people).toEqual(mockPeople);
+   210→    expect(result.data.relationships).toEqual(mockRelationships);
+   211→    expect(result.data.users).toEqual(mockUsers);
+   212→    expect(result.data.suggestions).toEqual(mockSuggestions);
+   213→    expect(result.data.settings).toEqual(mockSettings);
+   214→    expect(result.photos).toEqual(mockPeopleWithPhotos);
+   215→  });
+   216→
+   217→  it("should exclude audit logs when includeAuditLogs is false", async () => {
+   218→    const deps = createMockDependencies({
+   219→      db: {
+   220→        person: {
+   221→          findMany: async () => mockPeople,
+   222→        },
+   223→        relationship: {
+   224→          findMany: async () => mockRelationships,
+   225→        },
+   226→        user: {
+   227→          findMany: async () => mockUsers,
+   228→        },
+   229→        suggestion: {
+   230→          findMany: async () => mockSuggestions,
+   231→        },
+   232→        familySettings: {
+   233→          findFirst: async () => mockSettings,
+   234→        },
+   235→        auditLog: {
+   236→          findMany: async () => [],
+   237→          create: async () => ({}),
+   238→        },
+   239→      } as any,
+   240→    });
+   241→
+   242→    const result = await gatherBackupDataCore(
+   243→      {
+   244→        includePhotos: false,
+   245→        includeAuditLogs: false,
+   246→        auditLogDays: 90,
+   247→      },
+   248→      deps
+   249→    );
+   250→
+   251→    expect(result.metadata.dataFiles).not.toContain("data/audit-logs.json");
+   252→    expect(result.data.auditLogs).toBeUndefined();
+   253→    expect(result.metadata.statistics.totalAuditLogs).toBe(0);
+   254→  });
+   255→
+   256→  it("should exclude photos when includePhotos is false", async () => {
+   257→    const deps = createMockDependencies({
+   258→      db: {
+   259→        person: {
+   260→          findMany: async () => mockPeople,
+   261→        },
+   262→        relationship: {
+   263→          findMany: async () => mockRelationships,
+   264→        },
+   265→        user: {
+   266→          findMany: async () => mockUsers,
+   267→        },
+   268→        suggestion: {
+   269→          findMany: async () => mockSuggestions,
+   270→        },
+   271→        familySettings: {
+   272→          findFirst: async () => mockSettings,
+   273→        },
+   274→        auditLog: {
+   275→          findMany: async () => mockAuditLogs,
+   276→          create: async () => ({}),
+   277→        },
+   278→      } as any,
+   279→    });
+   280→
+   281→    const result = await gatherBackupDataCore(
+   282→      {
+   283→        includePhotos: false,
+   284→        includeAuditLogs: true,
+   285→        auditLogDays: 90,
+   286→      },
+   287→      deps
+   288→    );
+   289→
+   290→    expect(result.photos).toEqual([]);
+   291→    expect(result.metadata.statistics.totalPhotos).toBe(0);
+   292→    expect(result.metadata.photoDirectories).toEqual([]);
+   293→  });
+   294→
+   295→  it("should handle null session name", async () => {
+   296→    const deps = createMockDependencies({
+   297→      requireAdmin: async () => ({ ...createMockSession(), name: null }),
+   298→      db: {
+   299→        person: {
+   300→          findMany: async () => mockPeople,
+   301→        },
+   302→        relationship: {
+   303→          findMany: async () => mockRelationships,
+   304→        },
+   305→        user: {
+   306→          findMany: async () => mockUsers,
+   307→        },
+   308→        suggestion: {
+   309→          findMany: async () => mockSuggestions,
+   310→        },
+   311→        familySettings: {
+   312→          findFirst: async () => mockSettings,
+   313→        },
+   314→        auditLog: {
+   315→          findMany: async () => [],
+   316→          create: async () => ({}),
+   317→        },
+   318→      } as any,
+   319→    });
+   320→
+   321→    const result = await gatherBackupDataCore(
+   322→      {
+   323→        includePhotos: false,
+   324→        includeAuditLogs: false,
+   325→        auditLogDays: 90,
+   326→      },
+   327→      deps
+   328→    );
+   329→
+   330→    expect(result.metadata.exportedBy.name).toBeNull();
+   331→  });
+   332→
+   333→  it("should handle empty database", async () => {
+   334→    const deps = createMockDependencies({
+   335→      db: {
+   336→        person: {
+   337→          findMany: async () => [],
+   338→        },
+   339→        relationship: {
+   340→          findMany: async () => [],
+   341→        },
+   342→        user: {
+   343→          findMany: async () => [],
+   344→        },
+   345→        suggestion: {
+   346→          findMany: async () => [],
+   347→        },
+   348→        familySettings: {
+   349→          findFirst: async () => null,
+   350→        },
+   351→        auditLog: {
+   352→          findMany: async () => [],
+   353→          create: async () => ({}),
+   354→        },
+   355→      } as any,
+   356→    });
+   357→
+   358→    const result = await gatherBackupDataCore(
+   359→      {
+   360→        includePhotos: false,
+   361→        includeAuditLogs: false,
+   362→        auditLogDays: 90,
+   363→      },
+   364→      deps
+   365→    );
+   366→
+   367→    expect(result.metadata.statistics).toEqual({
+   368→      totalPeople: 0,
+   369→      totalRelationships: 0,
+   370→      totalUsers: 0,
+   371→      totalSuggestions: 0,
+   372→      totalPhotos: 0,
+   373→      auditLogDays: 90,
+   374→      totalAuditLogs: 0,
+   375→    });
+   376→
+   377→    expect(result.data.settings).toBeNull();
+   378→  });
+   379→
+   380→  it("should validate input parameters", async () => {
+   381→    const deps = createMockDependencies();
+   382→
+   383→    await expect(
+   384→      gatherBackupDataCore(
+   385→        {
+   386→          includePhotos: true,
+   387→          includeAuditLogs: true,
+   388→          auditLogDays: 0, // Invalid: below minimum
+   389→        },
+   390→        deps
+   391→      )
+   392→    ).rejects.toThrow();
+   393→
+   394→    await expect(
+   395→      gatherBackupDataCore(
+   396→        {
+   397→          includePhotos: true,
+   398→          includeAuditLogs: true,
+   399→          auditLogDays: 366, // Invalid: above maximum
+   400→        },
+   401→        deps
+   402→      )
+   403→    ).rejects.toThrow();
+   404→  });
+   405→});
+   406→
+   407→describe("logBackupExportCore", () => {
+   408→  it("should require admin authentication", async () => {
+   409→    const deps = createMockDependencies({
+   410→      requireAdmin: async () => {
+   411→        throw new Error("Unauthorized");
+   412→      },
+   413→    });
+   414→
+   415→    await expect(logBackupExportCore(deps)).rejects.toThrow("Unauthorized");
+   416→  });
+   417→
+   418→  it("should create audit log entry", async () => {
+   419→    let createdData: any = null;
+   420→    const deps = createMockDependencies({
+   421→      db: {
+   422→        auditLog: {
+   423→          create: async (args: any) => {
+   424→            createdData = args;
+   425→            return {};
+   426→          },
+   427→        },
+   428→      } as any,
+   429→    });
+   430→
+   431→    await logBackupExportCore(deps);
+   432→
+   433→    expect(createdData).toEqual({
+   434→      data: {
+   435→        userId: "admin-123",
+   436→        action: "CREATE",
+   437→        entityType: "BACKUP_EXPORT",
+   438→        entityId: null,
+   439→        newData: {
+   440→          timestamp: expect.any(String),
+   441→          type: "full_export",
+   442→        },
+   443→      },
+   444→    });
+   445→  });
+   446→
+   447→  it("should handle database errors", async () => {
+   448→    const deps = createMockDependencies({
+   449→      db: {
+   450→        auditLog: {
+   451→          create: async () => {
+   452→            throw new Error("Database error");
+   453→          },
+   454→        },
+   455→      } as any,
+   456→    });
+   457→
+   458→    await expect(logBackupExportCore(deps)).rejects.toThrow("Database error");
+   459→  });
+   460→});
+   461→

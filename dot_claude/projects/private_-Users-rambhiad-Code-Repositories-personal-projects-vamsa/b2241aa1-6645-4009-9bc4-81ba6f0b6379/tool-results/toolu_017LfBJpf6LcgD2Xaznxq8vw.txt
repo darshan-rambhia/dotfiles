@@ -1,0 +1,382 @@
+     1→"use server";
+     2→
+     3→import { requireAdmin } from "@/lib/auth";
+     4→import { db } from "@/lib/db";
+     5→import { getStorageAdapter } from "@/lib/storage";
+     6→import { BackupValidator } from "@/lib/backup/validator";
+     7→import { ConflictResolver } from "@/lib/backup/conflict-resolver";
+     8→import { gatherBackupData, logBackupExport } from "@/actions/backup";
+     9→import {
+    10→  backupValidationSchema,
+    11→  backupImportSchema,
+    12→  type ValidationResult,
+    13→  type ImportResult,
+    14→  type ConflictResolutionStrategy,
+    15→} from "@/schemas/backup";
+    16→import archiver from "archiver";
+    17→import { writeFile, mkdir } from "fs/promises";
+    18→import { join } from "path";
+    19→
+    20→export async function validateBackup(
+    21→  formData: FormData
+    22→): Promise<ValidationResult> {
+    23→  const session = await requireAdmin();
+    24→
+    25→  try {
+    26→    const file = formData.get("file") as File;
+    27→    if (!file) {
+    28→      throw new Error("No file provided");
+    29→    }
+    30→
+    31→    // Validate file size (max 100MB)
+    32→    const maxSize = 100 * 1024 * 1024; // 100MB
+    33→    if (file.size > maxSize) {
+    34→      throw new Error("File size exceeds 100MB limit");
+    35→    }
+    36→
+    37→    // Validate file type
+    38→    if (!file.name.endsWith(".zip")) {
+    39→      throw new Error("File must be a ZIP archive");
+    40→    }
+    41→
+    42→    // Convert file to buffer
+    43→    const arrayBuffer = await file.arrayBuffer();
+    44→    const buffer = Buffer.from(arrayBuffer);
+    45→
+    46→    // Validate backup
+    47→    const validator = new BackupValidator(buffer);
+    48→    const result = await validator.validate();
+    49→
+    50→    return result;
+    51→  } catch (error) {
+    52→    console.error("Backup validation error:", error);
+    53→    throw new Error(
+    54→      `Validation failed: ${error instanceof Error ? error.message : "Unknown error"}`
+    55→    );
+    56→  }
+    57→}
+    58→
+    59→export async function importBackup(
+    60→  formData: FormData,
+    61→  strategy: ConflictResolutionStrategy,
+    62→  options: {
+    63→    createBackupBeforeImport: boolean;
+    64→    importPhotos: boolean;
+    65→    importAuditLogs: boolean;
+    66→  }
+    67→): Promise<ImportResult> {
+    68→  const session = await requireAdmin();
+    69→
+    70→  try {
+    71→    const file = formData.get("file") as File;
+    72→    if (!file) {
+    73→      throw new Error("No file provided");
+    74→    }
+    75→
+    76→    // Convert file to buffer
+    77→    const arrayBuffer = await file.arrayBuffer();
+    78→    const buffer = Buffer.from(arrayBuffer);
+    79→
+    80→    // Validate backup first
+    81→    const validator = new BackupValidator(buffer);
+    82→    const validationResult = await validator.validate();
+    83→
+    84→    if (!validationResult.isValid) {
+    85→      throw new Error(`Invalid backup: ${validationResult.errors.join(", ")}`);
+    86→    }
+    87→
+    88→    let backupCreated: string | undefined;
+    89→
+    90→    // Create backup before import if requested
+    91→    if (options.createBackupBeforeImport) {
+    92→      backupCreated = await createPreImportBackup();
+    93→    }
+    94→
+    95→    // Start database transaction for atomic import
+    96→    const importResult = await db.$transaction(async (tx) => {
+    97→      // Create conflict resolver
+    98→      const resolver = new ConflictResolver(strategy, {
+    99→        id: session.id,
+   100→        email: session.email,
+   101→        name: session.name || null,
+   102→      });
+   103→
+   104→      // Import data
+   105→      const { statistics, errors, warnings } = await resolver.importData(
+   106→        validator.getExtractedFiles(),
+   107→        validationResult.conflicts
+   108→      );
+   109→
+   110→      // Import photos if requested
+   111→      if (options.importPhotos) {
+   112→        const photosImported = await importPhotos(
+   113→          validator.getExtractedFiles()
+   114→        );
+   115→        statistics.photosImported = photosImported;
+   116→      }
+   117→
+   118→      // Log the import action
+   119→      await tx.auditLog.create({
+   120→        data: {
+   121→          userId: session.id,
+   122→          action: "CREATE",
+   123→          entityType: "BACKUP_IMPORT",
+   124→          entityId: null,
+   125→          newData: {
+   126→            timestamp: new Date().toISOString(),
+   127→            strategy,
+   128→            statistics: statistics as any,
+   129→            backupCreated,
+   130→          },
+   131→        },
+   132→      });
+   133→
+   134→      return {
+   135→        success: errors.length === 0,
+   136→        importedAt: new Date().toISOString(),
+   137→        importedBy: {
+   138→          id: session.id,
+   139→          email: session.email,
+   140→          name: session.name || null,
+   141→        },
+   142→        strategy,
+   143→        statistics,
+   144→        backupCreated,
+   145→        errors,
+   146→        warnings,
+   147→      };
+   148→    });
+   149→
+   150→    return importResult;
+   151→  } catch (error) {
+   152→    console.error("Backup import error:", error);
+   153→
+   154→    // Log failed import attempt
+   155→    try {
+   156→      await db.auditLog.create({
+   157→        data: {
+   158→          userId: session.id,
+   159→          action: "CREATE",
+   160→          entityType: "BACKUP_IMPORT_FAILED",
+   161→          entityId: null,
+   162→          newData: {
+   163→            timestamp: new Date().toISOString(),
+   164→            error: error instanceof Error ? error.message : "Unknown error",
+   165→          },
+   166→        },
+   167→      });
+   168→    } catch (logError) {
+   169→      console.error("Failed to log import error:", logError);
+   170→    }
+   171→
+   172→    throw new Error(
+   173→      `Import failed: ${error instanceof Error ? error.message : "Unknown error"}`
+   174→    );
+   175→  }
+   176→}
+   177→
+   178→async function createPreImportBackup(): Promise<string> {
+   179→  try {
+   180→    // Gather current data for backup
+   181→    const { metadata, data, photos } = await gatherBackupData({
+   182→      includePhotos: true,
+   183→      includeAuditLogs: true,
+   184→      auditLogDays: 90,
+   185→    });
+   186→
+   187→    // Create backup filename with timestamp
+   188→    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+   189→    const filename = `pre-import-backup-${timestamp}.zip`;
+   190→    const backupPath = join(
+   191→      process.env.STORAGE_LOCAL_PATH || "./data/uploads",
+   192→      "backups"
+   193→    );
+   194→
+   195→    // Ensure backup directory exists
+   196→    await mkdir(backupPath, { recursive: true });
+   197→
+   198→    const fullPath = join(backupPath, filename);
+   199→
+   200→    // Create ZIP archive
+   201→    return new Promise((resolve, reject) => {
+   202→      const archive = archiver("zip", { zlib: { level: 9 } });
+   203→      const output = require("fs").createWriteStream(fullPath);
+   204→
+   205→      output.on("close", () => {
+   206→        resolve(filename);
+   207→      });
+   208→
+   209→      archive.on("error", (err) => {
+   210→        reject(err);
+   211→      });
+   212→
+   213→      archive.pipe(output);
+   214→
+   215→      // Add metadata and data files
+   216→      archive.append(JSON.stringify(metadata, null, 2), {
+   217→        name: "metadata.json",
+   218→      });
+   219→      archive.append(JSON.stringify(data.people, null, 2), {
+   220→        name: "data/people.json",
+   221→      });
+   222→      archive.append(JSON.stringify(data.relationships, null, 2), {
+   223→        name: "data/relationships.json",
+   224→      });
+   225→      archive.append(JSON.stringify(data.users, null, 2), {
+   226→        name: "data/users.json",
+   227→      });
+   228→      archive.append(JSON.stringify(data.suggestions, null, 2), {
+   229→        name: "data/suggestions.json",
+   230→      });
+   231→      archive.append(JSON.stringify(data.settings, null, 2), {
+   232→        name: "data/settings.json",
+   233→      });
+   234→
+   235→      if (data.auditLogs) {
+   236→        archive.append(JSON.stringify(data.auditLogs, null, 2), {
+   237→          name: "data/audit-logs.json",
+   238→        });
+   239→      }
+   240→
+   241→      // Add photos
+   242→      if (photos.length > 0) {
+   243→        addPhotosToBackupArchive(archive, photos);
+   244→      } else {
+   245→        archive.finalize();
+   246→      }
+   247→    });
+   248→  } catch (error) {
+   249→    console.error("Failed to create pre-import backup:", error);
+   250→    throw new Error("Failed to create backup before import");
+   251→  }
+   252→}
+   253→
+   254→async function addPhotosToBackupArchive(
+   255→  archive: archiver.Archiver,
+   256→  photos: Array<{ id: string; photoUrl: string | null }>
+   257→): Promise<void> {
+   258→  const storage = getStorageAdapter();
+   259→
+   260→  for (const person of photos) {
+   261→    if (!person.photoUrl) continue;
+   262→
+   263→    try {
+   264→      // Extract the file path from the URL
+   265→      const urlParts = person.photoUrl.split("/api/uploads/");
+   266→      if (urlParts.length !== 2) continue;
+   267→
+   268→      const filePath = urlParts[1];
+   269→      const storagePath = process.env.STORAGE_LOCAL_PATH || "./data/uploads";
+   270→      const fullPath = join(storagePath, filePath);
+   271→
+   272→      // Read the file
+   273→      const fileBuffer = await require("fs/promises").readFile(fullPath);
+   274→
+   275→      // Extract original filename
+   276→      const originalName = filePath.split("-").slice(1).join("-");
+   277→
+   278→      // Add to archive
+   279→      archive.append(fileBuffer, {
+   280→        name: `photos/${person.id}/${originalName}`,
+   281→      });
+   282→    } catch (error) {
+   283→      console.warn(`Failed to add photo for person ${person.id}:`, error);
+   284→    }
+   285→  }
+   286→
+   287→  archive.finalize();
+   288→}
+   289→
+   290→async function importPhotos(extractedFiles: Map<string, any>): Promise<number> {
+   291→  const storage = getStorageAdapter();
+   292→  let importedCount = 0;
+   293→
+   294→  for (const [filePath, fileBuffer] of extractedFiles.entries()) {
+   295→    if (!filePath.startsWith("photos/") || filePath.endsWith("/")) {
+   296→      continue;
+   297→    }
+   298→
+   299→    try {
+   300→      // Extract person ID and filename from path: photos/{personId}/{filename}
+   301→      const pathParts = filePath.split("/");
+   302→      if (pathParts.length !== 3) continue;
+   303→
+   304→      const personId = pathParts[1];
+   305→      const filename = pathParts[2];
+   306→
+   307→      // Check if person exists
+   308→      const person = await db.person.findUnique({ where: { id: personId } });
+   309→      if (!person) {
+   310→        console.warn(`Skipping photo for non-existent person: ${personId}`);
+   311→        continue;
+   312→      }
+   313→
+   314→      // Upload photo to storage
+   315→      const storedPath = await storage.upload(
+   316→        fileBuffer,
+   317→        filename,
+   318→        "image/jpeg"
+   319→      );
+   320→      const photoUrl = storage.getUrl(storedPath);
+   321→
+   322→      // Update person with photo URL
+   323→      await db.person.update({
+   324→        where: { id: personId },
+   325→        data: { photoUrl },
+   326→      });
+   327→
+   328→      importedCount++;
+   329→    } catch (error) {
+   330→      console.warn(`Failed to import photo ${filePath}:`, error);
+   331→    }
+   332→  }
+   333→
+   334→  return importedCount;
+   335→}
+   336→
+   337→export async function getImportHistory(): Promise<
+   338→  Array<{
+   339→    id: string;
+   340→    importedAt: string;
+   341→    importedBy: string;
+   342→    strategy: string;
+   343→    statistics: any;
+   344→    success: boolean;
+   345→  }>
+   346→> {
+   347→  const session = await requireAdmin();
+   348→
+   349→  const auditLogs = await db.auditLog.findMany({
+   350→    where: {
+   351→      entityType: {
+   352→        in: ["BACKUP_IMPORT", "BACKUP_IMPORT_FAILED"],
+   353→      },
+   354→    },
+   355→    include: {
+   356→      user: {
+   357→        select: {
+   358→          email: true,
+   359→          name: true,
+   360→        },
+   361→      },
+   362→    },
+   363→    orderBy: {
+   364→      createdAt: "desc",
+   365→    },
+   366→    take: 50,
+   367→  });
+   368→
+   369→  return auditLogs.map((log) => ({
+   370→    id: log.id,
+   371→    importedAt: log.createdAt.toISOString(),
+   372→    importedBy: log.user.name || log.user.email,
+   373→    strategy: (log.newData as any)?.strategy || "unknown",
+   374→    statistics: (log.newData as any)?.statistics || {},
+   375→    success: log.entityType === "BACKUP_IMPORT",
+   376→  }));
+   377→}
+   378→
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>

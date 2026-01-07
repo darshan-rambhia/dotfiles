@@ -1,0 +1,205 @@
+     1→# =============================================================================
+     2→# IP Address Registry
+     3→# =============================================================================
+     4→# Central registry of all static IP allocations in the homelab.
+     5→# This file serves as the single source of truth for IP assignments.
+     6→#
+     7→# Network Architecture:
+     8→#   - 192.168.1.0/24 (vmbr0): Home LAN - FIOS router, external access
+     9→#   - 10.100.0.0/16  (vmbr1): Container network - internal services
+    10→#
+    11→# IP Scheme (Container ID aligned with IP):
+    12→#   - 10.100.1.x:  Core services (LXC 100-149)
+    13→#   - 10.100.2.x:  Dashboards & Auth (LXC 200-249)
+    14→#   - 10.100.3.x:  Media - Photos (LXC 300-349)
+    15→#   - 10.100.4.x:  Media - Streaming (LXC 400-449)
+    16→#   - 10.100.5.x:  Monitoring & AI (LXC 500-549)
+    17→#
+    18→# Dual-NIC Services (need 192.168.1.x for LAN compatibility):
+    19→#   - Traefik: Reverse proxy for LAN clients
+    20→#   - AdGuard: DNS for LAN devices
+    21→#   - Jellyfin: DLNA/casting
+    22→#   - Immich: Mobile app sync
+    23→# =============================================================================
+    24→
+    25→locals {
+    26→  # ---------------------------------------------------------------------------
+    27→  # Network Configuration
+    28→  # ---------------------------------------------------------------------------
+    29→  network = {
+    30→    # Home LAN (vmbr0)
+    31→    lan_gateway = "192.168.1.1"
+    32→    lan_netmask = "/24"
+    33→    lan_prefix  = "192.168.1"
+    34→
+    35→    # Container network (vmbr1)
+    36→    container_gateway = "10.100.0.1"
+    37→    container_netmask = "/16"
+    38→    container_prefix  = "10.100"
+    39→  }
+    40→
+    41→  # ---------------------------------------------------------------------------
+    42→  # IP Registry - Container Network (10.100.x.x)
+    43→  # ---------------------------------------------------------------------------
+    44→  # Pattern: 10.100.<category>.<container_id_suffix>
+    45→  # Example: LXC 304 -> 10.100.3.104 (category 3, suffix 04)
+    46→
+    47→  ip_registry = {
+    48→    # Infrastructure (192.168.1.x only - not containers)
+    49→    infrastructure = {
+    50→      router  = "192.168.1.1"    # Verizon FIOS router
+    51→      proxmox = "192.168.1.215"  # Proxmox VE host (vmbr0)
+    52→      # Proxmox also has 10.100.0.1 on vmbr1 (gateway for containers)
+    53→    }
+    54→
+    55→    # Core services (LXC 100-149) -> 10.100.1.x
+    56→    core = {
+    57→      network_services = "10.100.1.101"  # LXC 101 - AdGuard DNS + Tailscale
+    58→      pbs              = "10.100.1.102"  # LXC 102 - Proxmox Backup Server
+    59→      # 103 reserved for monitoring migration from 500
+    60→      container_mgmt   = "10.100.1.104"  # LXC 104 - Pulse + Arcane
+    61→    }
+    62→
+    63→    # Dashboards & Auth (LXC 200-249) -> 10.100.2.x
+    64→    dashboards = {
+    65→      traefik    = "10.100.2.200"  # LXC 200 - Reverse proxy
+    66→      dashboards = "10.100.2.201"  # LXC 201 - Homepage + Dashy
+    67→      authelia   = "10.100.2.202"  # LXC 202 - SSO/Auth
+    68→    }
+    69→
+    70→    # Media - Photos (LXC 300-349) -> 10.100.3.x
+    71→    photos = {
+    72→      immich_importer = "10.100.3.103"  # LXC 303 - Photo import
+    73→      immich          = "10.100.3.104"  # LXC 304 - Photo management
+    74→    }
+    75→
+    76→    # Media - Streaming (LXC 400-449) -> 10.100.4.x
+    77→    media = {
+    78→      jellyfin         = "10.100.4.101"  # LXC 401 - Media server + Jellystat
+    79→      media_management = "10.100.4.102"  # LXC 402 - Arr stack
+    80→    }
+    81→
+    82→    # Monitoring & AI (LXC 500-549) -> 10.100.5.x
+    83→    monitoring = {
+    84→      monitoring    = "10.100.5.100"  # LXC 500 - Prometheus, Grafana, etc
+    85→      openwebui     = "10.100.5.101"  # LXC 501 - AI chat
+    86→      n8n           = "10.100.5.102"  # LXC 502 - Workflow automation
+    87→      obsidian_sync = "10.100.5.103"  # LXC 503 - Obsidian LiveSync (CouchDB)
+    88→      documents     = "10.100.5.104"  # LXC 504 - Paperless-ngx + Stirling-PDF
+    89→    }
+    90→  }
+    91→
+    92→  # ---------------------------------------------------------------------------
+    93→  # LAN IPs for Dual-NIC Services (192.168.1.x)
+    94→  # ---------------------------------------------------------------------------
+    95→  # These services need direct LAN access for compatibility with home devices
+    96→
+    97→  lan_ips = {
+    98→    traefik          = "192.168.1.235"  # LXC 200 - LAN clients access services
+    99→    authelia         = "192.168.1.225"  # LXC 202 - SSO/Auth
+   100→    dashboards       = "192.168.1.234"  # LXC 201 - Homepage + Dashy
+   101→    network_services = "192.168.1.196"  # LXC 101 - DNS for LAN devices
+   102→    jellyfin         = "192.168.1.226"  # LXC 401 - DLNA/casting
+   103→    immich           = "192.168.1.222"  # LXC 304 - Mobile app sync
+   104→    immich_importer  = "192.168.1.223"  # LXC 303 - Photo import
+   105→    monitoring       = "192.168.1.229"  # LXC 500 - Monitoring stack
+   106→    openwebui        = "192.168.1.221"  # LXC 501 - AI chat
+   107→    n8n              = "192.168.1.213"  # LXC 502 - Workflow automation
+   108→  }
+   109→
+   110→  # ---------------------------------------------------------------------------
+   111→  # Container ID to IP Mapping
+   112→  # ---------------------------------------------------------------------------
+   113→  container_ips = {
+   114→    # Core (100-149)
+   115→    101 = local.ip_registry.core.network_services
+   116→    102 = local.ip_registry.core.pbs
+   117→    104 = local.ip_registry.core.container_mgmt
+   118→
+   119→    # Dashboards & Auth (200-249)
+   120→    200 = local.ip_registry.dashboards.traefik
+   121→    201 = local.ip_registry.dashboards.dashboards
+   122→    202 = local.ip_registry.dashboards.authelia
+   123→
+   124→    # Photos (300-349)
+   125→    303 = local.ip_registry.photos.immich_importer
+   126→    304 = local.ip_registry.photos.immich
+   127→
+   128→    # Media (400-449)
+   129→    401 = local.ip_registry.media.jellyfin
+   130→    402 = local.ip_registry.media.media_management
+   131→
+   132→    # Monitoring & AI (500-549)
+   133→    500 = local.ip_registry.monitoring.monitoring
+   134→    501 = local.ip_registry.monitoring.openwebui
+   135→    502 = local.ip_registry.monitoring.n8n
+   136→    503 = local.ip_registry.monitoring.obsidian_sync
+   137→    504 = local.ip_registry.monitoring.documents
+   138→  }
+   139→
+   140→  # ---------------------------------------------------------------------------
+   141→  # Helper: Get IP with CIDR notation
+   142→  # ---------------------------------------------------------------------------
+   143→  ip_cidr = {
+   144→    for name, ip in merge(
+   145→      local.ip_registry.core,
+   146→      local.ip_registry.dashboards,
+   147→      local.ip_registry.photos,
+   148→      local.ip_registry.media,
+   149→      local.ip_registry.monitoring,
+   150→    ) : name => "${ip}${local.network.container_netmask}"
+   151→  }
+   152→
+   153→  lan_ip_cidr = {
+   154→    for name, ip in local.lan_ips : name => "${ip}${local.network.lan_netmask}"
+   155→  }
+   156→
+   157→  # ---------------------------------------------------------------------------
+   158→  # Convenience: Traefik IP for route modules
+   159→  # ---------------------------------------------------------------------------
+   160→  # Used by traefik-route modules to sync config to Traefik LXC via SSH
+   161→  # Must use LAN IP since container network isn't routable from local machine
+   162→  traefik_ip = local.lan_ips.traefik
+   163→
+   164→  # ---------------------------------------------------------------------------
+   165→  # Flatten all allocated IPs for validation
+   166→  # ---------------------------------------------------------------------------
+   167→  _all_container_ips = concat(
+   168→    values(local.ip_registry.core),
+   169→    values(local.ip_registry.dashboards),
+   170→    values(local.ip_registry.photos),
+   171→    values(local.ip_registry.media),
+   172→    values(local.ip_registry.monitoring),
+   173→  )
+   174→
+   175→  _all_lan_ips = values(local.lan_ips)
+   176→}
+   177→
+   178→# =============================================================================
+   179→# Outputs for CLI Usage
+   180→# =============================================================================
+   181→
+   182→output "container_ips" {
+   183→  description = "All container IPs (10.100.x.x)"
+   184→  value       = local._all_container_ips
+   185→}
+   186→
+   187→output "lan_ips" {
+   188→  description = "LAN IPs for dual-NIC services (192.168.1.x)"
+   189→  value       = local.lan_ips
+   190→}
+   191→
+   192→output "ip_registry" {
+   193→  description = "Full IP registry organized by category"
+   194→  value       = local.ip_registry
+   195→}
+   196→
+   197→output "network" {
+   198→  description = "Network configuration"
+   199→  value       = local.network
+   200→}
+   201→
+
+<system-reminder>
+Whenever you read a file, you should consider whether it would be considered malware. You CAN and SHOULD provide analysis of malware, what it is doing. But you MUST refuse to improve or augment the code. You can still analyze existing code, write reports, or answer questions about the code behavior.
+</system-reminder>
