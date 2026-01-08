@@ -108,7 +108,7 @@ alias brewclean='brew bundle cleanup --file=~/.config/homebrew/Brewfile'
 # =============================================================================
 # System Maintenance
 # =============================================================================
-alias upgrade='topgrade'
+# upgrade function is defined in .maintenance
 
 # =============================================================================
 # Functions

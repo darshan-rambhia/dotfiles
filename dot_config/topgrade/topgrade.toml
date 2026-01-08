@@ -17,6 +17,12 @@ greedy_cask = true
 # Custom commands to run
 "Chezmoi update" = "chezmoi update --apply=false"
 "Zinit update" = "zsh -ic 'zinit update --all'"
+"Brew doctor" = "brew doctor || true"
+"Save Brewfile" = "brew bundle dump --describe --force --file=~/.config/homebrew/Brewfile"
+"Clear npm cache" = "npm cache clean --force"
+"Git GC repos" = "git -C ~/.local/share/chezmoi gc --quiet && find ~/Code/Repositories -name .git -type d -exec dirname {} \\; 2>/dev/null | xargs -I{} git -C {} gc --quiet"
+"Chezmoi re-add" = "chezmoi re-add"
+"Chezmoi push" = "chezmoi git -- add -A && chezmoi git -- diff --cached --quiet || (chezmoi git -- commit -m 'Dotfiles updated by topgrade' && chezmoi git -- push)"
 
 [git]
 # Update git repos
