@@ -106,6 +106,11 @@ alias brewcheck='brew bundle check --file=~/.config/homebrew/Brewfile'
 alias brewclean='brew bundle cleanup --file=~/.config/homebrew/Brewfile'
 
 # =============================================================================
+# System Maintenance
+# =============================================================================
+alias upgrade='topgrade'
+
+# =============================================================================
 # Functions
 # =============================================================================
 function set_win_title() {

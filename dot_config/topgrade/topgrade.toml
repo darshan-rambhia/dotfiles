@@ -1,0 +1,29 @@
+# Topgrade configuration
+# https://github.com/topgrade-rs/topgrade
+
+[misc]
+# Don't ask for confirmation
+assume_yes = false
+# Cleanup after updates
+cleanup = true
+# Skip items that need sudo
+#no_sudo = true
+
+[brew]
+# Greedy cask upgrade (upgrade even if auto-update is enabled)
+greedy_cask = true
+
+[commands]
+# Custom commands to run
+"Chezmoi update" = "chezmoi update --apply=false"
+"Zinit update" = "zsh -ic 'zinit update --all'"
+
+[git]
+# Update git repos
+repos = [
+  "~/.local/share/zinit/plugins/*"
+]
+
+# Skip these steps if they cause issues
+[linux]
+# Skip snap, flatpak on macOS
