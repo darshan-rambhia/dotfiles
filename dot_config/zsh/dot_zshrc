@@ -129,7 +129,8 @@ fi
 # =============================================================================
 # History Configuration
 # =============================================================================
-# HISTFILE is set in .zshenv for XDG compliance
+# Override /etc/zshrc which sets HISTFILE to $ZDOTDIR/.zsh_history
+HISTFILE="$XDG_STATE_HOME/zsh/history"
 HISTSIZE=999999999
 SAVEHIST=$HISTSIZE
 HIST_STAMPS="yyyy-mm-dd"

@@ -16,7 +16,7 @@
 [core]
 	excludesFile = ~/.config/git/ignore
 	editor = code --wait
-	pager = less -FRX
+	pager = delta
 	autocrlf = input
 	ignorecase = true
 	# Performance optimizations
@@ -24,6 +24,18 @@
 	untrackedCache = true
 	preloadIndex = true
 	commitGraph = true
+
+# -----------------------------------------------------------------------------
+# Delta (syntax-highlighted diffs)
+# -----------------------------------------------------------------------------
+[delta]
+	navigate = true
+	line-numbers = true
+	side-by-side = false
+	syntax-theme = zenburn
+
+[interactive]
+	diffFilter = delta --color-only
 
 [init]
 	defaultBranch = main
