@@ -111,6 +111,13 @@ alias brewclean='brew bundle cleanup --file=~/.config/homebrew/Brewfile'
 # =============================================================================
 # upgrade function is defined in .maintenance
 
+# Quick chezmoi sync to git
+function chezmoi-push() {
+  chezmoi git -- add -A && \
+  chezmoi git -- commit -m "Dotfiles update - $(date +%Y-%m-%d)" && \
+  chezmoi git -- push
+}
+
 # =============================================================================
 # Functions
 # =============================================================================

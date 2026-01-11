@@ -45,6 +45,16 @@
 # -----------------------------------------------------------------------------
 [safe]
 	directory = *
+	directory = /Users/rambhiad/Code/Repositories/personal-projects/vamsa
+	directory = /Users/rambhiad/Code/Repositories/personal-projects/vamsa
+	directory = /Users/rambhiad/Code/Repositories/personal-projects/vamsa
+	directory = /Users/rambhiad/Code/Repositories/personal-projects/vamsa
+	directory = /Users/rambhiad/Code/Repositories/personal-projects/vamsa
+	directory = /Users/rambhiad/Code/Repositories/personal-projects/vamsa
+	directory = /Users/rambhiad/Code/Repositories/personal-projects/vamsa
+	directory = /Users/rambhiad/Code/Repositories/personal-projects/vamsa
+	directory = /Users/rambhiad/Code/Repositories/personal-projects/vamsa
+	directory = /Users/rambhiad/Code/Repositories/personal-projects/vamsa
 
 [transfer]
 	# Block credentials in URLs (security best practice)

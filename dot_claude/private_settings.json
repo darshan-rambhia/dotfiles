@@ -1,41 +1,43 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bd prime"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bd prime"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  },
   "enabledPlugins": {
     "gopls-lsp@claude-plugins-official": true,
     "jdtls-lsp@claude-plugins-official": true,
     "playwright@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true
+    "typescript-lsp@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true
   },
   "feedbackSurveyState": {
     "lastShownTime": 1754053596778
   },
-  "hooks": {
-    "PreCompact": [
-      {
-        "hooks": [
-          {
-            "command": "bd prime",
-            "type": "command"
-          }
-        ],
-        "matcher": ""
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "command": "bd prime",
-            "type": "command"
-          }
-        ],
-        "matcher": ""
-      }
-    ]
-  },
-  "statusLine": {
-    "command": "input=$(cat); current_dir=$(echo \"$input\" | jq -r '.workspace.current_dir'); model_name=$(echo \"$input\" | jq -r '.model.display_name'); user=$(whoami); host=$(hostname -s); rel_dir=${current_dir/#$HOME/~}; git_info=''; if [ -d \"$current_dir/.git\" ]; then cd \"$current_dir\" \u0026\u0026 branch=$(git branch --show-current 2\u003e/dev/null) \u0026\u0026 git_status=$(git status --porcelain 2\u003e/dev/null) \u0026\u0026 if [ -n \"$git_status\" ]; then git_info=\" [$branch*]\"; else git_info=\" [$branch]\"; fi; fi; printf \"\\033[1;36m%s@%s\\033[0m:\\033[1;34m%s\\033[0m%s \\033[1;35m(%s)\\033[0m\" \"$user\" \"$host\" \"$rel_dir\" \"$git_info\" \"$model_name\"",
-    "type": "command"
-  }
+  "model": "sonnet"
 }
