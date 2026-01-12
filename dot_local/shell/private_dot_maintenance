@@ -33,9 +33,9 @@ _upgrade_mark_done() {
 upgrade() {
   topgrade "$@"
   local exit_code=$?
-  if [[ $exit_code -eq 0 ]]; then
-    _upgrade_mark_done
-  fi
+  # Always mark as done, even if topgrade had some failures
+  # (topgrade often exits non-zero if any single step fails)
+  _upgrade_mark_done
   return $exit_code
 }
 
