@@ -8,6 +8,8 @@ assume_yes = false
 cleanup = true
 # Skip items that need sudo
 #no_sudo = true
+# Disable steps you don't use
+disable = ["tmux", "helm", "containers"]
 
 [brew]
 # Greedy cask upgrade (upgrade even if auto-update is enabled)
@@ -15,6 +17,7 @@ greedy_cask = true
 
 [commands]
 # Custom commands to run
+"Clean npm staging" = "find $(npm root -g) -maxdepth 1 -name '.*' -type d -exec rm -rf {} + 2>/dev/null || true"
 "Chezmoi update" = "chezmoi update --apply=false"
 "Zinit update" = "zsh -ic 'zinit update --all'"
 "Brew doctor" = "brew doctor || true"

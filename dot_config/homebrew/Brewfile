@@ -51,6 +51,10 @@ brew "ffmpeg"
 brew "fzf"
 # GNU awk utility
 brew "gawk"
+# Open-source, cross-platform JavaScript runtime environment
+brew "node"
+# Interact with Google Gemini AI models from the command-line
+brew "gemini-cli"
 # GitHub command-line tool
 brew "gh"
 # Syntax-highlighting pager for git and diff output
@@ -99,8 +103,6 @@ brew "maven"
 brew "nasm"
 # Small build system for use with gyp or CMake
 brew "ninja"
-# Open-source, cross-platform JavaScript runtime environment
-brew "node"
 # Manage multiple Node.js versions
 brew "nvm"
 # Create, run, and share large language models (LLMs)
@@ -125,6 +127,8 @@ brew "pinentry-mac"
 brew "pipx"
 # Draw UML diagrams
 brew "plantuml"
+# Fast, disk space efficient package manager
+brew "pnpm"
 # Python package management tool
 brew "poetry"
 # Framework for managing multi-language pre-commit hooks

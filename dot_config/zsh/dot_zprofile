@@ -1,0 +1,10 @@
+# =============================================================================
+# ~/.zprofile - Commands for login shells
+# =============================================================================
+# This runs after /etc/zprofile which calls path_helper and reorders PATH
+
+# Fix PATH order after path_helper - ensure Homebrew comes before system bins
+# Note: GOPATH and other XDG vars are already set in .zshenv
+
+# Prepend Homebrew and local bin to PATH
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$HOME/.local/bin:${GOPATH:-$HOME/.local/share/go}/bin:$PATH"
