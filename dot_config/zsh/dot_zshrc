@@ -277,6 +277,8 @@ fi
 # =============================================================================
 # Powerlevel10k Theme
 # =============================================================================
+# Custom gitstatus (pure zsh/gawk alternative to gitstatusd binary)
+[[ -f "$HOME/.local/shell/p10k-gitstatus.zsh" ]] && source "$HOME/.local/shell/p10k-gitstatus.zsh"
 [[ -f "$HOME/.local/shell/.p10k.zsh" ]] && source "$HOME/.local/shell/.p10k.zsh"
 
 # =============================================================================

@@ -118,6 +118,9 @@ function chezmoi-push() {
   chezmoi git -- push
 }
 
+# Reload shell configuration
+alias reloadsh='exec zsh'
+
 # =============================================================================
 # Functions
 # =============================================================================
