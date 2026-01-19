@@ -17,8 +17,6 @@ brew "tree"
 brew "ansible"
 # Checks ansible playbooks for practices and behaviour
 brew "ansible-lint"
-# Library for ARIB STD-B24, decoding JIS 8 bit characters and parsing MPEG-TS
-brew "aribb24", link: false
 # Collection of over 500 reusable autoconf macros
 brew "autoconf-archive"
 # Tool for generating GNU Standards-compliant Makefiles
@@ -49,8 +47,6 @@ brew "docker-credential-helper"
 brew "eza"
 # Play, record, convert, and stream select audio and video codecs
 brew "ffmpeg"
-# Minimalistic plugin API for video effects
-brew "frei0r", link: false
 # Command-line fuzzy finder written in Go
 brew "fzf"
 # GNU awk utility
@@ -97,12 +93,8 @@ brew "kubernetes-cli"
 brew "kustomize"
 # Simple terminal UI for git commands
 brew "lazygit"
-# Blu-Ray disc playback library for media players like VLC
-brew "libbluray", link: false
 # Postgres C API library
 brew "libpq", link: true
-# Reliable Internet Stream Transport (RIST)
-brew "librist", link: false
 # Mac App Store command-line interface
 brew "mas"
 # Java-based project management
@@ -121,8 +113,6 @@ brew "openapi-generator"
 brew "ripgrep"
 # AI coding agent, built for the terminal
 brew "opencode"
-# Audio codecs extracted from Android open source project
-brew "opencore-amr", link: false
 # Development kit for the Java programming language
 brew "openjdk@17"
 # Open source suite of directory software
@@ -153,18 +143,12 @@ brew "qpdf"
 brew "rclone"
 # Perl-powered file rename script with many helpful built-ins
 brew "rename"
-# Audio time stretcher tool and library
-brew "rubberband", link: false
 # Static analysis and lint tool, for (ba)sh scripts
 brew "shellcheck"
 # Work with remote images registries
 brew "skopeo"
 # Editor of encrypted files
 brew "sops"
-# Audio codec designed for speech
-brew "speex", link: false
-# Secure Reliable Transport
-brew "srt", link: false
 # Cross-shell prompt for astronauts
 brew "starship"
 # User interface to the TELNET protocol
@@ -189,16 +173,10 @@ brew "virtualenv"
 brew "wget"
 # Why is this running?
 brew "witr"
-# High-performance, high-quality MPEG-4 video library
-brew "xvid", link: false
 # Language Server for Yaml Files
 brew "yaml-language-server"
 # Process YAML, JSON, XML, CSV and properties documents from the CLI
 brew "yq"
-# High-performance, asynchronous messaging library
-brew "zeromq", link: false
-# Scaling, colorspace conversion, and dithering library
-brew "zimg", link: false
 # Shell extension to navigate your filesystem faster
 brew "zoxide"
 # A CLI for building apps using Cloud Native Buildpacks
