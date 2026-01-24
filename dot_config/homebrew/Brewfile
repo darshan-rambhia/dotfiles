@@ -33,6 +33,8 @@ brew "chezmoi"
 brew "cmake"
 # Documentation for CMake
 brew "cmake-docs"
+# Portable file server
+brew "copyparty"
 # GNU File, Shell, and Text utilities
 brew "coreutils"
 # Get a file from an HTTP, HTTPS or FTP server
@@ -275,6 +277,7 @@ vscode "howardzuo.vscode-npm-dependency"
 vscode "humao.rest-client"
 vscode "ibm.output-colorizer"
 vscode "idered.npm"
+vscode "igordvlpr.open-in-browser"
 vscode "infeng.vscode-react-typescript"
 vscode "ipedrazas.kubernetes-snippets"
 vscode "ivory-lab.jenkinsfile-support"
