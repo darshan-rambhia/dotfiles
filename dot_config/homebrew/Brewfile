@@ -39,10 +39,6 @@ brew "copyparty"
 brew "coreutils"
 # Get a file from an HTTP, HTTPS or FTP server
 brew "curl"
-# Pack, ship and run any application as a lightweight container
-brew "docker"
-# Isolated development environments using Docker
-brew "docker-compose"
 # Platform keystore credential helper for Docker
 brew "docker-credential-helper"
 # Modern, maintained replacement for ls
@@ -268,7 +264,6 @@ vscode "github.copilot-chat"
 vscode "github.vscode-github-actions"
 vscode "github.vscode-pull-request-github"
 vscode "golang.go"
-vscode "google.gemini-cli-vscode-ide-companion"
 vscode "hashicorp.hcl"
 vscode "hbenl.vscode-test-explorer"
 vscode "helm-ls.helm-ls"
