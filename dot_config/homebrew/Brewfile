@@ -9,6 +9,10 @@ tap "steveyegge/beads"
 tap "theurichde/go-aws-sso"
 tap "tofuutils/tap"
 tap "warrensbox/tap"
+# Static analysis and lint tool, for (ba)sh scripts
+brew "shellcheck"
+# Static checker for GitHub Actions workflow files
+brew "actionlint"
 # Simple, modern, secure file encryption
 brew "age"
 # Display directories as trees (with optional color/HTML output)
@@ -23,6 +27,8 @@ brew "autoconf-archive"
 brew "automake"
 # Official Amazon AWS command-line interface
 brew "awscli"
+# Bourne-Again SHell, a UNIX command interpreter
+brew "bash"
 # Clone of cat(1) with syntax highlighting and Git integration
 brew "bat"
 # Object-file caching compiler wrapper
@@ -39,6 +45,10 @@ brew "copyparty"
 brew "coreutils"
 # Get a file from an HTTP, HTTPS or FTP server
 brew "curl"
+# Docker CLI plugin for extended build capabilities with BuildKit
+brew "docker-buildx"
+# Isolated development environments using Docker
+brew "docker-compose"
 # Platform keystore credential helper for Docker
 brew "docker-credential-helper"
 # Modern, maintained replacement for ls
@@ -92,7 +102,7 @@ brew "kustomize"
 # Simple terminal UI for git commands
 brew "lazygit"
 # Postgres C API library
-brew "libpq", link: true
+brew "libpq"
 # Mac App Store command-line interface
 brew "mas"
 # Java-based project management
@@ -103,6 +113,8 @@ brew "nasm"
 brew "ninja"
 # Manage multiple Node.js versions
 brew "nvm"
+# Oracle Cloud Infrastructure CLI
+brew "oci-cli"
 # Create, run, and share large language models (LLMs)
 brew "ollama"
 # Generate clients, server & docs from an OpenAPI spec (v2, v3)
@@ -141,8 +153,6 @@ brew "qpdf"
 brew "rclone"
 # Perl-powered file rename script with many helpful built-ins
 brew "rename"
-# Static analysis and lint tool, for (ba)sh scripts
-brew "shellcheck"
 # Work with remote images registries
 brew "skopeo"
 # Editor of encrypted files
@@ -155,6 +165,8 @@ brew "telnet"
 brew "terraform-docs"
 # Terraform version manager inspired by rbenv
 brew "tfenv"
+# Linter for Terraform files
+brew "tflint"
 # Terragrunt version manager inspired by tfenv
 brew "tgenv"
 # Terminal multiplexer
@@ -192,6 +204,8 @@ cask "0-ad"
 # Command-line interface for 1Password
 cask "1password-cli"
 cask "font-hack-nerd-font"
+# Terminal emulator that uses platform-native UI and GPU acceleration
+cask "ghostty"
 # Menu bar manager
 cask "jordanbaird-ice"
 # Get up and running with large language models locally
@@ -217,9 +231,9 @@ mas "Magnet", id: 441258766
 mas "Patterns", id: 429449079
 mas "Tailscale", id: 1475387142
 mas "WhatsApp", id: 310633997
-mas "Xcode", id: 497799835
 vscode "42crunch.vscode-openapi"
 vscode "4ops.terraform"
+vscode "aaron-bond.better-comments"
 vscode "ahmadalli.vscode-nginx-conf"
 vscode "alefragnani.project-manager"
 vscode "aleksandra.go-group-imports"
@@ -247,6 +261,7 @@ vscode "dnicolson.binary-plist"
 vscode "donjayamanne.git-extension-pack"
 vscode "donjayamanne.githistory"
 vscode "dotjoshjohnson.xml"
+vscode "dsznajder.es7-react-js-snippets"
 vscode "dustypomerleau.rust-syntax"
 vscode "eamodio.gitlens"
 vscode "ecmel.vscode-html-css"
@@ -259,7 +274,6 @@ vscode "figma.figma-vscode-extension"
 vscode "formulahendry.auto-close-tag"
 vscode "formulahendry.auto-rename-tag"
 vscode "foxundermoon.shell-format"
-vscode "github.copilot"
 vscode "github.copilot-chat"
 vscode "github.vscode-github-actions"
 vscode "github.vscode-pull-request-github"
@@ -287,6 +301,7 @@ vscode "kingwl.vscode-vitest-runner"
 vscode "leizongmin.node-module-intellisense"
 vscode "lixvbnet.goworkspace"
 vscode "maarti.jenkins-doc"
+vscode "malmaud.tmux"
 vscode "marclipovsky.string-manipulation"
 vscode "marlon407.code-groovy"
 vscode "mechatroner.rainbow-csv"
@@ -307,6 +322,7 @@ vscode "ms-python.vscode-python-envs"
 vscode "ms-vscode.makefile-tools"
 vscode "ms-vscode.test-adapter-converter"
 vscode "ms-vscode.vs-keybindings"
+vscode "ms-vscode.vscode-typescript-next"
 vscode "mtxr.sqltools"
 vscode "mtxr.sqltools-driver-pg"
 vscode "nhoizey.gremlins"
@@ -325,6 +341,7 @@ vscode "qezhu.gitlink"
 vscode "raynigon.nginx-formatter"
 vscode "redhat.vscode-xml"
 vscode "redhat.vscode-yaml"
+vscode "rphlmr.vscode-drizzle-orm"
 vscode "s1e2b3i4.onenord-vscode"
 vscode "secanis.jenkinsfile-support"
 vscode "seltonfiuza.terragrunt-easy-plan"
@@ -346,3 +363,8 @@ vscode "yoavbls.pretty-ts-errors"
 vscode "zignd.html-css-class-completion"
 vscode "ziyasal.vscode-open-in-github"
 vscode "zoellner.openapi-preview"
+go "github.com/air-verse/air"
+go "github.com/securego/gosec/v2/cmd/gosec"
+go "golang.org/x/vuln/cmd/govulncheck"
+go "github.com/swaggo/swag/cmd/swag"
+go "github.com/a-h/templ/cmd/templ"
