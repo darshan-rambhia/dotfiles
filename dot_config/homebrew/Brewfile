@@ -231,6 +231,7 @@ mas "Magnet", id: 441258766
 mas "Patterns", id: 429449079
 mas "Tailscale", id: 1475387142
 mas "WhatsApp", id: 310633997
+mas "Xcode", id: 497799835
 vscode "42crunch.vscode-openapi"
 vscode "4ops.terraform"
 vscode "aaron-bond.better-comments"
