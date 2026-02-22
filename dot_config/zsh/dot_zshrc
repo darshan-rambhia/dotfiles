@@ -3,6 +3,14 @@
 # =============================================================================
 # Note: Environment variables are now in ~/.zshenv (XDG compliant)
 
+# Ensure .zshenv is sourced (needed for Claude Code and other tools that skip it)
+[[ -f "$HOME/.zshenv" ]] && source "$HOME/.zshenv"
+
+# Auto-start tmux (only in Ghostty, not already in tmux)
+if [[ "$TERM_PROGRAM" == "ghostty" && -z "$TMUX" ]]; then
+    exec tmux new-session -A -s main
+fi
+
 # Kiro CLI pre block. Keep at the top of this file.
 [[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.pre.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.pre.zsh"
 
@@ -290,3 +298,6 @@ fpath=(/Users/rambhiad/.docker/completions $fpath)
 autoload -Uz compinit
 compinit
 # End of Docker CLI completions
+
+# bun completions
+[ -s "/Users/rambhiad/.bun/_bun" ] && source "/Users/rambhiad/.bun/_bun"
