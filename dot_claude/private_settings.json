@@ -3,6 +3,7 @@
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
+  "model": "sonnet",
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/statusline-command.sh"
@@ -19,5 +20,7 @@
   "skipDangerousModePermissionPrompt": true,
   "feedbackSurveyState": {
     "lastShownTime": 1754053596778
-  }
+  },
+  "mcpServers": {},
+  "effortLevel": "medium"
 }
