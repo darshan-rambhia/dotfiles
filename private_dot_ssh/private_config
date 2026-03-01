@@ -7,10 +7,18 @@ Host *
   ServerAliveCountMax 10
   PermitLocalCommand yes
   StrictHostKeyChecking accept-new
+  IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
 
 Host github.com
   User git
   IdentityFile ~/.ssh/github_ed25519
+
+Host staging-db
+  HostName 10.100.5.105
+  User admin
+  LocalForward 5433 localhost:5432
+  IdentitiesOnly yes
+  IdentityFile ~/.ssh/1Password/SHA256_VTThKxGUUC7mIafG5i1kmf+67PJItMQ9imML8FZnZ04.pub
 
 Host homelab
   ForwardAgent yes
