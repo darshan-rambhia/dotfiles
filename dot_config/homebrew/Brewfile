@@ -195,7 +195,7 @@ brew "zoxide"
 brew "buildpacks/tap/pack"
 # Detect non-inclusive language in your source code.
 brew "get-woke/tap/woke"
-# Task runner / simpler Make alternative written in Go
+# A fast, cross-platform build tool inspired by Make, designed for modern workflows.
 brew "go-task/tap/go-task"
 # Incredibly fast JavaScript runtime, bundler, transpiler and package manager - all in one.
 brew "oven-sh/bun/bun"

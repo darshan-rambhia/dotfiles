@@ -4,7 +4,7 @@
 # Note: Environment variables are now in ~/.zshenv (XDG compliant)
 
 # Ensure .zshenv is sourced (needed for Claude Code and other tools that skip it)
-[[ -f "$HOME/.zshenv" ]] && source "$HOME/.zshenv"
+[[ -z "$ZSHENV_LOADED" ]] && source "$HOME/.zshenv"
 
 # Auto-start tmux (only in Ghostty, not already in tmux)
 if [[ "$TERM_PROGRAM" == "ghostty" && -z "$TMUX" ]]; then
@@ -293,11 +293,6 @@ fi
 # Kiro CLI post block. Keep at the bottom of this file.
 # =============================================================================
 [[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh"
-# The following lines have been added by Docker Desktop to enable Docker CLI completions.
-fpath=(/Users/rambhiad/.docker/completions $fpath)
-autoload -Uz compinit
-compinit
-# End of Docker CLI completions
 
 # bun completions
 [ -s "/Users/rambhiad/.bun/_bun" ] && source "/Users/rambhiad/.bun/_bun"

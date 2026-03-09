@@ -4,6 +4,10 @@
 # This file is loaded first, before .zprofile, .zshrc, and .zlogin
 # Only put environment variables here - no interactive shell config
 
+# Guard against double-sourcing (e.g. when .zshrc re-sources this file)
+[[ -n "$ZSHENV_LOADED" ]] && return
+export ZSHENV_LOADED=1
+
 # =============================================================================
 # XDG Base Directory Specification
 # =============================================================================
