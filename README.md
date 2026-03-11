@@ -70,6 +70,11 @@ chezmoi apply
 brew bundle --file=~/.config/homebrew/Brewfile
 ```
 
+> **Managed Mac (can't write to `/Applications`):** Use `~/Applications` instead:
+> ```bash
+> HOMEBREW_CASK_OPTS="--appdir=~/Applications" brew bundle --file=~/.config/homebrew/Brewfile
+> ```
+
 **Step 7 — Post-install** (see APPS.md for manual installs)
 ```bash
 # Restore PopClip extensions
