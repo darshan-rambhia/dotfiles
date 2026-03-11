@@ -101,7 +101,6 @@ export REDISCLI_HISTFILE="$XDG_STATE_HOME/redis/rediscli_history"
 # =============================================================================
 export HOMEBREW_CACHE="$XDG_CACHE_HOME/homebrew"
 export HOMEBREW_LOGS="$XDG_STATE_HOME/homebrew/logs"
-export HOMEBREW_CASK_OPTS="--appdir=~/Applications"
 
 # =============================================================================
 # Zoxide

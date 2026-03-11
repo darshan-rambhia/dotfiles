@@ -204,7 +204,7 @@ brew "oven-sh/bun/bun"
 # AI-supervised issue tracker for coding workflows
 brew "steveyegge/beads/bd"
 # Real-time strategy game
-cask "0-ad"
+cask "0-ad", args: { appdir: "~/Applications" }
 # Password manager
 cask "1password"
 # Command-line interface for 1Password
