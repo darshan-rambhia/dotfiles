@@ -28,27 +28,33 @@ My personal dotfiles, managed with [chezmoi](https://chezmoi.io/).
 xcode-select --install
 ```
 
-**Step 2 — 1Password** (needed for SSH keys and encrypted secrets)
-
-Download and install manually from https://1password.com/downloads/mac/
-
-Then: sign in → Settings → Developer → enable SSH Agent
-
-**Step 3 — Homebrew**
+**Step 2 — Homebrew**
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-**Step 4 — Restore from rsync backup** (if migrating from old machine)
+**Step 3 — Restore from rsync backup** (no SSH keys or 1Password needed yet)
 ```bash
-# Mount the share first (LAN only — must be on 192.168.1.0/24)
+# Mount the Samba share (LAN only — must be on 192.168.1.0/24)
+# Password: stored in 1Password "elsevier-mac samba"
 open smb://darshan@192.168.1.225/elsevier-mac
 
-# Then rsync back (SSH path, no SMB needed)
-rsync -avzP root@homelab:/tank/elsevier-mac/home/ /Users/rambhiad/
+# Grab the temporary migration SSH key from the share
+cp /Volumes/elsevier-mac/migration_key ~/.ssh/migration_key
+chmod 600 ~/.ssh/migration_key
+
+# Rsync everything back using the temp key
+rsync -avzP -e "ssh -i ~/.ssh/migration_key -o IdentitiesOnly=yes" \
+  root@192.168.1.215:/tank/elsevier-mac/home/ /Users/rambhiad/
 ```
 
 > At this point `~/.local/share/chezmoi` is already restored from the backup.
+
+**Step 4 — 1Password** (install now, after files are restored)
+
+Download and install manually from https://1password.com/downloads/mac/
+
+Then: sign in → Settings → Developer → enable SSH Agent
 
 **Step 5 — Apply dotfiles**
 ```bash
