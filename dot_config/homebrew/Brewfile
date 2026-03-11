@@ -217,8 +217,6 @@ cask "alfred"
 cask "appcleaner"
 # Browser
 cask "arc"
-# Menu bar organizer
-cask "bartender"
 # Prevent Mac from sleeping
 cask "caffeine"
 # Anthropic's Claude desktop app
