@@ -39,8 +39,9 @@ xcode-select --install
 # Password: stored in 1Password "elsevier-mac samba"
 open smb://darshan@192.168.1.225/elsevier-mac
 
-# Grab the temporary migration SSH key from the share
+# Grab the temporary migration SSH key — from the share, or 1Password if unavailable
 cp /Volumes/elsevier-mac/migration_key ~/.ssh/migration_key
+# fallback: op read "op://homelab/migration-temp-key/notesPlain" > ~/.ssh/migration_key
 chmod 600 ~/.ssh/migration_key
 
 # Rsync everything back using the temp key
