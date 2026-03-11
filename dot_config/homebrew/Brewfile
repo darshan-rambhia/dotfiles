@@ -279,6 +279,8 @@ mas "GIF Keyboard", id: 1043270657
 mas "iStat Mini", id: 927292435
 mas "Magnet", id: 441258766
 mas "Patterns", id: 429449079
+# Tailscale available both ways — cask preferred for fresh machines (no App Store login needed)
+cask "tailscale-app"
 mas "Tailscale", id: 1475387142
 mas "WhatsApp", id: 310633997
 mas "Xcode", id: 497799835
