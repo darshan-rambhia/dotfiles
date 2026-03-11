@@ -44,7 +44,9 @@ cp /Volumes/elsevier-mac/migration_key ~/.ssh/migration_key
 chmod 600 ~/.ssh/migration_key
 
 # Rsync everything back using the temp key
-rsync -avzP -e "ssh -i ~/.ssh/migration_key -o IdentitiesOnly=yes" \
+# --no-owner --no-group: assign files to current user regardless of stored UID
+rsync -avzP --no-owner --no-group \
+  -e "ssh -i ~/.ssh/migration_key -o IdentitiesOnly=yes" \
   root@192.168.1.215:/tank/elsevier-mac/home/ /Users/rambhiad/
 ```
 
