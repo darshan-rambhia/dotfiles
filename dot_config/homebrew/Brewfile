@@ -203,19 +203,71 @@ brew "oven-sh/bun/bun"
 brew "steveyegge/beads/bd"
 # Real-time strategy game
 cask "0-ad", args: { appdir: "~/Applications" }
+# Password manager
+cask "1password"
 # Command-line interface for 1Password
 cask "1password-cli"
+# Knowledge base and note-taking
+cask "affine"
+# Productivity app launcher
+cask "alfred"
+# App uninstaller
+cask "appcleaner"
+# Browser
+cask "arc"
+# Menu bar organizer
+cask "bartender"
+# Prevent Mac from sleeping
+cask "caffeine"
+# Anthropic's Claude desktop app
+cask "claude"
+# Voice and text chat
+cask "discord"
 cask "font-hack-nerd-font"
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask "ghostty"
+# Web browser
+cask "google-chrome"
+# GPG tools for macOS
+cask "gpg-suite"
+# Overlay browser for desktop
+cask "helium"
+# Menu bar calendar
+cask "itsycal"
+# JetBrains IDE manager
+cask "jetbrains-toolbox"
 # Menu bar manager
 cask "jordanbaird-ice"
+# Email client (may also be provisioned via MDM)
+cask "microsoft-outlook"
+# Team chat (may also be provisioned via MDM)
+cask "microsoft-teams"
+# Note-taking and knowledge base
+cask "obsidian"
+# Cloud storage
+cask "onedrive"
 # Replacement for Docker Desktop
 cask "orbstack"
 # Used to access context-specific actions when text is selected
 cask "popclip"
+# API client
+cask "rapidapi"
+# Team messaging
+cask "slack"
+# System stats in menu bar
+cask "stats"
+# Game distribution platform
+cask "steam"
+# Quick Look plugin for source code
+cask "syntax-highlight"
 # Replacement for RCDefaultApps, written in Swift
 cask "swiftdefaultappsprefpane"
+# Code editor
+cask "visual-studio-code"
+# Remote desktop viewer
+cask "vnc-viewer"
+# Privacy-focused browser
+cask "zen-browser"
 mas "1Password for Safari", id: 1569813296
 mas "2048 Tile!", id: 851153911
 mas "AdBlock Pro", id: 1018301773

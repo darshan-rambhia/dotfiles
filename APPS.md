@@ -10,6 +10,10 @@ Apps not available via Homebrew or Mac App Store that require manual installatio
 | Self Service | Jamf | Installed via MDM |
 | Jamf Connect | Jamf | Installed via MDM |
 | Falcon | [CrowdStrike](https://www.crowdstrike.com/) | Enterprise security, installed via IT |
+| BeyondTrust | IT | Privilege management, pushed via MDM |
+| PrivilegeManagement | IT | Pushed via MDM |
+| Zscaler | IT | Network security proxy, pushed via IT |
+| Microsoft Word | IT / MDM | May come via company portal or `brew install --cask microsoft-word` |
 
 ## Third-Party Apps
 
@@ -21,7 +25,7 @@ Apps not available via Homebrew or Mac App Store that require manual installatio
 | CrisisGo | [CrisisGo](https://www.crisisgo.com/) | Safety platform |
 | Florix | - | Custom/Unknown |
 | OpenLauncher | - | Custom/Unknown |
-| Syntax Highlight | [GitHub](https://github.com/sbarex/SourceCodeSyntaxHighlight) | Quick Look plugin |
+| Syntax Highlight | [GitHub](https://github.com/sbarex/SourceCodeSyntaxHighlight) | Quick Look plugin (also available via `brew install --cask syntax-highlight`) |
 
 ## Notes
 
