@@ -81,17 +81,17 @@ alias cp='cp -i'
 # =============================================================================
 # Tailscale
 # =============================================================================
-alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
+# alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
 
-# Generate completions only if missing
-if [[ ! -f "${fpath[1]}/_tailscale" ]] && [[ -x "/Applications/Tailscale.app/Contents/MacOS/Tailscale" ]]; then
-  /Applications/Tailscale.app/Contents/MacOS/Tailscale completion zsh > "${fpath[1]}/_tailscale" 2>/dev/null
-fi
+# # Generate completions only if missing
+# if [[ ! -f "${fpath[1]}/_tailscale" ]] && [[ -x "/Applications/Tailscale.app/Contents/MacOS/Tailscale" ]]; then
+#   /Applications/Tailscale.app/Contents/MacOS/Tailscale completion zsh > "${fpath[1]}/_tailscale" 2>/dev/null
+# fi
 
 # =============================================================================
 # Miscellaneous
 # =============================================================================
-alias reload='source ~/.zshrc'
+alias reload='source ~/.config/zsh/.zshrc'
 alias path='echo -e ${PATH//:/\\n}'
 alias ports='lsof -i -P -n | grep LISTEN'
 alias ip='curl -s ifconfig.me'
@@ -120,6 +120,33 @@ function chezmoi-push() {
 
 # Reload shell configuration
 alias reloadsh='exec zsh'
+
+# =============================================================================
+# DraftKings Claude (via LiteLLM)
+# =============================================================================
+function dkclaude() {
+  local token
+  token=$(security find-generic-password -a "$USER" -s "litellm-token" -w 2>/dev/null)
+  if [[ -z "$token" ]]; then
+    echo "LiteLLM token not found in Keychain. Add it with:"
+    echo "  security add-generic-password -a \"\$USER\" -s \"litellm-token\" -w \"<your-token>\""
+    return 1
+  fi
+  ANTHROPIC_BEDROCK_BASE_URL="https://litellm.dev.dkng.tools/bedrock" \
+  CLAUDE_CODE_SKIP_BEDROCK_AUTH=1 \
+  CLAUDE_CODE_USE_BEDROCK=1 \
+  ANTHROPIC_AUTH_TOKEN="$token" \
+  CLAUDE_CONFIG_DIR="$HOME/.config/claude-dk" \
+  claude "$@"
+}
+
+# =============================================================================
+# DraftKings Codex (via LiteLLM)
+# =============================================================================
+function dkcodex() {
+  CODEX_HOME="$HOME/.config/codex-dk" \
+  codex "$@"
+}
 
 # =============================================================================
 # Functions
@@ -170,7 +197,7 @@ function openfiles() {
   echo "├─────────┼─────────┼───────────────────────────────────┤"
 
   lsof 2>/dev/null | awk '{print $2, $1}' | sort | uniq -c | sort -rn | head -$count | \
-    while read files pid proc; do
+    while read -r files pid proc; do
       printf "│ %7s │ %7s │ %-33s │\n" "$files" "$pid" "${proc:0:33}"
     done
 
@@ -205,7 +232,7 @@ function popclip-backup() {
 
   echo "Backing up PopClip extensions..."
   mkdir -p "$dest"
-  rm -rf "$dest"/*
+  rm -rf "${dest:?}"/*
   cp -R "$src"/* "$dest"/
   chezmoi add ~/.config/popclip
   echo "Done. PopClip extensions backed up and added to chezmoi."

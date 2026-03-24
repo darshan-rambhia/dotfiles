@@ -1,7 +1,7 @@
 tap "buildpacks/tap"
+tap "derailed/k9s"
 tap "devnullvoid/pvetui"
-# Proxmox VE TUI
-cask "devnullvoid/pvetui/pvetui"
+tap "fluxcd/tap"
 tap "get-woke/tap"
 tap "go-task/tap"
 tap "hashicorp/tap"
@@ -47,12 +47,22 @@ brew "copyparty"
 brew "coreutils"
 # Get a file from an HTTP, HTTPS or FTP server
 brew "curl"
+# Load/unload environment variables based on $PWD
+brew "direnv"
 # Docker CLI plugin for extended build capabilities with BuildKit
 brew "docker-buildx"
 # Isolated development environments using Docker
 brew "docker-compose"
 # Platform keystore credential helper for Docker
 brew "docker-credential-helper"
+# .NET Core
+brew "dotnet"
+# .NET Core
+brew "dotnet@8"
+# .NET Core
+brew "dotnet@9"
+# Select default apps for documents and URL schemes on macOS
+brew "duti"
 # Modern, maintained replacement for ls
 brew "eza"
 # Play, record, convert, and stream select audio and video codecs
@@ -67,6 +77,8 @@ brew "node"
 brew "gemini-cli"
 # GitHub command-line tool
 brew "gh"
+# Distributed revision control system
+brew "git"
 # Syntax-highlighting pager for git and diff output
 brew "git-delta"
 # Small git utilities
@@ -87,6 +99,8 @@ brew "graphviz"
 brew "helm"
 # Command-line interface for JFrog products
 brew "jfrog-cli"
+# Feature-rich interactive Jira CLI
+brew "jira-cli"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
 # User-friendly front-end to ssh-agent(1)
@@ -109,10 +123,16 @@ brew "libpq"
 brew "mas"
 # Java-based project management
 brew "maven"
+# Simple tool to make locally trusted development certificates
+brew "mkcert"
+# Open source relational database management system
+brew "mysql-client"
 # Netwide Assembler (NASM) is an 80x86 assembler
 brew "nasm"
 # Small build system for use with gyp or CMake
 brew "ninja"
+# Libraries for security-enabled client and server applications
+brew "nss"
 # Manage multiple Node.js versions
 brew "nvm"
 # Oracle Cloud Infrastructure CLI
@@ -155,6 +175,8 @@ brew "qpdf"
 brew "rclone"
 # Perl-powered file rename script with many helpful built-ins
 brew "rename"
+# Utility that provides fast incremental file transfer
+brew "rsync"
 # Easily detect and prevent bugs and anti-patterns in your codebase
 brew "semgrep"
 # Work with remote images registries
@@ -163,6 +185,8 @@ brew "skopeo"
 brew "sops"
 # Cross-shell prompt for astronauts
 brew "starship"
+# Easiest, most secure way to use WireGuard and 2FA
+brew "tailscale"
 # User interface to the TELNET protocol
 brew "telnet"
 # Tool to generate documentation from Terraform modules
@@ -195,98 +219,50 @@ brew "yq"
 brew "zoxide"
 # A CLI for building apps using Cloud Native Buildpacks
 brew "buildpacks/tap/pack"
+# Kubernetes CLI To Manage Your Clusters In Style!
+brew "derailed/k9s/k9s"
+# Flux CLI
+brew "fluxcd/tap/flux"
 # Detect non-inclusive language in your source code.
 brew "get-woke/tap/woke"
 # A fast, cross-platform build tool inspired by Make, designed for modern workflows.
 brew "go-task/tap/go-task"
+# Vault
+brew "hashicorp/tap/vault"
 # Incredibly fast JavaScript runtime, bundler, transpiler and package manager - all in one.
 brew "oven-sh/bun/bun"
 # AI-supervised issue tracker for coding workflows
 brew "steveyegge/beads/bd"
 # Real-time strategy game
 cask "0-ad", args: { appdir: "~/Applications" }
-# Password manager
-cask "1password"
 # Command-line interface for 1Password
 cask "1password-cli"
-# Knowledge base and note-taking
-cask "affine"
-# Productivity app launcher
-cask "alfred"
-# App uninstaller
-cask "appcleaner"
-# Browser
-cask "arc"
-# Prevent Mac from sleeping
-cask "caffeine"
-# Anthropic's Claude desktop app
-cask "claude"
-# Voice and text chat
-cask "discord"
 cask "font-hack-nerd-font"
+# Kubernetes IDE
+cask "freelens"
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask "ghostty"
-# Web browser
-cask "google-chrome"
-# GPG tools for macOS
-cask "gpg-suite"
-# Overlay browser for desktop
-cask "helium"
-# Menu bar calendar
-cask "itsycal"
-# JetBrains IDE manager
-cask "jetbrains-toolbox"
 # Menu bar manager
 cask "jordanbaird-ice"
-# Email client (may also be provisioned via MDM)
-cask "microsoft-outlook"
-# Team chat (may also be provisioned via MDM)
-cask "microsoft-teams"
-# Note-taking and knowledge base
-cask "obsidian"
-# Cloud storage
-cask "onedrive"
 # Replacement for Docker Desktop
-cask "ollama-app"
 cask "orbstack"
 # Used to access context-specific actions when text is selected
 cask "popclip"
-# API client
-cask "rapidapi"
-# Team messaging
-cask "slack"
-# System stats in menu bar
-cask "stats"
-# Game distribution platform
-cask "steam"
-# Quick Look plugin for source code
-cask "syntax-highlight"
+# Collaboration platform for API development
+cask "postman"
+# Store SSH keys in the Secure Enclave
+cask "secretive"
 # Replacement for RCDefaultApps, written in Swift
 cask "swiftdefaultappsprefpane"
-# Code editor
+# Open-source code editor
 cask "visual-studio-code"
-# Remote desktop viewer
-cask "vnc-viewer"
-# Privacy-focused browser
-cask "zen-browser"
-mas "1Password for Safari", id: 1569813296
-mas "2048 Tile!", id: 851153911
-mas "AdBlock Pro", id: 1018301773
-mas "Boom3D Netflix Extension", id: 6445882848
 mas "Browserism", id: 979047768
 mas "Exporter", id: 1099120373
-mas "Ghostery Privacy Ad Blocker", id: 6504861501
-mas "GIF Keyboard", id: 1043270657
-mas "iStat Mini", id: 927292435
-mas "Magnet", id: 441258766
-mas "Patterns", id: 429449079
-# Tailscale available both ways — cask preferred for fresh machines (no App Store login needed)
-cask "tailscale-app"
-mas "Tailscale", id: 1475387142
-mas "WhatsApp", id: 310633997
+mas "LastPass", id: 926036361
+mas "Slack", id: 803453959
+mas "Universal Print", id: 6450432292
 mas "Xcode", id: 497799835
 vscode "4ops.terraform"
-vscode "aaron-bond.better-comments"
 vscode "alefragnani.project-manager"
 vscode "alvesvaren.arc-dark"
 vscode "amazonwebservices.codewhisperer-for-command-line-companion"
@@ -295,15 +271,13 @@ vscode "antfu.browse-lite"
 vscode "antfu.vite"
 vscode "anthropic.claude-code"
 vscode "bradlc.vscode-tailwindcss"
+vscode "catppuccin.catppuccin-vsc"
 vscode "chadalen.vscode-jetbrains-icon-theme"
-vscode "christian-kohler.npm-intellisense"
-vscode "christian-kohler.path-intellisense"
 vscode "codezombiech.gitignore"
 vscode "d4nyll.devops-extension-pack"
-vscode "dbaeumer.vscode-eslint"
+vscode "davidanson.vscode-markdownlint"
 vscode "dnicolson.binary-plist"
 vscode "donjayamanne.githistory"
-vscode "dsznajder.es7-react-js-snippets"
 vscode "ecmel.vscode-html-css"
 vscode "editorconfig.editorconfig"
 vscode "entuent.fira-code-nerd-font"
@@ -315,22 +289,19 @@ vscode "formulahendry.auto-rename-tag"
 vscode "foxundermoon.shell-format"
 vscode "github.copilot-chat"
 vscode "golang.go"
-vscode "hbenl.vscode-test-explorer"
+vscode "hashicorp.hcl"
 vscode "henriiik.docker-linter"
 vscode "howardzuo.vscode-npm-dependency"
 vscode "ibm.output-colorizer"
 vscode "idered.npm"
 vscode "igordvlpr.open-in-browser"
-vscode "infeng.vscode-react-typescript"
 vscode "jebbs.plantuml"
-vscode "jfrog.jfrog-vscode-extension"
 vscode "jmmeessen.jenkins-declarative-support"
 vscode "johnpapa.vscode-peacock"
 vscode "k--kato.intellij-idea-keybindings"
 vscode "leizongmin.node-module-intellisense"
 vscode "marclipovsky.string-manipulation"
 vscode "mechatroner.rainbow-csv"
-vscode "mhutchie.git-graph"
 vscode "mikestead.dotenv"
 vscode "mohsen1.prettify-json"
 vscode "mousavian.ssh-config-syntax-highlighter"
@@ -338,21 +309,25 @@ vscode "ms-azuretools.vscode-containers"
 vscode "ms-azuretools.vscode-docker"
 vscode "ms-ossdata.vscode-pgsql"
 vscode "ms-playwright.playwright"
+vscode "ms-vscode-remote.remote-containers"
+vscode "ms-vscode-remote.remote-ssh"
+vscode "ms-vscode-remote.remote-ssh-edit"
+vscode "ms-vscode-remote.remote-wsl"
+vscode "ms-vscode-remote.vscode-remote-extensionpack"
 vscode "ms-vscode.makefile-tools"
+vscode "ms-vscode.remote-explorer"
+vscode "ms-vscode.remote-server"
 vscode "ms-vscode.test-adapter-converter"
 vscode "ms-vscode.vs-keybindings"
 vscode "ms-vscode.vscode-typescript-next"
-vscode "mtxr.sqltools"
-vscode "mtxr.sqltools-driver-pg"
 vscode "nhoizey.gremlins"
 vscode "oderwat.indent-rainbow"
+vscode "opentofu.vscode-opentofu"
 vscode "oven.bun-vscode"
 vscode "pflannery.vscode-versionlens"
 vscode "ph-hawkins.arc-plus"
 vscode "phoenisx.cssvar"
 vscode "pjmiravalle.terraform-advanced-syntax-highlighting"
-vscode "pkief.material-icon-theme"
-vscode "planet57.vscode-beads"
 vscode "qezhu.gitlink"
 vscode "redhat.vscode-yaml"
 vscode "rphlmr.vscode-drizzle-orm"
@@ -360,6 +335,7 @@ vscode "s1e2b3i4.onenord-vscode"
 vscode "seltonfiuza.terragrunt-easy-plan"
 vscode "shd101wyy.markdown-preview-enhanced"
 vscode "tamasfe.even-better-toml"
+vscode "task.vscode-task"
 vscode "timonwong.shellcheck"
 vscode "vijaynirmal.playwright-mcp-relay"
 vscode "vitest.explorer"

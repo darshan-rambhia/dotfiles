@@ -274,17 +274,11 @@
 # -----------------------------------------------------------------------------
 # Conditional Includes (Work vs Personal)
 # -----------------------------------------------------------------------------
-[includeIf "gitdir:/Users/rambhiad/Code/Repositories/elsevier-research/**"]
-	path = /Users/rambhiad/Code/Repositories/elsevier-research/.gitconfig
+[includeIf "gitdir:~/Code/Repositories/draftkings/**"]
+	path = ~/Code/Repositories/draftkings/.gitconfig
 
-[includeIf "gitdir:/Users/rambhiad/Code/Repositories/personal-projects/**"]
-	path = /Users/rambhiad/Code/Repositories/personal-projects/.gitconfig
-
-# -----------------------------------------------------------------------------
-# Maintenance (auto-configured repos)
-# -----------------------------------------------------------------------------
-[maintenance]
-	repo = /Users/rambhiad/Code/Repositories/elsevier-research/lighthouse/lhp-ui
+[includeIf "gitdir:~/Code/Repositories/personal-projects/**"]
+	path = ~/Code/Repositories/personal-projects/.gitconfig
 
 # -----------------------------------------------------------------------------
 # UI

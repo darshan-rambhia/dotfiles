@@ -1,0 +1,8 @@
+{
+  "skipDangerousModePermissionPrompt": true,
+  "effortLevel": "high",
+  "statusLine": {
+    "type": "command",
+    "command": "bash /Users/d.rambhia/.config/claude-dk/statusline-command.sh"
+  }
+}
