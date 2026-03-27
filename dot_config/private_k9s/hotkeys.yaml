@@ -1,0 +1,25 @@
+hotkeys:
+  # Shift+1: Athos pods
+  shift-1:
+    shortCut: Shift-1
+    description: Athos pods
+    command: pods
+    namespace: athos
+  # Shift+2: Arena Gamesmaster pods
+  shift-2:
+    shortCut: Shift-2
+    description: Gamesmaster pods
+    command: pods
+    namespace: arena-gamesmaster
+  # Shift+3: Athos deployments
+  shift-3:
+    shortCut: Shift-3
+    description: Athos deployments
+    command: deployments
+    namespace: athos
+  # Shift+4: Gamesmaster deployments
+  shift-4:
+    shortCut: Shift-4
+    description: Gamesmaster deployments
+    command: deployments
+    namespace: arena-gamesmaster

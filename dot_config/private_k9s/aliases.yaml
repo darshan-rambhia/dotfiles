@@ -1,0 +1,14 @@
+aliases:
+  # Athos
+  da: pods athos
+  # Arena Gamesmaster
+  gm: pods arena-gamesmaster
+  # Quick resource shortcuts
+  dp: deployments
+  ss: statefulsets
+  svc: services
+  ing: ingresses
+  cm: configmaps
+  sec: secrets
+  ev: events
+  log: logs

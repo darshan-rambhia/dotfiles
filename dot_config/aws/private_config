@@ -1,0 +1,8 @@
+[default]
+region = us-east-1
+output = json
+
+[profile dk]
+region = us-east-1
+output = json
+source_profile = dag-default

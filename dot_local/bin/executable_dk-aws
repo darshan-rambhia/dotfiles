@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+# Wrapper around aws-cia for DraftKings AWS credential management.
+# aws-cia writes STS creds to ~/.aws/credentials; this script copies
+# them into the XDG credentials file so both paths stay in sync.
+#
+# Usage:
+#   dk-aws login          Full login (AD + MFA prompt)
+#   dk-aws refresh        Refresh tokens silently (no AD/MFA)
+
+set -euo pipefail
+
+CIA="${DOTNET_CLI_HOME:-$HOME/.local/share/dotnet}/tools/aws-cia"
+export DOTNET_ROOT="${DOTNET_ROOT:-/opt/homebrew/opt/dotnet/libexec}"
+
+XDG_CREDS="${AWS_SHARED_CREDENTIALS_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/aws/credentials}"
+CIA_CREDS="$HOME/.aws/credentials"
+
+sync_credentials() {
+  if [[ -f "$CIA_CREDS" ]]; then
+    mkdir -p "$(dirname "$XDG_CREDS")"
+    # Copy dag-default as both [default] and [dag-default]
+    {
+      sed 's/^\[dag-default\]/[default]/' "$CIA_CREDS"
+      echo ""
+      cat "$CIA_CREDS"
+    } > "$XDG_CREDS"
+    chmod 600 "$XDG_CREDS"
+    echo "Credentials synced to $XDG_CREDS"
+  fi
+}
+
+DK_USERNAME="${VAULT_USERNAME:-d.rambhia}"
+DK_ROLE="${DK_AWS_ROLE:-1}"  # 1 = DAG-Developers
+
+get_ad_password() {
+  security find-generic-password -s "dk-ad-password" -w 2>/dev/null || {
+    echo "Error: No AD password found in Keychain." >&2
+    echo "Store it: security add-generic-password -a \"\$(whoami)\" -s \"dk-ad-password\" -w" >&2
+    return 1
+  }
+}
+
+auto_login() {
+  local password
+  password=$(get_ad_password) || exit 1
+
+  expect -c "
+    log_user 1
+    set timeout 120
+    spawn $CIA login
+    expect \"Enter Username*\"
+    send \"$DK_USERNAME\r\"
+    expect \"Enter your password:\"
+    send {$password}
+    send \"\r\"
+    # DUO code is displayed — user confirms on phone — aws-cia waits automatically
+    expect {
+      \"Choose your role:\" {
+        send \"$DK_ROLE\r\"
+      }
+      timeout {
+        puts \"Timed out waiting for MFA approval.\"
+        exit 1
+      }
+    }
+    expect eof
+  "
+}
+
+case "${1:-help}" in
+  login)
+    if security find-generic-password -s "dk-ad-password" -w >/dev/null 2>&1; then
+      auto_login
+    else
+      echo "No AD password in Keychain — falling back to interactive login."
+      echo "To automate: security add-generic-password -a \"\$(whoami)\" -s \"dk-ad-password\" -w"
+      "$CIA" login
+    fi
+    sync_credentials
+    ;;
+  refresh)
+    "$CIA" login --refresh
+    sync_credentials
+    ;;
+  help|--help|-h)
+    echo "Usage: dk-aws <login|refresh>"
+    echo ""
+    echo "  login    Full login with AD credentials + MFA (auto-fills username/password/role from Keychain)"
+    echo "  refresh  Refresh STS tokens without prompting"
+    echo ""
+    echo "To enable auto-login, store your AD password:"
+    echo "  security add-generic-password -a \"\$(whoami)\" -s \"dk-ad-password\" -w"
+    ;;
+  *)
+    echo "Unknown command: $1" >&2
+    echo "Usage: dk-aws <login|refresh>" >&2
+    exit 1
+    ;;
+esac

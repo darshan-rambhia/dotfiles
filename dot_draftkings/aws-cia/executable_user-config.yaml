@@ -1,0 +1,12 @@
+UserName: d.rambhia
+Environments:
+- Name: default
+  DagUrl: https://sso-90f18fc1.sso.duosecurity.com/saml2/sp/DI7Y9LJRUD0HQ07Y57L4/sso
+  SamlArn: arn:aws:iam::746224680033:saml-provider/DUO_SSO
+  DagRoleProfileName: dag-default
+  AssumedRoleProfiles: 
+- Name: cde
+  DagUrl: https://sso-aa0ba9dc.sso.duosecurity.com/saml2/sp/DI4SYAE6MTE744FPU4P1/sso
+  SamlArn: arn:aws:iam::746224680033:saml-provider/DUO_SSO_CDE
+  DagRoleProfileName: dag-cde
+  AssumedRoleProfiles: 

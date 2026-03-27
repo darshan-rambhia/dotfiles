@@ -141,6 +141,18 @@ function dkclaude() {
 }
 
 # =============================================================================
+# Personal Claude (bypass LiteLLM, use Anthropic subscription)
+# =============================================================================
+function pdcl() {
+  ANTHROPIC_BEDROCK_BASE_URL="" \
+  CLAUDE_CODE_USE_BEDROCK="" \
+  CLAUDE_CODE_SKIP_BEDROCK_AUTH="" \
+  ANTHROPIC_AUTH_TOKEN="" \
+  CLAUDE_CONFIG_DIR="$HOME/.config/claude-dk" \
+  claude "$@"
+}
+
+# =============================================================================
 # DraftKings Codex (via LiteLLM)
 # =============================================================================
 function dkcodex() {
