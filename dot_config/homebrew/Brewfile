@@ -262,6 +262,8 @@ cask "secretive"
 cask "swiftdefaultappsprefpane"
 # Open-source code editor
 cask "visual-studio-code"
+# Gecko based web browser
+cask "zen"
 mas "Browserism", id: 979047768
 mas "Exporter", id: 1099120373
 mas "LastPass", id: 926036361
@@ -284,6 +286,7 @@ vscode "d4nyll.devops-extension-pack"
 vscode "davidanson.vscode-markdownlint"
 vscode "dnicolson.binary-plist"
 vscode "donjayamanne.githistory"
+vscode "eamodio.gitlens"
 vscode "ecmel.vscode-html-css"
 vscode "editorconfig.editorconfig"
 vscode "entuent.fira-code-nerd-font"
