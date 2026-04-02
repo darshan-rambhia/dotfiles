@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Wrapper around aws-cia for DraftKings AWS credential management.
-# aws-cia writes STS creds to ~/.aws/credentials; this script copies
-# them into the XDG credentials file so both paths stay in sync.
+# aws-cia writes STS creds as [dag-default]; this script normalizes
+# them to [default] for compatibility with AWS CLI profiles.
 #
 # Usage:
 #   dk-aws login          Full login (AD + MFA prompt)
@@ -12,20 +12,24 @@ set -euo pipefail
 CIA="${DOTNET_CLI_HOME:-$HOME/.local/share/dotnet}/tools/aws-cia"
 export DOTNET_ROOT="${DOTNET_ROOT:-/opt/homebrew/opt/dotnet/libexec}"
 
-XDG_CREDS="${AWS_SHARED_CREDENTIALS_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/aws/credentials}"
-CIA_CREDS="$HOME/.aws/credentials"
+CREDS_FILE="${AWS_SHARED_CREDENTIALS_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/aws/credentials}"
 
 sync_credentials() {
-  if [[ -f "$CIA_CREDS" ]]; then
-    mkdir -p "$(dirname "$XDG_CREDS")"
-    # Copy dag-default as both [default] and [dag-default]
-    {
-      sed 's/^\[dag-default\]/[default]/' "$CIA_CREDS"
-      echo ""
-      cat "$CIA_CREDS"
-    } > "$XDG_CREDS"
-    chmod 600 "$XDG_CREDS"
-    echo "Credentials synced to $XDG_CREDS"
+  # aws-cia writes to AWS_SHARED_CREDENTIALS_FILE as [dag-default]
+  # Replace [dag-default] with [default] in place, keeping only the fresh credentials
+  if [[ -f "$CREDS_FILE" ]]; then
+    if grep -q "^\[dag-default\]" "$CREDS_FILE"; then
+      # Extract just the [dag-default] section and rename to [default]
+      sed -n '/^\[dag-default\]/,/^$/p' "$CREDS_FILE" | sed 's/^\[dag-default\]/[default]/' > "${CREDS_FILE}.tmp"
+      mv "${CREDS_FILE}.tmp" "$CREDS_FILE"
+      chmod 600 "$CREDS_FILE"
+      echo "✓ Credentials normalized to [default] profile"
+    else
+      echo "✓ Credentials already in correct format"
+    fi
+  else
+    echo "⚠ Credentials file not found at $CREDS_FILE"
+    return 1
   fi
 }
 

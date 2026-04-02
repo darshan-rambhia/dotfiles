@@ -10,8 +10,6 @@
 		<string>Passwords</string>
 		<string>LastPass</string>
 	</array>
-	<key>fastAppend</key>
-	<true/>
 	<key>fastAppendBackToClipboard</key>
 	<true/>
 	<key>hotkey</key>
@@ -23,5 +21,7 @@
 		<key>string</key>
 		<string>C</string>
 	</dict>
+	<key>limit</key>
+	<integer>1</integer>
 </dict>
 </plist>

@@ -2,7 +2,39 @@
 region = us-east-1
 output = json
 
-[profile dk]
+# Development environment (lower environments, testing)
+# DynamoDB, RDS, and other dev resources
+[profile dev]
+role_arn = arn:aws:iam::248797271221:role/developer
+source_profile = default
 region = us-east-1
 output = json
-source_profile = dag-default
+
+# Production environment (main production infrastructure)
+# DynamoDB, RDS, and other production resources
+[profile prod]
+role_arn = arn:aws:iam::347508672966:role/developer
+source_profile = default
+region = us-east-1
+output = json
+
+# Build/CI environment (Jenkins, Bamboo, build tools)
+[profile dkbuild]
+role_arn = arn:aws:iam::617341777685:role/developer
+source_profile = default
+region = us-east-1
+output = json
+
+# dkidentity account (central auth account, DAG roles)
+[profile dkidentity]
+role_arn = arn:aws:iam::746224680033:role/developer
+source_profile = default
+region = us-east-1
+output = json
+
+# Media team account (AD partnership applications)
+[profile dkmedia]
+role_arn = arn:aws:iam::797946699443:role/developer
+source_profile = default
+region = us-east-1
+output = json
