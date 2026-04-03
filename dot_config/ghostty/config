@@ -14,18 +14,47 @@ theme = nord
 cursor-style = block
 cursor-style-blink = true
 
-# Window
-window-width = 80
-window-height = 25
+# ─── Window ──────────────────────────────────────────────────────────
+window-width = 120  # Wider for side-by-side diffs
+window-height = 40  # Taller for stack traces
+window-padding-x = 4
+window-padding-y = 4
+window-padding-balance = true
+window-decoration = true
+
+# ─── Performance ─────────────────────────────────────────────────────
+# GPU acceleration (cmux/Ghostty is native, not Electron)
+gtk-titlebar = false  # macOS native
+macos-titlebar-style = tabs
+macos-option-as-alt = true
+
+# ─── Agent Integration ───────────────────────────────────────────────
+# OSC sequences for notifications (cmux agent attention system)
+shell-integration = detect
+shell-integration-features = sudo,title
 
 # Minimum contrast (iTerm2 was ~42%)
 minimum-contrast = 1.42
 
-# Misc settings matching iTerm2 behavior
+# ─── Behavior ────────────────────────────────────────────────────────
 mouse-hide-while-typing = true
-copy-on-select = false
-confirm-close-surface = false
+copy-on-select = false  # Explicit Cmd+C for copy
+clipboard-trim-trailing-spaces = true
+clipboard-paste-protection = false  # Allow paste in agent sessions
+confirm-close-surface = false  # Fast workflow, no prompts
 
-# Default working directory
-working-directory = /Users/rambhiad/Code/Repositories/personal-projects
+# Scrollback
+scrollback-limit = 100000  # Large for .NET stack traces
+
+# ─── Working Directory ───────────────────────────────────────────────
+working-directory = /Users/d.rambhia/Code/Repositories/draftkings
+
+# ─── Keybindings ─────────────────────────────────────────────────────
+# cmux defaults:
+#   Cmd+Shift+U: Jump to most recent agent completion
+#   Cmd+D: Split horizontally
+#   Cmd+Shift+D: Split vertically
+# Add custom shortcuts if needed:
+# keybind = cmd+t=new_tab
+# keybind = cmd+shift+t=goto_tab:1
 
