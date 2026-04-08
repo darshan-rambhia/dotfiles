@@ -31,7 +31,7 @@ macos-option-as-alt = true
 # ─── Agent Integration ───────────────────────────────────────────────
 # OSC sequences for notifications (cmux agent attention system)
 shell-integration = detect
-shell-integration-features = sudo,title
+shell-integration-features = no-cursor,sudo,title
 
 # Minimum contrast (iTerm2 was ~42%)
 minimum-contrast = 1.42

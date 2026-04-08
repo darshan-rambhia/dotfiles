@@ -33,6 +33,7 @@
 	line-numbers = true
 	side-by-side = false
 	syntax-theme = zenburn
+	dark = true
 
 [interactive]
 	diffFilter = delta --color-only
@@ -257,6 +258,8 @@
 	contributors = shortlog -sn --no-merges
 	find = !git ls-files | grep -i
 
+	# Open repo in browser
+	bb = "!/usr/bin/open \"$(git remote get-url origin | sed -E 's#ssh://git@([^/:]+)(:[0-9]+)?/([^/]+)/(.+)\\.git#https://\\1/projects/\\3/repos/\\4/browse#')\""
 # -----------------------------------------------------------------------------
 # Credential Helpers
 # -----------------------------------------------------------------------------
