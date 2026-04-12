@@ -302,13 +302,6 @@ fi
 eval "$(dotnet completions script zsh | sed "s|'/v=.*||")"
 
 # =============================================================================
-# Claude Code / Codex
-# =============================================================================
-# Default to DK config everywhere; personal-projects overrides via direnv
-export CLAUDE_CONFIG_DIR="$XDG_CONFIG_HOME/claude-dk"
-export CODEX_HOME="$XDG_CONFIG_HOME/codex-dk"
-
-# =============================================================================
 # Workspace Visual Differentiation (cmux sidebar)
 # =============================================================================
 # Updates cmux sidebar metadata based on directory (DraftKings vs Personal)

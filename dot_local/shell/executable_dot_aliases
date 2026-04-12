@@ -122,7 +122,11 @@ function chezmoi-push() {
 alias reloadsh='exec zsh'
 
 # =============================================================================
-# DraftKings Claude (via LiteLLM)
+# DraftKings Claude (via LiteLLM) — for external/global invocation.
+# Inside ~/Code/Repositories/draftkings, direnv already sets this env so
+# plain `claude` works without this wrapper. This function is kept for
+# launching from anywhere (same as tools/dkclaude which is used by
+# Alfred/PopClip extensions).
 # =============================================================================
 function dkclaude() {
   local token
@@ -136,27 +140,30 @@ function dkclaude() {
   CLAUDE_CODE_SKIP_BEDROCK_AUTH=1 \
   CLAUDE_CODE_USE_BEDROCK=1 \
   ANTHROPIC_AUTH_TOKEN="$token" \
-  CLAUDE_CONFIG_DIR="$HOME/.config/claude-dk" \
+  CLAUDE_CONFIG_DIR="$HOME/Code/Repositories/draftkings/.claude" \
   claude "$@"
 }
 
 # =============================================================================
-# Personal Claude (bypass LiteLLM, use Anthropic subscription)
+# Personal exploration against the DK profile (no LiteLLM, personal auth).
+# Useful for poking around the DK Claude config/state with your own
+# Anthropic subscription instead of the DK Bedrock proxy.
 # =============================================================================
 function pdcl() {
   ANTHROPIC_BEDROCK_BASE_URL="" \
   CLAUDE_CODE_USE_BEDROCK="" \
   CLAUDE_CODE_SKIP_BEDROCK_AUTH="" \
   ANTHROPIC_AUTH_TOKEN="" \
-  CLAUDE_CONFIG_DIR="$HOME/.config/claude-dk" \
+  CLAUDE_CONFIG_DIR="$HOME/Code/Repositories/draftkings/.claude" \
   claude "$@"
 }
 
 # =============================================================================
-# DraftKings Codex (via LiteLLM)
+# DraftKings Codex — for external/global invocation. Inside the workspace,
+# direnv already sets CODEX_HOME so plain `codex` works without this.
 # =============================================================================
 function dkcodex() {
-  CODEX_HOME="$HOME/.config/codex-dk" \
+  CODEX_HOME="$HOME/Code/Repositories/draftkings/.codex" \
   codex "$@"
 }
 

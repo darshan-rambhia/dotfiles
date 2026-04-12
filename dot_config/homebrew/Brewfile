@@ -91,6 +91,8 @@ brew "git-filter-repo"
 brew "gitleaks"
 # Fast linters runner for Go
 brew "golangci-lint"
+# CLI for Drive, Gmail, Calendar, Sheets, Docs, Chat, Admin, and more
+brew "googleworkspace-cli"
 # Development kit for the Java programming language
 brew "openjdk"
 # Open-source build automation tool based on the Groovy and Kotlin DSL
@@ -167,6 +169,8 @@ brew "plantuml"
 brew "pnpm"
 # Python package management tool
 brew "poetry"
+# PDF rendering library (based on the xpdf-3.0 code base)
+brew "poppler"
 # Framework for managing multi-language pre-commit hooks
 brew "pre-commit"
 # Python version management
@@ -247,13 +251,13 @@ cask "1password-cli"
 cask "alfred"
 # Ghostty-based terminal with vertical tabs and notifications for AI coding agents
 cask "cmux"
+# Window peeking utility app
+cask "dockdoor"
 cask "font-hack-nerd-font"
 # Kubernetes IDE
 cask "freelens"
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask "ghostty"
-# Menu bar manager
-cask "jordanbaird-ice"
 # Replacement for Docker Desktop
 cask "orbstack"
 # Used to access context-specific actions when text is selected
@@ -266,6 +270,8 @@ cask "secretive"
 cask "swiftdefaultappsprefpane"
 # Minimal GUI for AI code agents
 cask "t3-code"
+# Menu bar manager
+cask "thaw"
 # Open-source code editor
 cask "visual-studio-code"
 # Gecko based web browser
