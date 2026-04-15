@@ -2,7 +2,7 @@
   "env": {
     "DISABLE_AUTOUPDATER": "1"
   },
-  "model": "us.anthropic.claude-sonnet-4-6",
+  "model": "sonnet",
   "statusLine": {
     "type": "command",
     "command": "bash /Users/d.rambhia/.claude/statusline-command.sh"

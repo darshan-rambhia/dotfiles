@@ -2,6 +2,7 @@ tap "buildpacks/tap"
 tap "datadog-labs/pack"
 tap "derailed/k9s"
 tap "devnullvoid/pvetui"
+tap "erikbra/cask"
 tap "fluxcd/tap"
 tap "get-woke/tap"
 tap "go-task/tap"
@@ -61,6 +62,8 @@ brew "docker-compose"
 brew "docker-credential-helper"
 # .NET Core
 brew "dotnet"
+# .NET Core
+brew "dotnet@6"
 # .NET Core
 brew "dotnet@8"
 # .NET Core
@@ -159,6 +162,8 @@ brew "openjdk@17"
 brew "openldap"
 # Open Visual Inference And Optimization toolkit for AI inference
 brew "openvino"
+# Swiss-army knife of markup format conversion
+brew "pandoc"
 # CLI for Postgres with auto-completion and syntax highlighting
 brew "pgcli"
 # Pinentry for GPG on Mac
@@ -260,6 +265,8 @@ cask "font-hack-nerd-font"
 cask "freelens"
 # Terminal emulator that uses platform-native UI and GPU acceleration
 cask "ghostty"
+# grate - the SQL scripts migration runner
+cask "erikbra/cask/grate"
 # Replacement for Docker Desktop
 cask "orbstack"
 # Used to access context-specific actions when text is selected
