@@ -315,3 +315,7 @@ eval "$(dotnet completions script zsh | sed "s|'/v=.*||")"
 
 # bun completions
 [ -s "/Users/rambhiad/.bun/_bun" ] && source "/Users/rambhiad/.bun/_bun"
+
+. "$HOME/.config/atuin/bin/env"
+
+eval "$(atuin init zsh --disable-up-arrow)"

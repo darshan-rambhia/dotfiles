@@ -91,9 +91,6 @@ export KUBECONFIG="$XDG_CONFIG_HOME/kube/config"
 # Terraform
 export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME/terraform/terraformrc"
 
-# SOPS (use 1Password for age key instead of local file)
-export SOPS_AGE_KEY_CMD="op read 'op://homelab/sops-age-key/private_key'"
-
 # =============================================================================
 # Database Configs & Histories
 # =============================================================================
@@ -128,12 +125,21 @@ export EDITOR='code --wait'
 export VISUAL='code --wait'
 
 # =============================================================================
-# Claude Code / Codex — NOT set globally.
-# DK env is scoped to ~/Code/Repositories/draftkings via direnv (.envrc).
-# Personal env is scoped to ~/Code/Repositories/personal-projects via direnv.
-# External invocations (Alfred, PopClip) use tools/dkclaude which is self-
-# contained and pulls auth from Keychain directly.
+# Claude Code
+# Uses default ~/.claude for all contexts. LiteLLM auth injected via direnv
+# (draftkings workspace) or dk-claude alias. External invocations (Alfred,
+# PopClip) use ~/.claude/draftkings/tools/dkclaude wrapper.
 # =============================================================================
+alias p-claude='~/.local/bin/claude'  # bypass PATH; auth cleared by pclaude() in .aliases
+alias dk-claude='LITELLM_BASE_URL=https://draftkings.litellm.com LITELLM_API_KEY=$(security find-generic-password -s "draftkings-litellm" -w) claude'
+
+# =============================================================================
+# Codex
+# Uses profiles from ~/.codex/config.toml. Personal vs DK profiles selected
+# via --profile flag.
+# =============================================================================
+alias p-codex='codex --profile personal'
+alias dk-codex='codex --profile dk'
 
 # =============================================================================
 # PATH Construction (order matters: first match wins)
@@ -167,3 +173,10 @@ else
 fi
 
 export PATH
+
+# =============================================================================
+# Atuin - Quick filter mode searches
+# =============================================================================
+alias atuin-global='atuin search --filter-mode global -i'
+alias atuin-workspace='atuin search --filter-mode workspace -i'
+alias atuin-dir='atuin search --filter-mode directory -i'

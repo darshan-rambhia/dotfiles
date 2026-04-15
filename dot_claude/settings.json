@@ -1,8 +1,47 @@
 {
-  "skipDangerousModePermissionPrompt": true,
-  "effortLevel": "high",
+  "env": {
+    "DISABLE_AUTOUPDATER": "1"
+  },
+  "model": "us.anthropic.claude-sonnet-4-6",
   "statusLine": {
     "type": "command",
-    "command": "bash /Users/d.rambhia/.config/claude-dk/statusline-command.sh"
-  }
+    "command": "bash /Users/d.rambhia/.claude/statusline-command.sh"
+  },
+  "enabledPlugins": {
+    "impeccable@impeccable": true,
+    "codex@openai-codex": true,
+    "caveman@caveman": true,
+    "bt-game-engine@blackthrone-plugin-marketplace": true,
+    "bt-tools@blackthrone-plugin-marketplace": true
+  },
+  "extraKnownMarketplaces": {
+    "impeccable": {
+      "source": {
+        "source": "github",
+        "repo": "pbakaus/impeccable"
+      }
+    },
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
+      }
+    },
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
+      }
+    },
+    "blackthrone-plugin-marketplace": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/d.rambhia/Code/Repositories/draftkings/blackthrone-plugin-marketplace"
+      }
+    }
+  },
+  "effortLevel": "low",
+  "autoMemoryEnabled": true,
+  "autoDreamEnabled": false,
+  "skipDangerousModePermissionPrompt": true
 }

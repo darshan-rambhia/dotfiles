@@ -140,8 +140,8 @@ function dkclaude() {
   CLAUDE_CODE_SKIP_BEDROCK_AUTH=1 \
   CLAUDE_CODE_USE_BEDROCK=1 \
   ANTHROPIC_AUTH_TOKEN="$token" \
-  CLAUDE_CONFIG_DIR="$HOME/Code/Repositories/draftkings/.claude" \
-  claude "$@"
+  CLAUDE_CONFIG_DIR="$HOME/.claude" \
+  ~/.local/bin/claude "$@"
 }
 
 # =============================================================================
@@ -149,13 +149,13 @@ function dkclaude() {
 # Useful for poking around the DK Claude config/state with your own
 # Anthropic subscription instead of the DK Bedrock proxy.
 # =============================================================================
-function pdcl() {
+function pclaude() {
   ANTHROPIC_BEDROCK_BASE_URL="" \
   CLAUDE_CODE_USE_BEDROCK="" \
   CLAUDE_CODE_SKIP_BEDROCK_AUTH="" \
   ANTHROPIC_AUTH_TOKEN="" \
-  CLAUDE_CONFIG_DIR="$HOME/Code/Repositories/draftkings/.claude" \
-  claude "$@"
+  CLAUDE_CONFIG_DIR="$HOME/.claude" \
+  ~/.local/bin/claude "$@"
 }
 
 # =============================================================================
