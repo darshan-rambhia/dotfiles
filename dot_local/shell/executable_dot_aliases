@@ -154,6 +154,7 @@ function pclaude() {
   CLAUDE_CODE_USE_BEDROCK="" \
   CLAUDE_CODE_SKIP_BEDROCK_AUTH="" \
   ANTHROPIC_AUTH_TOKEN="" \
+  ANTHROPIC_API_KEY="" \
   CLAUDE_CONFIG_DIR="$HOME/.claude" \
   ~/.local/bin/claude "$@"
 }

@@ -38,3 +38,10 @@ role_arn = arn:aws:iam::797946699443:role/developer
 source_profile = default
 region = us-east-1
 output = json
+
+# Alias for dev — matches name used in simulation Confluence guide
+[profile draftkingsdev]
+role_arn = arn:aws:iam::248797271221:role/developer
+source_profile = default
+region = us-east-1
+output = json

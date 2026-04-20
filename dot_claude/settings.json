@@ -12,7 +12,8 @@
     "codex@openai-codex": true,
     "caveman@caveman": true,
     "bt-game-engine@blackthrone-plugin-marketplace": true,
-    "bt-tools@blackthrone-plugin-marketplace": true
+    "bt-tools@blackthrone-plugin-marketplace": true,
+    "acli@dk-cli-skills": true
   },
   "extraKnownMarketplaces": {
     "impeccable": {
@@ -37,6 +38,12 @@
       "source": {
         "source": "directory",
         "path": "/Users/d.rambhia/Code/Repositories/draftkings/blackthrone-plugin-marketplace"
+      }
+    },
+    "dk-cli-skills": {
+      "source": {
+        "source": "git",
+        "url": "git@bitbucket.build.dkinternal.com:CLI/cli-skills.git"
       }
     }
   },
