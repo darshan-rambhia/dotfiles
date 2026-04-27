@@ -9,8 +9,8 @@
 
 set -euo pipefail
 
-CIA="${DOTNET_CLI_HOME:-$HOME/.local/share/dotnet}/tools/aws-cia"
-export DOTNET_ROOT="${DOTNET_ROOT:-/opt/homebrew/opt/dotnet/libexec}"
+CIA="$(which aws-cia)"
+export DOTNET_ROOT="${DOTNET_ROOT:-/opt/homebrew/opt/dotnet@8/libexec}"
 
 CREDS_FILE="${AWS_SHARED_CREDENTIALS_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/aws/credentials}"
 
@@ -34,7 +34,7 @@ sync_credentials() {
 }
 
 DK_USERNAME="${VAULT_USERNAME:-d.rambhia}"
-DK_ROLE="${DK_AWS_ROLE:-1}"  # 1 = DAG-Developers
+DK_ROLE="${DK_AWS_ROLE:-3}"  # 3 = DAG-TechLeads
 
 get_ad_password() {
   security find-generic-password -s "dk-ad-password" -w 2>/dev/null || {
@@ -57,17 +57,12 @@ auto_login() {
     expect \"Enter your password:\"
     send {$password}
     send \"\r\"
-    # DUO code is displayed — user confirms on phone — aws-cia waits automatically
-    expect {
-      \"Choose your role:\" {
+    set timeout -1
+    interact {
+      \"your role:\" {
         send \"$DK_ROLE\r\"
       }
-      timeout {
-        puts \"Timed out waiting for MFA approval.\"
-        exit 1
-      }
     }
-    expect eof
   "
 }
 

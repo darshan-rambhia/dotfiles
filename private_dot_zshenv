@@ -48,9 +48,10 @@ export NODE_REPL_HISTORY="$XDG_STATE_HOME/node_repl_history"
 
 # .NET (data: ~/.dotnet -> ~/.local/share/dotnet, cache: ~/.nuget -> ~/.cache/nuget)
 export DOTNET_CLI_HOME="$XDG_DATA_HOME/dotnet"
-export DOTNET_ROOT="/opt/homebrew/opt/dotnet/libexec"
+export DOTNET_ROOT="/opt/homebrew/opt/dotnet@8/libexec"
 export NUGET_PACKAGES="$XDG_CACHE_HOME/nuget/packages"
 export DOTNET_NOLOGO=1
+alias dotnet='/opt/homebrew/opt/dotnet@8/bin/dotnet'
 
 # Python
 export PYTHONSTARTUP="$XDG_CONFIG_HOME/python/pythonrc"
@@ -157,6 +158,7 @@ if [ -n "$ZSH_VERSION" ]; then
         "/opt/homebrew/opt/make/libexec/gnubin"
         "/opt/homebrew/opt/grep/libexec/gnubin"
         "/opt/homebrew/opt/gawk/libexec/gnubin"
+        "/opt/homebrew/opt/dotnet@8/bin"
         "/opt/homebrew/bin"
         "/opt/homebrew/sbin"
         "/usr/local/bin"
