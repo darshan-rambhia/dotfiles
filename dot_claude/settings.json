@@ -2,7 +2,57 @@
   "env": {
     "DISABLE_AUTOUPDATER": "1"
   },
-  "model": "sonnet",
+  "model": "us.anthropic.claude-sonnet-4-6",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/d.rambhia/.claude/hooks/agent-session-start.sh",
+            "async": true
+          },
+          {
+            "type": "command",
+            "command": "bash /Users/d.rambhia/.claude/hooks/ensure-crons.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/d.rambhia/.claude/hooks/agent-tool-update.sh",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/d.rambhia/.claude/hooks/agent-session-stop.sh",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/d.rambhia/.claude/hooks/precompact-mine.sh",
+            "async": true
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "bash /Users/d.rambhia/.claude/statusline-command.sh"
@@ -50,5 +100,6 @@
   "effortLevel": "low",
   "autoMemoryEnabled": true,
   "autoDreamEnabled": false,
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "agentPushNotifEnabled": true
 }

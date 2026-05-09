@@ -25,8 +25,6 @@ brew "tree"
 brew "ansible"
 # Checks ansible playbooks for practices and behaviour
 brew "ansible-lint"
-# Improved shell history for zsh, bash, fish and nushell
-brew "atuin"
 # Collection of over 500 reusable autoconf macros
 brew "autoconf-archive"
 # Tool for generating GNU Standards-compliant Makefiles
@@ -62,10 +60,6 @@ brew "docker-compose"
 # Platform keystore credential helper for Docker
 brew "docker-credential-helper"
 # .NET Core
-brew "dotnet"
-# .NET Core
-brew "dotnet@6"
-# .NET Core
 brew "dotnet@8"
 # .NET Core
 brew "dotnet@9"
@@ -73,16 +67,14 @@ brew "dotnet@9"
 brew "duti"
 # Modern, maintained replacement for ls
 brew "eza"
+# Simple, fast and user-friendly alternative to find
+brew "fd"
 # Play, record, convert, and stream select audio and video codecs
 brew "ffmpeg"
 # Command-line fuzzy finder written in Go
 brew "fzf"
 # GNU awk utility
 brew "gawk"
-# Open-source, cross-platform JavaScript runtime environment
-brew "node"
-# Interact with Google Gemini AI models from the command-line
-brew "gemini-cli"
 # GitHub command-line tool
 brew "gh"
 # Distributed revision control system
@@ -95,8 +87,8 @@ brew "git-extras"
 brew "git-filter-repo"
 # Audit git repos for secrets
 brew "gitleaks"
-# Fast linters runner for Go
-brew "golangci-lint"
+# Open source programming language to build simple/reliable/efficient software
+brew "go"
 # CLI for Drive, Gmail, Calendar, Sheets, Docs, Chat, Admin, and more
 brew "googleworkspace-cli"
 # Development kit for the Java programming language
@@ -107,8 +99,6 @@ brew "gradle"
 brew "graphviz"
 # Kubernetes package manager
 brew "helm"
-# Command-line interface for JFrog products
-brew "jfrog-cli"
 # Feature-rich interactive Jira CLI
 brew "jira-cli"
 # Lightweight and flexible command-line JSON processor
@@ -141,22 +131,18 @@ brew "mkcert"
 brew "mysql-client"
 # Netwide Assembler (NASM) is an 80x86 assembler
 brew "nasm"
+# Interactive cheatsheet tool for the command-line
+brew "navi"
 # Small build system for use with gyp or CMake
 brew "ninja"
+# Open-source, cross-platform JavaScript runtime environment
+brew "node"
 # Libraries for security-enabled client and server applications
 brew "nss"
 # Manage multiple Node.js versions
 brew "nvm"
 # Oracle Cloud Infrastructure CLI
 brew "oci-cli"
-# Create, run, and share large language models (LLMs)
-brew "ollama"
-# Generate clients, server & docs from an OpenAPI spec (v2, v3)
-brew "openapi-generator"
-# Search tool like grep and The Silver Searcher
-brew "ripgrep"
-# AI coding agent, built for the terminal
-brew "opencode"
 # Development kit for the Java programming language
 brew "openjdk@17"
 # Open source suite of directory software
@@ -191,6 +177,8 @@ brew "qpdf"
 brew "rclone"
 # Perl-powered file rename script with many helpful built-ins
 brew "rename"
+# Search tool like grep and The Silver Searcher
+brew "ripgrep"
 # Utility that provides fast incremental file transfer
 brew "rsync"
 # Powerful, clean, object-oriented scripting language
@@ -201,16 +189,12 @@ brew "semgrep"
 brew "skopeo"
 # Editor of encrypted files
 brew "sops"
-# Cross-shell prompt for astronauts
-brew "starship"
 # Easiest, most secure way to use WireGuard and 2FA
 brew "tailscale"
 # User interface to the TELNET protocol
 brew "telnet"
 # Tool to generate documentation from Terraform modules
 brew "terraform-docs"
-# Terraform version manager inspired by rbenv
-brew "tfenv"
 # Linter for Terraform files
 brew "tflint"
 # Terragrunt version manager inspired by tfenv
@@ -261,6 +245,8 @@ cask "1password-cli"
 cask "alfred"
 # Ghostty-based terminal with vertical tabs and notifications for AI coding agents
 cask "cmux"
+# OpenAI's coding agent that runs in your terminal
+cask "codex"
 # Window peeking utility app
 cask "dockdoor"
 cask "font-hack-nerd-font"
@@ -278,6 +264,8 @@ cask "popclip"
 cask "postman"
 # Store SSH keys in the Secure Enclave
 cask "secretive"
+# Menu bar customization tool
+cask "swiftbar"
 # Replacement for RCDefaultApps, written in Swift
 cask "swiftdefaultappsprefpane"
 # Minimal GUI for AI code agents
@@ -290,9 +278,7 @@ cask "visual-studio-code"
 cask "zen"
 mas "Browserism", id: 979047768
 mas "Exporter", id: 1099120373
-mas "Keynote", id: 409183694
 mas "LastPass", id: 926036361
-mas "Pages", id: 409201541
 mas "Slack", id: 803453959
 mas "Universal Print", id: 6450432292
 mas "Xcode", id: 497799835
@@ -327,7 +313,6 @@ vscode "esbenp.prettier-vscode"
 vscode "formulahendry.auto-close-tag"
 vscode "formulahendry.auto-rename-tag"
 vscode "foxundermoon.shell-format"
-vscode "github.copilot-chat"
 vscode "golang.go"
 vscode "hashicorp.hcl"
 vscode "hbenl.vscode-test-explorer"

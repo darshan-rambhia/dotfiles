@@ -273,19 +273,18 @@ fi
 # =============================================================================
 # System Maintenance Check
 # =============================================================================
-[[ -f "$HOME/.local/shell/.maintenance" ]] && source "$HOME/.local/shell/.maintenance"
+source "$HOME/.config/zsh/maintenance.zsh"
 
 # =============================================================================
 # Custom Aliases
 # =============================================================================
-[[ -f "$HOME/.local/shell/.aliases" ]] && source "$HOME/.local/shell/.aliases"
+source "$HOME/.config/zsh/aliases.zsh"
 
 # =============================================================================
 # Powerlevel10k Theme
 # =============================================================================
-# Custom gitstatus (pure zsh/gawk alternative to gitstatusd binary)
-[[ -f "$HOME/.local/shell/p10k-gitstatus.zsh" ]] && source "$HOME/.local/shell/p10k-gitstatus.zsh"
-[[ -f "$HOME/.local/shell/.p10k.zsh" ]] && source "$HOME/.local/shell/.p10k.zsh"
+source "$HOME/.config/zsh/p10k-gitstatus.zsh"
+source "$HOME/.config/zsh/.p10k.zsh"
 
 
 # =============================================================================
@@ -297,9 +296,13 @@ fi
 
 
 # =============================================================================
-# dotnet CLI completions (filter out broken /v= MSBuild arg specs)
+# dotnet CLI completions (.NET 8+)
 # =============================================================================
-eval "$(dotnet completions script zsh | sed "s|'/v=.*||")"
+_dotnet_zsh_complete() {
+  local completions=("$(dotnet complete --position ${CURSOR} "${BUFFER}")")
+  reply=( "${(ps:\n:)completions}" )
+}
+compctl -K _dotnet_zsh_complete dotnet
 
 # =============================================================================
 # Workspace Visual Differentiation (cmux sidebar)
@@ -316,6 +319,5 @@ eval "$(dotnet completions script zsh | sed "s|'/v=.*||")"
 # bun completions
 [ -s "/Users/rambhiad/.bun/_bun" ] && source "/Users/rambhiad/.bun/_bun"
 
-. "$HOME/.config/atuin/bin/env"
-
-eval "$(atuin init zsh --disable-up-arrow)"
+# ── tool customizations (fzf, fd, bat, navi) ─────────────────────────────────
+source ~/.config/zsh/tools.zsh
