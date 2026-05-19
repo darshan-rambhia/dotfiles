@@ -6,14 +6,15 @@
 #
 # Location: ~/.local/shell/.maintenance
 # State: ~/.local/state/maintenance/upgrade.lastrun
+# Lock:  ~/.local/state/maintenance/upgrade.running  (contains PID while running)
 
 UPGRADE_THRESHOLD_DAYS=${UPGRADE_THRESHOLD_DAYS:-3}
-UPGRADE_STATE_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/maintenance/upgrade.lastrun"
+_UPGRADE_STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/maintenance"
+UPGRADE_STATE_FILE="$_UPGRADE_STATE_DIR/upgrade.lastrun"
+UPGRADE_LOCK_FILE="$_UPGRADE_STATE_DIR/upgrade.running"
 
-# Ensure state directory exists
-[[ -d "${UPGRADE_STATE_FILE%/*}" ]] || mkdir -p "${UPGRADE_STATE_FILE%/*}"
+[[ -d "$_UPGRADE_STATE_DIR" ]] || mkdir -p "$_UPGRADE_STATE_DIR"
 
-# Get days since last upgrade
 _upgrade_days_since() {
   if [[ -f "$UPGRADE_STATE_FILE" ]]; then
     local lastrun=$(cat "$UPGRADE_STATE_FILE")
@@ -24,27 +25,62 @@ _upgrade_days_since() {
   fi
 }
 
-# Mark upgrade as complete
 _upgrade_mark_done() {
   date +%s > "$UPGRADE_STATE_FILE"
 }
 
-# Wrapper to run upgrade and mark complete
-upgrade() {
-  topgrade "$@"
-  local exit_code=$?
-  # Always mark as done, even if topgrade had some failures
-  # (topgrade often exits non-zero if any single step fails)
-  _upgrade_mark_done
-  return $exit_code
+# Returns 0 if topgrade is currently running in another shell
+_upgrade_is_running() {
+  if [[ -f "$UPGRADE_LOCK_FILE" ]]; then
+    local pid=$(cat "$UPGRADE_LOCK_FILE" 2>/dev/null)
+    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+      return 0
+    else
+      rm -f "$UPGRADE_LOCK_FILE"
+    fi
+  fi
+  return 1
 }
 
-# Check on shell startup
+# Wrapper to run upgrade and mark complete
+upgrade() {
+  if _upgrade_is_running; then
+    echo -e "\033[1;33mUpgrade already running (PID $(cat "$UPGRADE_LOCK_FILE")).\033[0m"
+    return 1
+  fi
+
+  if [[ -n "$TMUX" ]]; then
+    # Run in a new tmux window so no shell is blocked
+    local state_file="$UPGRADE_STATE_FILE"
+    local lock_file="$UPGRADE_LOCK_FILE"
+    local args="$*"
+    # Write sentinel PID (tmux server PID as placeholder) so other shells see it as running
+    tmux display-message -p "#{pid}" > "$UPGRADE_LOCK_FILE" 2>/dev/null || echo "0" > "$UPGRADE_LOCK_FILE"
+    tmux new-window -n "topgrade" \
+      "topgrade $args; date +%s > \"$state_file\"; rm -f \"$lock_file\"; echo; echo -e '\033[1;32mUpgrade complete. Press enter to close.\033[0m'; read"
+    echo -e "\033[1;32mUpgrade running in tmux window 'topgrade'.\033[0m"
+  else
+    echo $$ > "$UPGRADE_LOCK_FILE"
+    topgrade "$@"
+    local exit_code=$?
+    # Always mark as done even with partial failures (topgrade exits non-zero if any step fails)
+    _upgrade_mark_done
+    rm -f "$UPGRADE_LOCK_FILE"
+    return $exit_code
+  fi
+}
+
 _upgrade_check() {
   local days="$(_upgrade_days_since)"
 
   if [[ "$days" == "never" ]] || [[ "$days" -ge "$UPGRADE_THRESHOLD_DAYS" ]]; then
     echo ""
+    if _upgrade_is_running; then
+      echo -e "\033[1;33mSystem upgrade already running in another shell.\033[0m"
+      echo ""
+      return
+    fi
+
     if [[ "$days" == "never" ]]; then
       echo -e "\033[1;33mSystem upgrade has never been run.\033[0m"
     else

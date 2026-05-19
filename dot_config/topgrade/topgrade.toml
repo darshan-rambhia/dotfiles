@@ -9,7 +9,19 @@ cleanup = true
 # Skip items that need sudo
 #no_sudo = true
 # Disable steps you don't use
-disable = ["tmux", "helm", "containers", "chezmoi"]
+disable = [
+  "tmux", "helm", "containers", "chezmoi",
+  # softwareupdate requires a real TTY, always fails with "Not a terminal" in topgrade
+  "system",
+  # system Ruby 2.6 is too old for most gems; these fail every time
+  "gem", "rubygems",
+  # pnpm PATH not set in topgrade's environment; run manually when needed
+  "pnpm",
+  # npm global update breaks on @openai/.codex-* temp packages from nvm context
+  "npm",
+  # oh-my-zsh gets SIGINT; the custom "Zinit update" command handles zsh plugin updates
+  "oh_my_zsh",
+]
 
 [brew]
 # Greedy cask upgrade (upgrade even if auto-update is enabled)
