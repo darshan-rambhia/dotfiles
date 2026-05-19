@@ -2,7 +2,6 @@
   "env": {
     "DISABLE_AUTOUPDATER": "1"
   },
-  "model": "us.anthropic.claude-sonnet-4-6",
   "hooks": {
     "SessionStart": [
       {
@@ -61,7 +60,7 @@
     "impeccable@impeccable": true,
     "codex@openai-codex": true,
     "caveman@caveman": true,
-    "acli@dk-cli-skills": true
+    "bt-tools@blackthrone-plugins": true
   },
   "extraKnownMarketplaces": {
     "impeccable": {
@@ -82,16 +81,10 @@
         "repo": "JuliusBrussee/caveman"
       }
     },
-    "blackthrone-plugin-marketplace": {
+    "blackthrone-plugins": {
       "source": {
         "source": "directory",
         "path": "/Users/d.rambhia/Code/Repositories/draftkings/blackthrone-plugin-marketplace"
-      }
-    },
-    "dk-cli-skills": {
-      "source": {
-        "source": "git",
-        "url": "git@bitbucket.build.dkinternal.com:CLI/cli-skills.git"
       }
     }
   },
