@@ -21,7 +21,7 @@ disable = [
   "node",
   # microsoft.tye is deprecated and no longer in NuGet feeds
   "dotnet",
-  # uv fails on bt-mem (missing internal wheel); uv updates still run via custom commands
+  # uv --all fails if any single tool has a missing wheel (bt-mem etc); use custom command instead
   "uv",
   # IntelliJ IDEA not installed on this machine
   "jetbrains_idea",
@@ -33,6 +33,7 @@ greedy_cask = true
 
 [commands]
 # Custom commands to run
+"uv tools" = "uv tool list 2>/dev/null | awk '/^[a-z]/{print $1}' | while read t; do uv tool upgrade \"$t\" 2>/dev/null || echo \"skipped $t\"; done"
 "Clean npm staging" = "find $(npm root -g) -maxdepth 1 -name '.*' -type d -exec rm -rf {} + 2>/dev/null || true"
 "Chezmoi update" = "rm -f ~/.local/share/chezmoi/.git/objects/info/commit-graphs/commit-graph-chain.lock; chezmoi update --apply=false"
 "Zinit update" = "zsh -ic 'zinit update --all'"
