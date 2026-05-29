@@ -33,9 +33,16 @@ _upgrade_mark_done() {
 _upgrade_is_running() {
   if [[ -f "$UPGRADE_LOCK_FILE" ]]; then
     local lock_val=$(cat "$UPGRADE_LOCK_FILE" 2>/dev/null)
-    # "cmux" sentinel means it was launched in a cmux workspace
-    if [[ "$lock_val" == "cmux" ]]; then
-      return 0
+    # "cmux:<timestamp>" sentinel means it was launched in a cmux workspace
+    if [[ "$lock_val" == cmux:* ]]; then
+      local lock_ts="${lock_val#cmux:}"
+      local now=$(date +%s)
+      # Treat as stale after 4 hours — cmux workspace likely closed without cleanup
+      if (( now - lock_ts < 14400 )); then
+        return 0
+      else
+        rm -f "$UPGRADE_LOCK_FILE"
+      fi
     elif [[ -n "$lock_val" ]] && kill -0 "$lock_val" 2>/dev/null; then
       return 0
     else
@@ -57,7 +64,7 @@ upgrade() {
     local state_file="$UPGRADE_STATE_FILE"
     local lock_file="$UPGRADE_LOCK_FILE"
     local args="$*"
-    echo "cmux" > "$UPGRADE_LOCK_FILE"
+    echo "cmux:$(date +%s)" > "$UPGRADE_LOCK_FILE"
     cmux new-workspace --name "topgrade" \
       --command "topgrade $args; date +%s > \"$state_file\"; rm -f \"$lock_file\"; echo; echo -e '\033[1;32mUpgrade complete.\033[0m'"
     echo -e "\033[1;32mUpgrade running in new cmux workspace 'topgrade'.\033[0m"
