@@ -23,7 +23,7 @@ disable = [
   "dotnet",
   # uv fails on bt-mem (missing internal wheel); uv updates still run via custom commands
   "uv",
-  # JetBrains Toolbox script points to /Users/rambhiad/ (wrong home dir)
+  # IntelliJ IDEA not installed on this machine
   "jetbrains_idea",
 ]
 
