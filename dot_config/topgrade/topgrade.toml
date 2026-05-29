@@ -19,6 +19,14 @@ disable = [
   "pnpm",
   # npm (node) global update breaks on @openai/.codex-* temp packages from nvm context
   "node",
+  # microsoft.tye is deprecated and no longer in NuGet feeds
+  "dotnet",
+  # pi requires Node >=22.19.0; current nvm default is 22.9.0 — update node first
+  "pi",
+  # uv fails on bt-mem (missing internal wheel); uv updates still run via custom commands
+  "uv",
+  # JetBrains Toolbox script points to /Users/rambhiad/ (wrong home dir)
+  "jetbrains_idea",
 ]
 
 [brew]
@@ -28,7 +36,7 @@ greedy_cask = true
 [commands]
 # Custom commands to run
 "Clean npm staging" = "find $(npm root -g) -maxdepth 1 -name '.*' -type d -exec rm -rf {} + 2>/dev/null || true"
-"Chezmoi update" = "chezmoi update --apply=false"
+"Chezmoi update" = "rm -f ~/.local/share/chezmoi/.git/objects/info/commit-graphs/commit-graph-chain.lock; chezmoi update --apply=false"
 "Zinit update" = "zsh -ic 'zinit update --all'"
 "Brew doctor" = "brew doctor || true"
 "Save Brewfile" = "brew bundle dump --describe --force --file=~/.config/homebrew/Brewfile"
