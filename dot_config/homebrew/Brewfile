@@ -156,6 +156,8 @@ brew "openvino"
 brew "pandoc"
 # CLI for Postgres with auto-completion and syntax highlighting
 brew "pgcli"
+# AI agent toolkit
+brew "pi-coding-agent"
 # Pinentry for GPG on Mac
 brew "pinentry-mac"
 # Execute binaries from Python packages in isolated environments
@@ -418,17 +420,4 @@ uv "kaggle"
 uv "mkdocs", with: ["mkdocs-material", "pymdown-extensions"]
 uv "notebook"
 uv "snowflake-cli"
-npm "@aliou/pi-processes"
-npm "@dkmnx/pi-clarify"
-npm "@draftkings/bitbucket-explorer-cli"
-npm "@draftkings/sourcegraph-cli"
-npm "@earendil-works/pi-coding-agent"
-npm "@n8n/cli"
-npm "@openai/codex"
 npm "corepack"
-npm "newman"
-npm "pi-cmux-theme-picker"
-npm "pi-cmux"
-npm "pi-kanagawa"
-npm "pi-powerline-footer"
-npm "yaml"
