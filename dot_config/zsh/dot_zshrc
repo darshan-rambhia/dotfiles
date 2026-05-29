@@ -176,6 +176,7 @@ path+=(
   "/opt/homebrew/opt/mysql-client/bin"
   "/usr/local/opt/curl/bin"
   "/usr/local/opt/openssl/bin"
+  "$HOME/.rd/bin"
 )
 export PATH
 
