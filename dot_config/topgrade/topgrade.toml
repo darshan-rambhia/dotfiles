@@ -21,8 +21,6 @@ disable = [
   "node",
   # microsoft.tye is deprecated and no longer in NuGet feeds
   "dotnet",
-  # pi requires Node >=22.19.0; current nvm default is 22.9.0 — update node first
-  "pi",
   # uv fails on bt-mem (missing internal wheel); uv updates still run via custom commands
   "uv",
   # JetBrains Toolbox script points to /Users/rambhiad/ (wrong home dir)
