@@ -420,4 +420,6 @@ uv "kaggle"
 uv "mkdocs", with: ["mkdocs-material", "pymdown-extensions"]
 uv "notebook"
 uv "snowflake-cli"
+npm "@draftkings/bitbucket-explorer-cli"
 npm "corepack"
+npm "newman"

@@ -174,3 +174,9 @@ else
 fi
 
 export PATH
+
+# bt-tools calendar used by Codex/PI/Claude scheduled flows
+export DK_CALENDAR_NAME="DK"
+
+# DraftKings workspace root for bt-tools scheduled flows
+export DK_HOME="/Users/d.rambhia/Code/Repositories/draftkings"
