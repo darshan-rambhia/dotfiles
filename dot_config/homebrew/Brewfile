@@ -397,7 +397,7 @@ go "github.com/a-h/templ/cmd/templ"
 uv "acryl-datahub"
 uv "ansible-navigator"
 uv "bt-bamboo"
-uv "bt-bitbucket", with: ["bt-cli-corefile:///private/tmp/bt_rebuild/bt_cli_core-1.0.0-py3-none-any.whl", "bt-memfile:///Users/d.rambhia/Code/Repositories/draftkings/blackthrone-plugin-marketplace/plugins/bt-tools/bt-mem"]
+uv "bt-bitbucket"
 uv "bt-cal"
 uv "bt-confluence"
 uv "bt-dd"
