@@ -142,6 +142,8 @@ brew "ninja"
 brew "node"
 # Libraries for security-enabled client and server applications
 brew "nss"
+# Package manager for Microsoft development platform including .NET
+brew "nuget"
 # Manage multiple Node.js versions
 brew "nvm"
 # Oracle Cloud Infrastructure CLI
@@ -187,7 +189,7 @@ brew "ripgrep"
 # Utility that provides fast incremental file transfer
 brew "rsync"
 # Powerful, clean, object-oriented scripting language
-brew "ruby"
+brew "ruby", link: false
 # Easily detect and prevent bugs and anti-patterns in your codebase
 brew "semgrep"
 # Work with remote images registries
@@ -212,6 +214,8 @@ brew "tofuenv"
 brew "topgrade"
 # Extremely fast Python package installer and resolver, written in Rust
 brew "uv"
+# Your CLI home video recorder
+brew "vhs"
 # Tool for creating isolated virtual python environments
 brew "virtualenv"
 # Internet file retriever
@@ -408,7 +412,7 @@ uv "bt-mail"
 uv "bt-mem"
 uv "bt-pagerduty"
 uv "bt-postman"
-uv "bt-sg", with: ["bt-cli-corefile:///Users/d.rambhia/Code/Repositories/draftkings/blackthrone-plugin-marketplace/plugins/bt-tools/bt-cli-core", "bt-memfile:///Users/d.rambhia/Code/Repositories/draftkings/blackthrone-plugin-marketplace/plugins/bt-tools/bt-mem"]
+uv "bt-sg"
 uv "bt-slack"
 uv "bt-snow"
 uv "bt-sonar"
@@ -421,5 +425,6 @@ uv "mkdocs", with: ["mkdocs-material", "pymdown-extensions"]
 uv "notebook"
 uv "snowflake-cli"
 npm "@draftkings/bitbucket-explorer-cli"
+npm "@draftkings/mcp-dk-multitool"
 npm "corepack"
 npm "newman"

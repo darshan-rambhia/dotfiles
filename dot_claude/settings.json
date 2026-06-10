@@ -2,6 +2,7 @@
   "env": {
     "DISABLE_AUTOUPDATER": "1"
   },
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "SessionStart": [
       {
@@ -57,7 +58,7 @@
     "command": "bash /Users/d.rambhia/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
-    "impeccable@impeccable": true,
+    "impeccable@impeccable": false,
     "codex@openai-codex": true,
     "caveman@caveman": true,
     "bt-tools@blackthrone-plugins": true
@@ -92,6 +93,5 @@
   "autoMemoryEnabled": true,
   "autoDreamEnabled": false,
   "skipDangerousModePermissionPrompt": true,
-  "agentPushNotifEnabled": true,
-  "model": "us.anthropic.claude-sonnet-4-6"
+  "agentPushNotifEnabled": true
 }
