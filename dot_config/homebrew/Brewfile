@@ -1,19 +1,19 @@
-tap "atlassian/acli"
-tap "bufbuild/buf"
+tap "atlassian/acli", trusted: true
+tap "bufbuild/buf", trusted: true
 tap "buildpacks/tap"
-tap "datadog-labs/pack"
-tap "derailed/k9s"
-tap "devnullvoid/pvetui"
-tap "erikbra/cask"
-tap "fluxcd/tap"
-tap "get-woke/tap"
-tap "go-task/tap"
-tap "hashicorp/tap"
-tap "manaflow-ai/cmux"
-tap "oven-sh/bun"
-tap "romkatv/gitstatus"
-tap "tofuutils/tap"
-tap "warrensbox/tap"
+tap "datadog-labs/pack", trusted: true
+tap "derailed/k9s", trusted: true
+tap "devnullvoid/pvetui", trusted: true
+tap "erikbra/cask", trusted: true
+tap "fluxcd/tap", trusted: true
+tap "get-woke/tap", trusted: true
+tap "go-task/tap", trusted: true
+tap "hashicorp/tap", trusted: true
+tap "manaflow-ai/cmux", trusted: true
+tap "oven-sh/bun", trusted: true
+tap "romkatv/gitstatus", trusted: true
+tap "tofuutils/tap", trusted: true
+tap "warrensbox/tap", trusted: true
 # Static analysis and lint tool, for (ba)sh scripts
 brew "shellcheck"
 # Static checker for GitHub Actions workflow files
@@ -122,6 +122,8 @@ brew "kustomize"
 brew "lazygit"
 # Postgres C API library
 brew "libpq"
+# LLM inference in C/C++
+brew "llama.cpp"
 # Utility for directing compilation
 brew "make"
 # Mac App Store command-line interface
@@ -232,8 +234,6 @@ brew "zoxide"
 brew "atlassian/acli/acli"
 # The best way of working with Protocol Buffers.
 brew "bufbuild/buf/buf"
-# A CLI for building apps using Cloud Native Buildpacks
-brew "buildpacks/tap/pack"
 # Go-based command-line wrapper for easy interaction with Datadog APIs
 brew "datadog-labs/pack/pup"
 # Kubernetes CLI To Manage Your Clusters In Style!
@@ -267,6 +267,8 @@ cask "freelens"
 cask "ghostty"
 # grate - the SQL scripts migration runner
 cask "erikbra/cask/grate"
+# UI for Kubernetes
+cask "headlamp"
 # Replacement for Docker Desktop
 cask "orbstack"
 # Used to access context-specific actions when text is selected
