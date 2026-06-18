@@ -292,7 +292,6 @@ cask "zen"
 mas "Browserism", id: 979047768
 mas "Exporter", id: 1099120373
 mas "LastPass", id: 926036361
-mas "Slack", id: 803453959
 mas "Universal Print", id: 6450432292
 mas "Xcode", id: 497799835
 vscode "4ops.terraform"
@@ -428,5 +427,8 @@ uv "notebook"
 uv "snowflake-cli"
 npm "@draftkings/bitbucket-explorer-cli"
 npm "@draftkings/mcp-dk-multitool"
+npm "@mermaid-js/mermaid-cli"
 npm "corepack"
+npm "mermaid-cli"
+npm "mmdc"
 npm "newman"
