@@ -3,7 +3,7 @@
     "DISABLE_AUTOUPDATER": "1",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "us.anthropic.claude-sonnet-4-6"
   },
-  "model": "us.anthropic.claude-opus-4-8",
+  "model": "sonnet",
   "hooks": {
     "SessionStart": [
       {
@@ -91,6 +91,7 @@
     }
   },
   "effortLevel": "low",
+  "tui": "fullscreen",
   "autoMemoryEnabled": true,
   "autoDreamEnabled": false,
   "skipDangerousModePermissionPrompt": true,

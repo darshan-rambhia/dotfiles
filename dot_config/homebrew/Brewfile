@@ -121,7 +121,7 @@ brew "kustomize"
 # Simple terminal UI for git commands
 brew "lazygit"
 # Postgres C API library
-brew "libpq"
+brew "libpq", link: true
 # LLM inference in C/C++
 brew "llama.cpp"
 # Utility for directing compilation
@@ -288,10 +288,11 @@ cask "thaw"
 # Open-source code editor
 cask "visual-studio-code"
 # Gecko based web browser
-cask "zen"
+cask "zen", args: { appdir: "~/.config/apps" }
 mas "Browserism", id: 979047768
 mas "Exporter", id: 1099120373
 mas "LastPass", id: 926036361
+mas "Numbers", id: 361304891
 mas "Universal Print", id: 6450432292
 mas "Xcode", id: 497799835
 vscode "4ops.terraform"
