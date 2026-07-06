@@ -198,8 +198,6 @@ brew "semgrep"
 brew "skopeo"
 # Editor of encrypted files
 brew "sops"
-# Easiest, most secure way to use WireGuard and 2FA
-brew "tailscale"
 # User interface to the TELNET protocol
 brew "telnet"
 # Tool to generate documentation from Terraform modules
@@ -281,8 +279,6 @@ cask "secretive"
 cask "swiftbar"
 # Replacement for RCDefaultApps, written in Swift
 cask "swiftdefaultappsprefpane"
-# Minimal GUI for AI code agents
-cask "t3-code"
 # Menu bar manager
 cask "thaw"
 # Open-source code editor

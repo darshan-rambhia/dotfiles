@@ -1,9 +1,8 @@
 {
   "env": {
-    "DISABLE_AUTOUPDATER": "1",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "us.anthropic.claude-sonnet-4-6"
+    "DISABLE_AUTOUPDATER": "1"
   },
-  "model": "sonnet",
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "SessionStart": [
       {
@@ -61,8 +60,9 @@
   "enabledPlugins": {
     "impeccable@impeccable": false,
     "codex@openai-codex": true,
-    "caveman@caveman": true,
-    "bt-tools@blackthrone-plugins": true
+    "bt-tools@blackthrone-plugins": true,
+    "bt-game-engine@blackthrone-plugins": true,
+    "ponytail@ponytail": true
   },
   "extraKnownMarketplaces": {
     "impeccable": {
@@ -87,6 +87,12 @@
       "source": {
         "source": "directory",
         "path": "/Users/d.rambhia/Code/Repositories/draftkings/blackthrone-plugin-marketplace"
+      }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
       }
     }
   },

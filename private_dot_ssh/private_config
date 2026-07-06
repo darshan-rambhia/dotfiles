@@ -21,6 +21,14 @@ Host staging-db
   IdentitiesOnly yes
   IdentityFile ~/.ssh/homelab/unmemory_db_key
 
+# Container network default: never fan out all agent keys (avoids the target's
+# MaxAuthTries "Too many authentication failures"). Per-container keys live in
+# SOPS, not on disk — use `task ssh -- <name|id>` for authenticated access.
+# More-specific blocks above (e.g. staging-db) still win per keyword.
+Host 10.100.*
+  User admin
+  IdentitiesOnly yes
+
 Host homelab-socks
   HostName pangolin.rambtech.dev
   Port 2222
@@ -40,4 +48,5 @@ Host homelab
   HostName 192.168.1.215
   User root
   IdentityFile ~/.ssh/homelab/homelab
+  IdentitiesOnly yes
   HostKeyAlgorithms ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ecdsa-sha2-nistp256
