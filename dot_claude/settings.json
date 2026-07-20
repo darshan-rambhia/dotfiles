@@ -1,8 +1,13 @@
 {
   "env": {
-    "DISABLE_AUTOUPDATER": "1"
+    "DISABLE_AUTOUPDATER": "1",
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "OTEL_METRICS_EXPORTER": "otlp",
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "https://otel.build.dkinternal.com",
+    "OTEL_EXPORTER_OTLP_PROTOCOL": "http/json",
+    "OTEL_RESOURCE_ATTRIBUTES": "user.email=d.rambhia@draftkings.com"
   },
-  "model": "claude-fable-5[1m]",
+  "model": "us.anthropic.claude-fable-5",
   "hooks": {
     "SessionStart": [
       {
@@ -60,9 +65,10 @@
   "enabledPlugins": {
     "impeccable@impeccable": false,
     "codex@openai-codex": true,
-    "bt-tools@blackthrone-plugins": true,
+    "bt-tools@blackthrone-plugins": false,
     "bt-game-engine@blackthrone-plugins": true,
-    "ponytail@ponytail": true
+    "ponytail@ponytail": true,
+    "dk-tool-telemetry@DraftKings-ClaudeCode-Plugin-Marketplace": true
   },
   "extraKnownMarketplaces": {
     "impeccable": {
@@ -93,6 +99,12 @@
       "source": {
         "source": "github",
         "repo": "DietrichGebert/ponytail"
+      }
+    },
+    "DraftKings-ClaudeCode-Plugin-Marketplace": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/d.rambhia/Code/Repositories/draftkings/claudecode-marketplace"
       }
     }
   },
