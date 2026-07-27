@@ -280,6 +280,7 @@ source "$HOME/.config/zsh/maintenance.zsh"
 # Custom Aliases
 # =============================================================================
 source "$HOME/.config/zsh/aliases.zsh"
+source "$HOME/.config/zsh/llmsetup.zsh"
 
 # =============================================================================
 # Powerlevel10k Theme

@@ -7,7 +7,6 @@
     "OTEL_EXPORTER_OTLP_PROTOCOL": "http/json",
     "OTEL_RESOURCE_ATTRIBUTES": "user.email=d.rambhia@draftkings.com"
   },
-  "model": "us.anthropic.claude-fable-5",
   "hooks": {
     "SessionStart": [
       {
@@ -16,10 +15,6 @@
             "type": "command",
             "command": "bash /Users/d.rambhia/.claude/hooks/agent-session-start.sh",
             "async": true
-          },
-          {
-            "type": "command",
-            "command": "bash /Users/d.rambhia/.claude/hooks/ensure-crons.sh"
           }
         ]
       }
@@ -68,7 +63,8 @@
     "bt-tools@blackthrone-plugins": false,
     "bt-game-engine@blackthrone-plugins": true,
     "ponytail@ponytail": true,
-    "dk-tool-telemetry@DraftKings-ClaudeCode-Plugin-Marketplace": true
+    "dk-tool-telemetry@DraftKings-ClaudeCode-Plugin-Marketplace": true,
+    "darshan-predict-sdlc@darshan-local": true
   },
   "extraKnownMarketplaces": {
     "impeccable": {
@@ -106,6 +102,12 @@
         "source": "directory",
         "path": "/Users/d.rambhia/Code/Repositories/draftkings/claudecode-marketplace"
       }
+    },
+    "darshan-local": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/d.rambhia/plugins"
+      }
     }
   },
   "effortLevel": "low",
@@ -113,5 +115,6 @@
   "autoMemoryEnabled": true,
   "autoDreamEnabled": false,
   "skipDangerousModePermissionPrompt": true,
+  "theme": "dark",
   "agentPushNotifEnabled": true
 }
