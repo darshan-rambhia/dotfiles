@@ -3,7 +3,9 @@
 
 [misc]
 # Don't ask for confirmation
-assume_yes = false
+assume_yes = true
+# Never prompt "Retry? (y)es/(N)o/(s)hell/(q)uit" on a failed step
+ask_retry = false
 # Cleanup after updates
 cleanup = true
 # Skip items that need sudo
@@ -25,6 +27,8 @@ disable = [
   "uv",
   # IntelliJ IDEA not installed on this machine
   "jetbrains_idea",
+  # replaced by the "Brew casks" custom command below, which excludes visual-studio-code
+  "brew_cask",
 ]
 
 [brew]
@@ -33,6 +37,14 @@ greedy_cask = true
 
 [commands]
 # Custom commands to run
+# Greedy cask upgrade, minus visual-studio-code. The vscode cask carries
+# `uninstall launchctl: com.microsoft.VSCode.ShipIt`, and Homebrew probes the
+# launchd *system* domain with sudo unconditionally (abstract_uninstall.rb,
+# `booleans = [false, true]`) even though that service does not exist here --
+# which pops a Password: prompt mid-run. vscode auto-updates itself, so skipping
+# it loses nothing. xargs -I{} is deliberate: it runs zero times on empty input,
+# whereas a bare `xargs brew upgrade --cask --greedy` would upgrade everything.
+"Brew casks" = "brew outdated --cask --greedy --quiet | grep -vx 'visual-studio-code' | xargs -I{} brew upgrade --cask --greedy {}"
 "uv tools" = "uv tool list 2>/dev/null | awk '/^[a-z]/{print $1}' | while read t; do uv tool upgrade \"$t\" 2>/dev/null || echo \"skipped $t\"; done"
 "Clean npm staging" = "find $(npm root -g) -maxdepth 1 -name '.*' -type d -exec rm -rf {} + 2>/dev/null || true"
 "Chezmoi update" = "rm -f ~/.local/share/chezmoi/.git/objects/info/commit-graphs/commit-graph-chain.lock; chezmoi update --apply=false"
