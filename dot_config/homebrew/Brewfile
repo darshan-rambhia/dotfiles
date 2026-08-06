@@ -107,6 +107,8 @@ brew "helm"
 brew "jira-cli"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
+# Modern load testing tool, using Go and JavaScript
+brew "k6"
 # User-friendly front-end to ssh-agent(1)
 brew "keychain"
 # Easy way to access the system keyring service from python

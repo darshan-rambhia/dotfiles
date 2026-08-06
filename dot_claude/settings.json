@@ -7,7 +7,7 @@
     "OTEL_EXPORTER_OTLP_PROTOCOL": "http/json",
     "OTEL_RESOURCE_ATTRIBUTES": "user.email=d.rambhia@draftkings.com"
   },
-  "model": "opus[1m]",
+  "model": "us.anthropic.claude-fable-5",
   "hooks": {
     "SessionStart": [
       {
@@ -65,7 +65,8 @@
     "bt-game-engine@blackthrone-plugins": true,
     "ponytail@ponytail": true,
     "dk-tool-telemetry@DraftKings-ClaudeCode-Plugin-Marketplace": true,
-    "darshan-predict-sdlc@darshan-local": true
+    "darshan-predict-sdlc@darshan-local": true,
+    "mattpocock-skills@mattpocock": true
   },
   "extraKnownMarketplaces": {
     "impeccable": {
@@ -108,6 +109,12 @@
       "source": {
         "source": "directory",
         "path": "/Users/d.rambhia/plugins"
+      }
+    },
+    "mattpocock": {
+      "source": {
+        "source": "github",
+        "repo": "mattpocock/skills"
       }
     }
   },
