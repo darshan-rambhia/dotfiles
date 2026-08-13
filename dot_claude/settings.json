@@ -7,7 +7,7 @@
     "OTEL_EXPORTER_OTLP_PROTOCOL": "http/json",
     "OTEL_RESOURCE_ATTRIBUTES": "user.email=d.rambhia@draftkings.com"
   },
-  "model": "us.anthropic.claude-opus-5",
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "SessionStart": [
       {
@@ -46,6 +46,14 @@
             "type": "command",
             "command": "bash /Users/d.rambhia/.claude/hooks/agent-session-stop.sh",
             "async": true
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/d.rambhia/.claude/hooks/check-em-dash.sh"
           }
         ]
       }
