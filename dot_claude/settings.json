@@ -140,5 +140,6 @@
   "autoDreamEnabled": false,
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "autoUpdatesChannel": "stable"
 }
