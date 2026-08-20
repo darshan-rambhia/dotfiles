@@ -93,6 +93,8 @@ brew "git-lfs"
 brew "gitleaks"
 # Open source programming language to build simple/reliable/efficient software
 brew "go"
+# Task is a task runner/build tool that aims to be simpler and easier to use
+brew "go-task"
 # CLI for Drive, Gmail, Calendar, Sheets, Docs, Chat, Admin, and more
 brew "googleworkspace-cli"
 # Development kit for the Java programming language
@@ -109,6 +111,8 @@ brew "jira-cli"
 brew "jq"
 # Modern load testing tool, using Go and JavaScript
 brew "k6"
+# Generic command-line non-JVM Apache Kafka producer and consumer
+brew "kcat"
 # User-friendly front-end to ssh-agent(1)
 brew "keychain"
 # Easy way to access the system keyring service from python
@@ -179,6 +183,8 @@ brew "poetry"
 brew "poppler"
 # Framework for managing multi-language pre-commit hooks
 brew "pre-commit"
+# Monitor data's progress through a pipe
+brew "pv"
 # Python version management
 brew "pyenv"
 # Python interface to Tcl/Tk
@@ -247,8 +253,6 @@ brew "derailed/k9s/k9s"
 brew "fluxcd/tap/flux"
 # Detect non-inclusive language in your source code.
 brew "get-woke/tap/woke"
-# A fast, cross-platform build tool inspired by Make, designed for modern workflows.
-brew "go-task/tap/go-task"
 # Vault
 brew "hashicorp/tap/vault"
 # Incredibly fast JavaScript runtime, bundler, transpiler and package manager - all in one.
@@ -415,14 +419,14 @@ uv "dk-dd"
 uv "dk-jenkins"
 uv "dk-jira"
 uv "dk-mail"
-uv "dk-mem", with: ["dk-cli-corefile:///Users/d.rambhia/Code/Repositories/draftkings/dk-tools/dk-cli-core"]
+uv "dk-mem"
 uv "dk-pagerduty"
 uv "dk-postman"
 uv "dk-sg"
 uv "dk-slack"
 uv "dk-snow"
 uv "dk-sonar"
-uv "dk-tools", with: ["dk-cli-corefile:///Users/d.rambhia/Code/Repositories/draftkings/dk-tools/dk-cli-core"]
+uv "dk-tools"
 uv "dk-vault"
 uv "jupyter-core"
 uv "jupyterlab"

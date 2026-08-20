@@ -291,3 +291,5 @@
 
 [help]
 	autocorrect = prompt
+[beads]
+	role = contributor

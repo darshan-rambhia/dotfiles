@@ -81,7 +81,6 @@
     "bt-game-engine@blackthrone-plugins": true,
     "ponytail@ponytail": true,
     "dk-tool-telemetry@DraftKings-ClaudeCode-Plugin-Marketplace": true,
-    "darshan-predict-sdlc@darshan-local": true,
     "mattpocock-skills@mattpocock": true
   },
   "extraKnownMarketplaces": {
@@ -135,11 +134,11 @@
     }
   },
   "effortLevel": "low",
+  "autoUpdatesChannel": "stable",
   "tui": "fullscreen",
   "autoMemoryEnabled": true,
   "autoDreamEnabled": false,
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
-  "agentPushNotifEnabled": true,
-  "autoUpdatesChannel": "stable"
+  "agentPushNotifEnabled": true
 }
