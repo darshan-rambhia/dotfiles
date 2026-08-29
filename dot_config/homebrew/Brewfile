@@ -280,8 +280,6 @@ cask "erikbra/cask/grate"
 cask "handy"
 # UI for Kubernetes
 cask "headlamp"
-# Replacement for Docker Desktop
-cask "orbstack"
 # Used to access context-specific actions when text is selected
 cask "popclip"
 # Collaboration platform for API development
