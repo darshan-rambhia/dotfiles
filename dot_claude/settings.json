@@ -7,7 +7,7 @@
     "OTEL_EXPORTER_OTLP_PROTOCOL": "http/json",
     "OTEL_RESOURCE_ATTRIBUTES": "user.email=d.rambhia@draftkings.com"
   },
-  "model": "claude-fable-5[1m]",
+  "model": "us.anthropic.claude-fable-5-1",
   "hooks": {
     "SessionStart": [
       {
@@ -77,8 +77,6 @@
   "enabledPlugins": {
     "impeccable@impeccable": false,
     "codex@openai-codex": true,
-    "bt-tools@blackthrone-plugins": false,
-    "bt-game-engine@blackthrone-plugins": true,
     "ponytail@ponytail": true,
     "dk-tool-telemetry@DraftKings-ClaudeCode-Plugin-Marketplace": true,
     "mattpocock-skills@mattpocock": true
@@ -100,12 +98,6 @@
       "source": {
         "source": "github",
         "repo": "JuliusBrussee/caveman"
-      }
-    },
-    "blackthrone-plugins": {
-      "source": {
-        "source": "directory",
-        "path": "/Users/d.rambhia/Code/Repositories/draftkings/blackthrone-plugin-marketplace"
       }
     },
     "ponytail": {
@@ -134,7 +126,7 @@
     }
   },
   "effortLevel": "low",
-  "autoUpdatesChannel": "stable",
+  "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
   "autoMemoryEnabled": true,
   "autoDreamEnabled": false,
