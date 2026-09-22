@@ -180,3 +180,4 @@ export DK_CALENDAR_NAME="DK"
 
 # DraftKings workspace root for bt-tools scheduled flows
 export DK_HOME="/Users/d.rambhia/Code/Repositories/draftkings"
+export DK_MEM_PRE_WRITE_HOOK="$HOME/.claude/hooks/dk-mem-gate"  # log mode until JEV access; DK_MEM_GATE_MODE=jev to enforce

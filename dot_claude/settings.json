@@ -7,7 +7,7 @@
     "OTEL_EXPORTER_OTLP_PROTOCOL": "http/json",
     "OTEL_RESOURCE_ATTRIBUTES": "user.email=d.rambhia@draftkings.com"
   },
-  "model": "us.anthropic.claude-fable-5-1",
+  "model": "us.anthropic.claude-opus-5",
   "hooks": {
     "SessionStart": [
       {
@@ -27,6 +27,16 @@
             "type": "command",
             "command": "bash /Users/d.rambhia/.claude/hooks/agent-tool-update.sh",
             "async": true
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/d.rambhia/Code/Repositories/draftkings/dk-tools/hooks/pre_tool_track.py",
+            "timeout": 2
           }
         ]
       }
@@ -56,6 +66,19 @@
           {
             "type": "command",
             "command": "bash /Users/d.rambhia/.claude/hooks/precompact-mine.sh",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/d.rambhia/Code/Repositories/draftkings/dk-tools/hooks/post_tool_track.py",
+            "timeout": 3,
             "async": true
           }
         ]
