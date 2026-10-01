@@ -5,9 +5,15 @@
     "OTEL_METRICS_EXPORTER": "otlp",
     "OTEL_EXPORTER_OTLP_ENDPOINT": "https://otel.build.dkinternal.com",
     "OTEL_EXPORTER_OTLP_PROTOCOL": "http/json",
-    "OTEL_RESOURCE_ATTRIBUTES": "user.email=d.rambhia@draftkings.com"
+    "OTEL_RESOURCE_ATTRIBUTES": "user.email=d.rambhia@draftkings.com",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "us.anthropic.claude-sonnet-5-5",
+    "ANTHROPIC_DEFAULT_FABLE_MODEL": "us.anthropic.claude-fable-5-1",
+    "ANTHROPIC_DEFAULT_MODEL": "us.anthropic.claude-opus-5-5",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "us.anthropic.claude-opus-5-5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL_NAME": "Sonnet 5.5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION": "Sonnet 5.5 · fast, cheaper"
   },
-  "model": "us.anthropic.claude-fable-5-1",
+  "model": "opus",
   "hooks": {
     "SessionStart": [
       {
@@ -90,11 +96,11 @@
     "command": "bash /Users/d.rambhia/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
-    "impeccable@impeccable": false,
     "codex@openai-codex": true,
     "ponytail@ponytail": true,
     "dk-tool-telemetry@DraftKings-ClaudeCode-Plugin-Marketplace": true,
-    "mattpocock-skills@mattpocock": true
+    "mattpocock-skills@mattpocock": true,
+    "impeccable@impeccable": true
   },
   "extraKnownMarketplaces": {
     "impeccable": {
@@ -141,6 +147,11 @@
     }
   },
   "effortLevel": "low",
+  "modelSettings": {
+    "claude-fable-5-1": {
+      "effortLevel": "high"
+    }
+  },
   "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
   "autoMemoryEnabled": true,
@@ -148,9 +159,29 @@
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
   "agentPushNotifEnabled": true,
-  "modelSettings": {
-    "claude-fable-5-1": {
-      "effortLevel": "high"
-    }
+  "modelPicker": {
+    "replaceBuiltInOptions": true,
+    "options": [
+      {
+        "model": "us.anthropic.claude-opus-5-5",
+        "label": "Opus 5.5",
+        "description": "Complex tasks"
+      },
+      {
+        "model": "us.anthropic.claude-opus-5-5[1m]",
+        "label": "Opus 5.5 (1M context)",
+        "description": "Long sessions"
+      },
+      {
+        "model": "us.anthropic.claude-sonnet-5-5",
+        "label": "Sonnet 5.5",
+        "description": "Fast, cheaper"
+      },
+      {
+        "model": "us.anthropic.claude-fable-5-1",
+        "label": "Fable 5.1",
+        "description": "Fable 5.1"
+      }
+    ]
   }
 }
