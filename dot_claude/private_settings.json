@@ -11,7 +11,7 @@
     "ANTHROPIC_DEFAULT_MODEL": "us.anthropic.claude-opus-5-5",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "us.anthropic.claude-opus-5-5",
     "ANTHROPIC_DEFAULT_SONNET_MODEL_NAME": "Sonnet 5.5",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION": "Sonnet 5.5 · fast, cheaper"
+    "ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION": "Sonnet 5.5 \u00b7 fast, cheaper"
   },
   "model": "opus",
   "hooks": {
@@ -86,6 +86,16 @@
             "command": "python3 /Users/d.rambhia/Code/Repositories/draftkings/dk-tools/hooks/post_tool_track.py",
             "timeout": 3,
             "async": true
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/d.rambhia/Code/Repositories/draftkings/dk-tools/hooks/context_inject.sh"
           }
         ]
       }
@@ -183,5 +193,6 @@
         "description": "Fable 5.1"
       }
     ]
-  }
+  },
+  "enableWorkflows": true
 }
