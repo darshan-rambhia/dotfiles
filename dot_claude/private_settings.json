@@ -11,9 +11,34 @@
     "ANTHROPIC_DEFAULT_MODEL": "us.anthropic.claude-opus-5-5",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "us.anthropic.claude-opus-5-5",
     "ANTHROPIC_DEFAULT_SONNET_MODEL_NAME": "Sonnet 5.5",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION": "Sonnet 5.5 \u00b7 fast, cheaper"
+    "ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION": "Sonnet 5.5 · fast, cheaper"
   },
-  "model": "opus",
+  "model": "sonnet",
+  "modelPicker": {
+    "options": [
+      {
+        "model": "us.anthropic.claude-opus-5-5",
+        "label": "Opus 5.5",
+        "description": "Complex tasks"
+      },
+      {
+        "model": "us.anthropic.claude-opus-5-5[1m]",
+        "label": "Opus 5.5 (1M context)",
+        "description": "Long sessions"
+      },
+      {
+        "model": "us.anthropic.claude-sonnet-5-5",
+        "label": "Sonnet 5.5",
+        "description": "Fast, cheaper"
+      },
+      {
+        "model": "us.anthropic.claude-fable-5-1",
+        "label": "Fable 5.1",
+        "description": "Fable 5.1"
+      }
+    ],
+    "replaceBuiltInOptions": true
+  },
   "hooks": {
     "SessionStart": [
       {
@@ -101,15 +126,16 @@
       }
     ]
   },
+  "enableWorkflows": true,
   "statusLine": {
     "type": "command",
     "command": "bash /Users/d.rambhia/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
-    "codex@openai-codex": true,
+    "codex@openai-codex": false,
     "ponytail@ponytail": true,
     "dk-tool-telemetry@DraftKings-ClaudeCode-Plugin-Marketplace": true,
-    "mattpocock-skills@mattpocock": true,
+    "mattpocock-skills@mattpocock": false,
     "impeccable@impeccable": true
   },
   "extraKnownMarketplaces": {
@@ -160,6 +186,9 @@
   "modelSettings": {
     "claude-fable-5-1": {
       "effortLevel": "high"
+    },
+    "claude-opus-5-5": {
+      "effortLevel": "medium"
     }
   },
   "autoUpdatesChannel": "latest",
@@ -168,31 +197,5 @@
   "autoDreamEnabled": false,
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
-  "agentPushNotifEnabled": true,
-  "modelPicker": {
-    "replaceBuiltInOptions": true,
-    "options": [
-      {
-        "model": "us.anthropic.claude-opus-5-5",
-        "label": "Opus 5.5",
-        "description": "Complex tasks"
-      },
-      {
-        "model": "us.anthropic.claude-opus-5-5[1m]",
-        "label": "Opus 5.5 (1M context)",
-        "description": "Long sessions"
-      },
-      {
-        "model": "us.anthropic.claude-sonnet-5-5",
-        "label": "Sonnet 5.5",
-        "description": "Fast, cheaper"
-      },
-      {
-        "model": "us.anthropic.claude-fable-5-1",
-        "label": "Fable 5.1",
-        "description": "Fable 5.1"
-      }
-    ]
-  },
-  "enableWorkflows": true
+  "agentPushNotifEnabled": true
 }
