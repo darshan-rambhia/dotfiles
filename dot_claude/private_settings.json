@@ -11,7 +11,8 @@
     "ANTHROPIC_DEFAULT_MODEL": "us.anthropic.claude-opus-5-5",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "us.anthropic.claude-opus-5-5",
     "ANTHROPIC_DEFAULT_SONNET_MODEL_NAME": "Sonnet 5.5",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION": "Sonnet 5.5 · fast, cheaper"
+    "ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION": "Sonnet 5.5 \u00b7 fast, cheaper",
+    "DK_OUTCOME_MAX_RETRIES": "1"
   },
   "model": "sonnet",
   "modelPicker": {
@@ -70,6 +71,16 @@
             "timeout": 2
           }
         ]
+      },
+      {
+        "matcher": "Bash|Read|mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/d.rambhia/.claude/hooks/guardrails.py",
+            "timeout": 15
+          }
+        ]
       }
     ],
     "Stop": [
@@ -120,7 +131,20 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /Users/d.rambhia/Code/Repositories/draftkings/dk-tools/hooks/context_inject.sh"
+            "command": "python3 /Users/d.rambhia/.claude/hooks/dk_context_filter.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/d.rambhia/Code/Repositories/draftkings/dk-tools/hooks/post_tool_track.py",
+            "timeout": 3,
+            "async": true
           }
         ]
       }
@@ -133,7 +157,7 @@
   },
   "enabledPlugins": {
     "codex@openai-codex": false,
-    "ponytail@ponytail": true,
+    "ponytail@ponytail": false,
     "dk-tool-telemetry@DraftKings-ClaudeCode-Plugin-Marketplace": true,
     "mattpocock-skills@mattpocock": false,
     "impeccable@impeccable": true
@@ -197,5 +221,10 @@
   "autoDreamEnabled": false,
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "cleanupPeriodDays": 120,
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
 }
