@@ -1,4 +1,5 @@
 {
+  "cleanupPeriodDays": 120,
   "env": {
     "DISABLE_AUTOUPDATER": "1",
     "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
@@ -11,8 +12,12 @@
     "ANTHROPIC_DEFAULT_MODEL": "us.anthropic.claude-opus-5-5",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "us.anthropic.claude-opus-5-5",
     "ANTHROPIC_DEFAULT_SONNET_MODEL_NAME": "Sonnet 5.5",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION": "Sonnet 5.5 \u00b7 fast, cheaper",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION": "Sonnet 5.5 · fast, cheaper",
     "DK_OUTCOME_MAX_RETRIES": "1"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
   },
   "model": "sonnet",
   "modelPicker": {
@@ -157,10 +162,10 @@
   },
   "enabledPlugins": {
     "codex@openai-codex": false,
-    "ponytail@ponytail": false,
     "dk-tool-telemetry@DraftKings-ClaudeCode-Plugin-Marketplace": true,
     "mattpocock-skills@mattpocock": false,
-    "impeccable@impeccable": true
+    "impeccable@impeccable": true,
+    "ponytail@ponytail": true
   },
   "extraKnownMarketplaces": {
     "impeccable": {
@@ -181,28 +186,22 @@
         "repo": "JuliusBrussee/caveman"
       }
     },
-    "ponytail": {
-      "source": {
-        "source": "github",
-        "repo": "DietrichGebert/ponytail"
-      }
-    },
     "DraftKings-ClaudeCode-Plugin-Marketplace": {
       "source": {
         "source": "directory",
         "path": "/Users/d.rambhia/Code/Repositories/draftkings/claudecode-marketplace"
       }
     },
-    "darshan-local": {
-      "source": {
-        "source": "directory",
-        "path": "/Users/d.rambhia/plugins"
-      }
-    },
     "mattpocock": {
       "source": {
         "source": "github",
         "repo": "mattpocock/skills"
+      }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
       }
     }
   },
@@ -215,16 +214,19 @@
       "effortLevel": "medium"
     }
   },
+  "pluginConfigs": {
+    "ponytail@ponytail": {
+      "options": {
+        "ledger": true,
+        "sendNames": true
+      }
+    }
+  },
   "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
   "autoMemoryEnabled": true,
   "autoDreamEnabled": false,
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
-  "agentPushNotifEnabled": true,
-  "cleanupPeriodDays": 120,
-  "attribution": {
-    "commit": "",
-    "pr": ""
-  }
+  "agentPushNotifEnabled": true
 }
