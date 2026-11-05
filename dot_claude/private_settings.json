@@ -19,7 +19,7 @@
     "commit": "",
     "pr": ""
   },
-  "model": "sonnet",
+  "model": "us.anthropic.claude-opus-5-5",
   "modelPicker": {
     "options": [
       {
