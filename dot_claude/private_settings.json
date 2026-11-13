@@ -1,232 +1,231 @@
 {
-  "cleanupPeriodDays": 120,
-  "env": {
-    "DISABLE_AUTOUPDATER": "1",
-    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
-    "OTEL_METRICS_EXPORTER": "otlp",
-    "OTEL_EXPORTER_OTLP_ENDPOINT": "https://otel.build.dkinternal.com",
-    "OTEL_EXPORTER_OTLP_PROTOCOL": "http/json",
-    "OTEL_RESOURCE_ATTRIBUTES": "user.email=d.rambhia@draftkings.com",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "us.anthropic.claude-sonnet-5-5",
-    "ANTHROPIC_DEFAULT_FABLE_MODEL": "us.anthropic.claude-fable-5-1",
-    "ANTHROPIC_DEFAULT_MODEL": "us.anthropic.claude-opus-5-5",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "us.anthropic.claude-opus-5-5",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL_NAME": "Sonnet 5.5",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION": "Sonnet 5.5 · fast, cheaper",
-    "DK_OUTCOME_MAX_RETRIES": "1"
+  "agentPushNotifEnabled" : true,
+  "attribution" : {
+    "commit" : "",
+    "pr" : ""
   },
-  "attribution": {
-    "commit": "",
-    "pr": ""
+  "autoDreamEnabled" : false,
+  "autoMemoryEnabled" : true,
+  "autoUpdatesChannel" : "latest",
+  "cleanupPeriodDays" : 120,
+  "effortLevel" : "low",
+  "enabledPlugins" : {
+    "codex@openai-codex" : false,
+    "dk-tool-telemetry@DraftKings-ClaudeCode-Plugin-Marketplace" : true,
+    "impeccable@impeccable" : true,
+    "mattpocock-skills@mattpocock" : false,
+    "ponytail@ponytail" : true
   },
-  "model": "us.anthropic.claude-opus-5-5",
-  "modelPicker": {
-    "options": [
-      {
-        "model": "us.anthropic.claude-opus-5-5",
-        "label": "Opus 5.5",
-        "description": "Complex tasks"
-      },
-      {
-        "model": "us.anthropic.claude-opus-5-5[1m]",
-        "label": "Opus 5.5 (1M context)",
-        "description": "Long sessions"
-      },
-      {
-        "model": "us.anthropic.claude-sonnet-5-5",
-        "label": "Sonnet 5.5",
-        "description": "Fast, cheaper"
-      },
-      {
-        "model": "us.anthropic.claude-fable-5-1",
-        "label": "Fable 5.1",
-        "description": "Fable 5.1"
-      }
-    ],
-    "replaceBuiltInOptions": true
+  "enableWorkflows" : true,
+  "env" : {
+    "ANTHROPIC_DEFAULT_FABLE_MODEL" : "us.anthropic.claude-fable-5-1",
+    "ANTHROPIC_DEFAULT_MODEL" : "us.anthropic.claude-opus-5-5",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL" : "us.anthropic.claude-opus-5-5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL" : "us.anthropic.claude-sonnet-5-5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION" : "Sonnet 5.5 · fast, cheaper",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL_NAME" : "Sonnet 5.5",
+    "CLAUDE_CODE_ENABLE_TELEMETRY" : "1",
+    "DK_OUTCOME_MAX_RETRIES" : "1",
+    "OTEL_EXPORTER_OTLP_ENDPOINT" : "https:\/\/otel.build.dkinternal.com",
+    "OTEL_EXPORTER_OTLP_PROTOCOL" : "http\/json",
+    "OTEL_METRICS_EXPORTER" : "otlp",
+    "OTEL_RESOURCE_ATTRIBUTES" : "user.email=d.rambhia@draftkings.com"
   },
-  "hooks": {
-    "SessionStart": [
+  "extraKnownMarketplaces" : {
+    "caveman" : {
+      "source" : {
+        "repo" : "JuliusBrussee\/caveman",
+        "source" : "github"
+      }
+    },
+    "DraftKings-ClaudeCode-Plugin-Marketplace" : {
+      "source" : {
+        "path" : "\/Users\/d.rambhia\/Code\/Repositories\/draftkings\/claudecode-marketplace",
+        "source" : "directory"
+      }
+    },
+    "impeccable" : {
+      "source" : {
+        "repo" : "pbakaus\/impeccable",
+        "source" : "github"
+      }
+    },
+    "mattpocock" : {
+      "source" : {
+        "repo" : "mattpocock\/skills",
+        "source" : "github"
+      }
+    },
+    "openai-codex" : {
+      "source" : {
+        "repo" : "openai\/codex-plugin-cc",
+        "source" : "github"
+      }
+    },
+    "ponytail" : {
+      "source" : {
+        "repo" : "DietrichGebert\/ponytail",
+        "source" : "github"
+      }
+    }
+  },
+  "hooks" : {
+    "PostToolUse" : [
       {
-        "hooks": [
+        "hooks" : [
           {
-            "type": "command",
-            "command": "bash /Users/d.rambhia/.claude/hooks/agent-session-start.sh",
-            "async": true
+            "async" : true,
+            "command" : "python3 \/Users\/d.rambhia\/Code\/Repositories\/draftkings\/dk-tools\/hooks\/post_tool_track.py",
+            "timeout" : 3,
+            "type" : "command"
+          }
+        ],
+        "matcher" : "Bash"
+      }
+    ],
+    "PostToolUseFailure" : [
+      {
+        "hooks" : [
+          {
+            "async" : true,
+            "command" : "python3 \/Users\/d.rambhia\/Code\/Repositories\/draftkings\/dk-tools\/hooks\/post_tool_track.py",
+            "timeout" : 3,
+            "type" : "command"
+          }
+        ],
+        "matcher" : "Bash"
+      }
+    ],
+    "PreCompact" : [
+      {
+        "hooks" : [
+          {
+            "async" : true,
+            "command" : "bash \/Users\/d.rambhia\/.claude\/hooks\/precompact-mine.sh",
+            "type" : "command"
           }
         ]
       }
     ],
-    "PreToolUse": [
+    "PreToolUse" : [
       {
-        "hooks": [
+        "hooks" : [
           {
-            "type": "command",
-            "command": "bash /Users/d.rambhia/.claude/hooks/agent-tool-update.sh",
-            "async": true
+            "async" : true,
+            "command" : "bash \/Users\/d.rambhia\/.claude\/hooks\/agent-tool-update.sh",
+            "type" : "command"
           }
         ]
       },
       {
-        "matcher": "Bash",
-        "hooks": [
+        "hooks" : [
           {
-            "type": "command",
-            "command": "python3 /Users/d.rambhia/Code/Repositories/draftkings/dk-tools/hooks/pre_tool_track.py",
-            "timeout": 2
+            "command" : "python3 \/Users\/d.rambhia\/Code\/Repositories\/draftkings\/dk-tools\/hooks\/pre_tool_track.py",
+            "timeout" : 2,
+            "type" : "command"
+          }
+        ],
+        "matcher" : "Bash"
+      },
+      {
+        "hooks" : [
+          {
+            "command" : "python3 \/Users\/d.rambhia\/.claude\/hooks\/guardrails.py",
+            "timeout" : 15,
+            "type" : "command"
+          }
+        ],
+        "matcher" : "Bash|Read|mcp__.*"
+      }
+    ],
+    "SessionStart" : [
+      {
+        "hooks" : [
+          {
+            "async" : true,
+            "command" : "bash \/Users\/d.rambhia\/.claude\/hooks\/agent-session-start.sh",
+            "type" : "command"
+          }
+        ]
+      }
+    ],
+    "Stop" : [
+      {
+        "hooks" : [
+          {
+            "async" : true,
+            "command" : "bash \/Users\/d.rambhia\/.claude\/hooks\/agent-session-stop.sh",
+            "type" : "command"
           }
         ]
       },
       {
-        "matcher": "Bash|Read|mcp__.*",
-        "hooks": [
+        "hooks" : [
           {
-            "type": "command",
-            "command": "python3 /Users/d.rambhia/.claude/hooks/guardrails.py",
-            "timeout": 15
+            "command" : "bash \/Users\/d.rambhia\/.claude\/hooks\/check-em-dash.sh",
+            "type" : "command"
           }
         ]
       }
     ],
-    "Stop": [
+    "UserPromptSubmit" : [
       {
-        "hooks": [
+        "hooks" : [
           {
-            "type": "command",
-            "command": "bash /Users/d.rambhia/.claude/hooks/agent-session-stop.sh",
-            "async": true
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash /Users/d.rambhia/.claude/hooks/check-em-dash.sh"
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash /Users/d.rambhia/.claude/hooks/precompact-mine.sh",
-            "async": true
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 /Users/d.rambhia/Code/Repositories/draftkings/dk-tools/hooks/post_tool_track.py",
-            "timeout": 3,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 /Users/d.rambhia/.claude/hooks/dk_context_filter.py"
-          }
-        ]
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 /Users/d.rambhia/Code/Repositories/draftkings/dk-tools/hooks/post_tool_track.py",
-            "timeout": 3,
-            "async": true
+            "command" : "python3 \/Users\/d.rambhia\/.claude\/hooks\/dk_context_filter.py",
+            "type" : "command"
           }
         ]
       }
     ]
   },
-  "enableWorkflows": true,
-  "statusLine": {
-    "type": "command",
-    "command": "bash /Users/d.rambhia/.claude/statusline-command.sh"
+  "model" : "us.anthropic.claude-opus-5-5",
+  "modelPicker" : {
+    "options" : [
+      {
+        "description" : "Complex tasks",
+        "label" : "Opus 5.5",
+        "model" : "us.anthropic.claude-opus-5-5"
+      },
+      {
+        "description" : "Long sessions",
+        "label" : "Opus 5.5 (1M context)",
+        "model" : "us.anthropic.claude-opus-5-5[1m]"
+      },
+      {
+        "description" : "Fast, cheaper",
+        "label" : "Sonnet 5.5",
+        "model" : "us.anthropic.claude-sonnet-5-5"
+      },
+      {
+        "description" : "Fable 5.1",
+        "label" : "Fable 5.1",
+        "model" : "us.anthropic.claude-fable-5-1"
+      }
+    ],
+    "replaceBuiltInOptions" : true
   },
-  "enabledPlugins": {
-    "codex@openai-codex": false,
-    "dk-tool-telemetry@DraftKings-ClaudeCode-Plugin-Marketplace": true,
-    "mattpocock-skills@mattpocock": false,
-    "impeccable@impeccable": true,
-    "ponytail@ponytail": true
+  "modelSettings" : {
+    "claude-fable-5-1" : {
+      "effortLevel" : "high"
+    },
+    "claude-opus-5-5" : {
+      "effortLevel" : "medium"
+    }
   },
-  "extraKnownMarketplaces": {
-    "impeccable": {
-      "source": {
-        "source": "github",
-        "repo": "pbakaus/impeccable"
-      }
-    },
-    "openai-codex": {
-      "source": {
-        "source": "github",
-        "repo": "openai/codex-plugin-cc"
-      }
-    },
-    "caveman": {
-      "source": {
-        "source": "github",
-        "repo": "JuliusBrussee/caveman"
-      }
-    },
-    "DraftKings-ClaudeCode-Plugin-Marketplace": {
-      "source": {
-        "source": "directory",
-        "path": "/Users/d.rambhia/Code/Repositories/draftkings/claudecode-marketplace"
-      }
-    },
-    "mattpocock": {
-      "source": {
-        "source": "github",
-        "repo": "mattpocock/skills"
-      }
-    },
-    "ponytail": {
-      "source": {
-        "source": "github",
-        "repo": "DietrichGebert/ponytail"
+  "pluginConfigs" : {
+    "ponytail@ponytail" : {
+      "options" : {
+        "ledger" : true,
+        "sendNames" : true
       }
     }
   },
-  "effortLevel": "low",
-  "modelSettings": {
-    "claude-fable-5-1": {
-      "effortLevel": "high"
-    },
-    "claude-opus-5-5": {
-      "effortLevel": "medium"
-    }
+  "skipDangerousModePermissionPrompt" : true,
+  "statusLine" : {
+    "command" : "bash \/Users\/d.rambhia\/.claude\/statusline-command.sh",
+    "type" : "command"
   },
-  "pluginConfigs": {
-    "ponytail@ponytail": {
-      "options": {
-        "ledger": true,
-        "sendNames": true
-      }
-    }
-  },
-  "autoUpdatesChannel": "latest",
-  "tui": "fullscreen",
-  "autoMemoryEnabled": true,
-  "autoDreamEnabled": false,
-  "skipDangerousModePermissionPrompt": true,
-  "theme": "dark",
-  "agentPushNotifEnabled": true
+  "theme" : "dark",
+  "tui" : "fullscreen"
 }
