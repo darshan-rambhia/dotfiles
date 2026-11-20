@@ -15,24 +15,24 @@
   "modelPicker": {
     "options": [
       {
-        "model": "us.anthropic.claude-opus-5-5",
+        "model": "opus",
         "label": "Opus 5.5",
         "description": "Complex tasks"
       },
       {
-        "model": "us.anthropic.claude-opus-5-5[1m]",
+        "model": "opus[1m]",
         "label": "Opus 5.5 (1M context)",
         "description": "Long sessions"
       },
       {
-        "model": "us.anthropic.claude-sonnet-5-5",
+        "model": "sonnet",
         "label": "Sonnet 5.5",
         "description": "Fast, cheaper"
       },
       {
-        "model": "us.anthropic.claude-fable-5-1",
-        "label": "Fable 5.1",
-        "description": "Fable 5.1"
+        "model": "claude-fable-5-2",
+        "label": "Fable 5.2",
+        "description": "Fable 5.2"
       }
     ],
     "replaceBuiltInOptions": true
