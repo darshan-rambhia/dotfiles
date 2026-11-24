@@ -155,7 +155,7 @@
   "enabledPlugins": {
     "codex@openai-codex": false,
     "dk-tool-telemetry@DraftKings-ClaudeCode-Plugin-Marketplace": true,
-    "impeccable@impeccable": true,
+    "impeccable@impeccable": false,
     "mattpocock-skills@mattpocock": false,
     "ponytail@ponytail": true
   },
@@ -220,5 +220,13 @@
   "autoDreamEnabled": false,
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "permissions": {
+    "deny": [
+      "ListAgents",
+      "ReportFindings",
+      "ScheduleWakeup",
+      "Workflow"
+    ]
+  }
 }
